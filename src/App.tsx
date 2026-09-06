@@ -11,7 +11,11 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { AuditLogViewer } from './components/AuditLogViewer';
 import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
-import { exportMaintenanceToExcel, exportMaintenanceToPDF } from './utils/exportUtils';
+import { CommandPalette } from './components/CommandPalette';
+import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
+import { playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
+import { cloudDb, isSupabaseConfigured } from './lib/supabaseClient';
+import { House } from './types';
 import { 
   Building2, 
   LayoutDashboard, 
@@ -35,7 +39,9 @@ import {
   ChevronDown,
   Sparkles,
   Home,
-  Plus
+  Plus,
+  RefreshCw,
+  Database
 } from 'lucide-react';
 
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
@@ -87,15 +93,87 @@ export function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
 
-  const [house] = useState(initialHouse);
+  const [house, setHouse] = useState<House>(initialHouse);
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>(initialNotificationLogs);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
   
   const [selectedRecordId, setSelectedRecordId] = useState<string>(initialMaintenanceRecords[0].id);
   const [showSettings, setShowSettings] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [cloudConnected, setCloudConnected] = useState(isSupabaseConfigured);
+  const [lastSynced, setLastSynced] = useState('Just now');
+  const [isSyncing, setIsSyncing] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowCommandPalette((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleSyncCloudDb = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await cloudDb.testConnection();
+      if (res.connected) {
+        const remoteUsers = await cloudDb.getUsers();
+        if (remoteUsers && remoteUsers.length > 0) setUsers(remoteUsers);
+        const remoteRecords = await cloudDb.getMaintenanceRecords();
+        if (remoteRecords && remoteRecords.length > 0) setRecords(remoteRecords);
+        setCloudConnected(true);
+        setLastSynced(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
+        showToast('Cloud PostgreSQL sync completed!');
+        playSuccessChime();
+      } else {
+        setCloudConnected(false);
+        showToast('Local Vault active (Cloud DB unconfigured or offline)');
+      }
+    } catch {
+      setCloudConnected(false);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      handleSyncCloudDb();
+    }
+  }, []);
+
+  const handleRestoreSystemBackup = (data: {
+    house?: House;
+    users?: User[];
+    records?: MaintenanceRecord[];
+    invoices?: Invoice[];
+    notificationLogs?: NotificationLog[];
+    auditLogs?: AuditLog[];
+  }) => {
+    if (data.house) setHouse(data.house);
+    if (data.users) setUsers(data.users);
+    if (data.records) setRecords(data.records);
+    if (data.invoices) setInvoices(data.invoices);
+    if (data.notificationLogs) setNotificationLogs(data.notificationLogs);
+    if (data.auditLogs) setAuditLogs(data.auditLogs);
+    showToast('Platform restored from system backup successfully!');
+    playSuccessChime();
+  };
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   const activeRecord = records.find((r) => r.id === selectedRecordId) || records[0];
 
@@ -213,6 +291,8 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
+    cloudDb.addExpense(newExpense).catch(() => {});
+    playSuccessChime();
     showToast(`Added expense "${newExpenseData.particular}" (₹${newExpenseData.amount.toLocaleString('en-IN')})`);
   };
 
@@ -248,7 +328,8 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
-    showToast(`Updated expense "${updatedExpense.particular}" (₹${updatedExpense.amount.toLocaleString('en-IN')})`);
+    playSuccessChime();
+    showToast(`Updated expense "${updatedExpense.particular}"`);
   };
 
   // Delete Expense Handler
@@ -271,6 +352,7 @@ export function App() {
       })
     );
 
+    playWarningChime();
     showToast('Deleted line item expense.');
   };
 
@@ -295,6 +377,8 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
+    cloudDb.createUser(newUser).catch(() => {});
+    playSuccessChime();
     showToast(`Registered resident ${userData.fullName} (${userData.flatNumber})`);
   };
 
@@ -332,6 +416,7 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
+    playWarningChime();
     showToast(`Removed user ${targetUser?.fullName || userId}`);
   };
 
@@ -345,6 +430,7 @@ export function App() {
         return u;
       })
     );
+    playSuccessChime();
     showToast('Updated tenant monthly maintenance payment status.');
   };
 
@@ -356,6 +442,7 @@ export function App() {
       uploadedAt: new Date().toISOString(),
     };
     setInvoices((prev) => [newInv, ...prev]);
+    playSuccessChime();
     showToast(`Uploaded bill "${invData.fileName}"`);
   };
 
@@ -379,12 +466,20 @@ export function App() {
   // Export handlers
   const handleExportExcel = () => {
     exportMaintenanceToExcel(activeRecord, house);
+    playSuccessChime();
     showToast(`Downloaded official Excel (.xlsx) statement for ${activeRecord.month}/${activeRecord.year}`);
   };
 
   const handleExportPDF = () => {
     exportMaintenanceToPDF(activeRecord, house);
+    playSuccessChime();
     showToast(`Generated and downloaded official PDF statement for ${activeRecord.month}/${activeRecord.year}`);
+  };
+
+  const handleExportTenantExcel = () => {
+    exportTenantsToExcel(users, house);
+    playSuccessChime();
+    showToast('Downloaded official tenant directory & rent ledger (.xlsx)');
   };
 
   const handleExportReport = () => {
@@ -545,19 +640,49 @@ export function App() {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="relative hidden sm:block">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-[#f3f3f9] border border-transparent hover:border-slate-300 focus:border-[#405189] focus:bg-white pl-9 pr-4 py-1.5 rounded text-xs text-slate-700 w-60 transition-all focus:outline-none"
-              />
-            </div>
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f3f9] hover:bg-white border border-slate-200 hover:border-[#405189] px-3 py-1.5 rounded-lg text-xs text-slate-500 w-56 md:w-64 transition-all shadow-2xs cursor-pointer group"
+              title="Open Command Palette (Ctrl+K / Cmd+K)"
+            >
+              <div className="flex items-center gap-2">
+                <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#405189]" />
+                <span className="font-medium">Search anything...</span>
+              </div>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white group-hover:bg-slate-100 border border-slate-200 text-slate-500 shadow-2xs">
+                ⌘K
+              </kbd>
+            </button>
           </div>
 
-          {/* Right: Role Switcher & Profile Dropdown */}
+          {/* Right: Role Switcher, Cloud Sync & Profile Dropdown */}
           <div className="flex items-center gap-3">
             
+            {/* Cloud Database Sync Pill */}
+            <button
+              onClick={handleSyncCloudDb}
+              disabled={isSyncing}
+              className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all shadow-2xs ${
+                cloudConnected
+                  ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+              }`}
+              title={cloudConnected ? `Connected to Cloud PostgreSQL • Last synced: ${lastSynced} • Click to sync` : 'Local Encrypted Vault Active • Click to test Cloud DB connection'}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  cloudConnected ? 'bg-emerald-400' : 'bg-slate-400'
+                }`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                  cloudConnected ? 'bg-emerald-500' : 'bg-slate-500'
+                }`} />
+              </span>
+              <span className="font-mono text-[11px]">
+                {isSyncing ? 'Syncing...' : cloudConnected ? 'Cloud DB' : 'Local Vault'}
+              </span>
+              <RefreshCw className={`w-3 h-3 text-slate-400 ${isSyncing ? 'animate-spin text-emerald-600' : ''}`} />
+            </button>
+
             {/* Active View Role Display */}
             {currentUser.role === 'OWNER' ? (
               <div className="hidden lg:flex items-center gap-1.5 bg-[#f3f3f9] px-2.5 py-1 rounded border border-slate-200 text-xs text-slate-700">
@@ -587,6 +712,15 @@ export function App() {
               </div>
             )}
 
+            {/* Fullscreen Button */}
+            <button
+              onClick={toggleFullScreen}
+              className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer hidden sm:block"
+              title="Toggle Fullscreen"
+            >
+              <Maximize className="w-4 h-4" />
+            </button>
+
             {/* Quick Icon Set */}
             <button className="p-2 rounded hover:bg-slate-100 text-slate-500 relative cursor-pointer" title="Expenses count">
               <ShoppingBag className="w-4 h-4" />
@@ -609,7 +743,7 @@ export function App() {
             <button 
               onClick={() => setShowSettings(true)}
               className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer" 
-              title="Settings"
+              title="Settings & Backup"
             >
               <Settings className="w-4 h-4" />
             </button>
@@ -733,6 +867,8 @@ export function App() {
             <NotificationCenter
               logs={notificationLogs}
               currentUserRole={currentUserRole}
+              currentRecord={activeRecord}
+              house={house}
               onTriggerNotifications={handleTriggerNotifications}
             />
           )}
@@ -752,18 +888,48 @@ export function App() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded shadow-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 animate-in slide-in-from-bottom-5 duration-200">
           <CheckCircle2 className="w-4 h-4 text-[#0ab39c]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Settings Modal */}
+      {/* Global Command Palette (Ctrl+K) */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        users={users}
+        currentRecord={activeRecord}
+        currentUserRole={currentUserRole}
+        onNavigate={(tab) => setActiveTab(tab)}
+        onOpenAddExpense={() => setActiveTab('maintenance')}
+        onOpenAddTenant={() => setActiveTab('tenants')}
+        onExportExcel={handleExportExcel}
+        onExportPDF={handleExportPDF}
+        onExportTenantExcel={handleExportTenantExcel}
+        onSwitchRole={(role) => {
+          setCurrentUserRole(role);
+          showToast(`Switched active view role to ${role}`);
+        }}
+        onOpenSettings={() => setShowSettings(true)}
+      />
+
+      {/* Settings & Disaster Recovery Modal */}
       {showSettings && (
         <SettingsModal
           house={house}
           currentUserRole={currentUserRole}
+          users={users}
+          records={records}
+          invoices={invoices}
+          notificationLogs={notificationLogs}
+          auditLogs={auditLogs}
           onClose={() => setShowSettings(false)}
+          onUpdateHouse={(h) => {
+            setHouse(h);
+            showToast('Property settings saved successfully!');
+          }}
+          onRestoreSystemBackup={handleRestoreSystemBackup}
         />
       )}
 

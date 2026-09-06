@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { MaintenanceRecord, House, Expense } from '../types';
+import { MaintenanceRecord, House, Expense, User, AuditLog } from '../types';
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -277,3 +277,172 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   // Download PDF directly
   doc.save(fileName);
 };
+
+/**
+ * Legitimate Tenant Roster Excel (.xlsx) Export
+ */
+export const exportTenantsToExcel = (users: User[], house?: House) => {
+  const fileName = `MaduraHouse_Tenants_Directory_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+  const worksheetData: (string | number)[][] = [
+    ['MADURA HOUSE RESIDENTIAL DIRECTORY & LEASE LEDGER'],
+    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} - ${house?.postalCode || '625001'}`],
+    [`Generated On: ${new Date().toLocaleString('en-IN')}`],
+    [],
+    ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Payment Status', 'Monthly Rent (INR)', 'Security Deposit (INR)', 'Move-In Date', 'Emergency Contact']
+  ];
+
+  users.forEach((user, idx) => {
+    worksheetData.push([
+      idx + 1,
+      user.flatNumber,
+      user.fullName,
+      user.phone,
+      user.email,
+      user.role,
+      user.occupancyStatus.toUpperCase(),
+      (user.paymentStatus || 'paid').toUpperCase(),
+      user.rentAmount || 0,
+      user.depositAmount || 0,
+      user.moveInDate || '-',
+      user.emergencyContact || '-'
+    ]);
+  });
+
+  worksheetData.push([]);
+  const totalRent = users.reduce((acc, u) => acc + (u.rentAmount || 0), 0);
+  const totalDeposit = users.reduce((acc, u) => acc + (u.depositAmount || 0), 0);
+  worksheetData.push(['', 'TOTAL ACTIVE UNITS', users.length, '', '', '', '', 'PORTFOLIO TOTALS:', totalRent, totalDeposit, '', '']);
+
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  worksheet['!cols'] = [
+    { wch: 8 },  // S.No
+    { wch: 14 }, // Flat
+    { wch: 25 }, // Name
+    { wch: 18 }, // Phone
+    { wch: 30 }, // Email
+    { wch: 16 }, // Role
+    { wch: 16 }, // Status
+    { wch: 16 }, // Payment
+    { wch: 18 }, // Rent
+    { wch: 20 }, // Deposit
+    { wch: 16 }, // Move In
+    { wch: 18 }, // Emergency
+  ];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Tenant Directory');
+  XLSX.writeFile(workbook, fileName);
+};
+
+/**
+ * Legitimate Tenant Directory PDF (.pdf) Export
+ */
+export const exportTenantsToPDF = (users: User[], house?: House) => {
+  const fileName = `MaduraHouse_Tenants_Directory_${new Date().toISOString().split('T')[0]}.pdf`;
+
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header Banner
+  doc.setFillColor(33, 37, 41);
+  doc.rect(0, 0, pageWidth, 20, 'F');
+  doc.setFillColor(10, 179, 156);
+  doc.rect(0, 20, pageWidth, 2, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('MADURA HOUSE - RESIDENTIAL OCCUPANCY & LEASE DIRECTORY', 14, 12);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(203, 213, 225);
+  doc.text(`Official Register • Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} • Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 17);
+
+  const tableData = users.map((u, idx) => [
+    (idx + 1).toString(),
+    u.flatNumber,
+    u.fullName,
+    u.phone,
+    u.email,
+    u.role,
+    u.occupancyStatus.toUpperCase(),
+    (u.paymentStatus || 'paid').toUpperCase(),
+    `Rs. ${(u.rentAmount || 0).toLocaleString('en-IN')}`,
+    `Rs. ${(u.depositAmount || 0).toLocaleString('en-IN')}`,
+    u.emergencyContact || '-'
+  ]);
+
+  autoTable(doc, {
+    startY: 28,
+    head: [['#', 'Flat', 'Resident Name', 'Phone', 'Email', 'Role', 'Status', 'Payment', 'Rent (mo)', 'Deposit', 'Emergency']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [64, 81, 137],
+      textColor: [255, 255, 255],
+      fontSize: 8,
+      fontStyle: 'bold',
+    },
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2.5,
+      textColor: [51, 65, 85],
+    },
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 18, fontStyle: 'bold' },
+      2: { cellWidth: 38 },
+      3: { cellWidth: 26 },
+      4: { cellWidth: 42 },
+      5: { cellWidth: 20 },
+      6: { cellWidth: 18 },
+      7: { cellWidth: 18 },
+      8: { cellWidth: 22, halign: 'right' },
+      9: { cellWidth: 24, halign: 'right' },
+      10: { cellWidth: 26 },
+    },
+  });
+
+  const finalY = (doc as any).lastAutoTable?.finalY || 160;
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text('Certified Confidential Property Record • Madura House Management Platform V0.1', 14, Math.min(finalY + 12, 195));
+
+  doc.save(fileName);
+};
+
+/**
+ * Compliance Audit Log Export to CSV (.csv)
+ */
+export const exportAuditLogsToCSV = (logs: AuditLog[]) => {
+  const fileName = `MaduraHouse_Security_Audit_${new Date().toISOString().split('T')[0]}.csv`;
+
+  const headers = ['Log ID', 'User Email', 'Action Performed', 'Resource Type', 'Resource ID', 'Client IP', 'Timestamp'];
+  const rows = logs.map((l) => [
+    `"${l.id}"`,
+    `"${l.userEmail}"`,
+    `"${l.action}"`,
+    `"${l.resourceType}"`,
+    `"${l.resourceId || '-'}"`,
+    `"${l.ipAddress}"`,
+    `"${new Date(l.timestamp).toISOString()}"`
+  ]);
+
+  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', fileName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+

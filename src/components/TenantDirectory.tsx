@@ -18,8 +18,13 @@ import {
   Filter, 
   SlidersHorizontal,
   Wallet,
-  Clock
+  Clock,
+  FileSpreadsheet,
+  FileText,
+  Download
 } from 'lucide-react';
+import { exportTenantsToExcel, exportTenantsToPDF } from '../utils/exportUtils';
+import { playSuccessChime } from '../utils/audioUtils';
 
 interface TenantDirectoryProps {
   users: User[];
@@ -191,6 +196,28 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               <UserPlus className="w-3.5 h-3.5" /> Add Occupant
             </button>
           )}
+
+          <button
+            onClick={() => {
+              exportTenantsToExcel(users);
+              playSuccessChime();
+            }}
+            className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Download complete resident roster & rent/deposit ledger as Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#0ab39c]" /> Excel
+          </button>
+
+          <button
+            onClick={() => {
+              exportTenantsToPDF(users);
+              playSuccessChime();
+            }}
+            className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Download official resident occupancy directory as PDF (.pdf)"
+          >
+            <FileText className="w-4 h-4 text-[#f06548]" /> PDF
+          </button>
         </div>
       </div>
 
