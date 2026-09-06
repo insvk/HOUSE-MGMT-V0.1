@@ -138,7 +138,23 @@ export function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
 
-  const [house, setHouse] = useState<House>(initialHouse);
+  const [house, setHouse] = useState<House>(() => {
+    try {
+      const saved = localStorage.getItem('madura_house_property_v1');
+      return saved ? JSON.parse(saved) : initialHouse;
+    } catch {
+      return initialHouse;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('madura_house_property_v1', JSON.stringify(house));
+    } catch (e) {
+      console.error('LocalStorage house write error:', e);
+    }
+  }, [house]);
+
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>(initialNotificationLogs);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
@@ -592,6 +608,53 @@ export function App() {
     showToast('Updated tenant monthly maintenance payment status.');
   };
 
+  // Property Master Update Handler (God Mode)
+  const handleUpdateHouse = (updatedHouse: House) => {
+    setHouse(updatedHouse);
+    try {
+      localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedHouse));
+    } catch {}
+    const audit: AuditLog = {
+      id: `al-${Date.now().toString().slice(-4)}`,
+      userId: currentUser.id,
+      userEmail: currentUser.email,
+      action: 'UPDATE_PROPERTY_PROFILE',
+      resourceType: 'house',
+      resourceId: updatedHouse.id,
+      timestamp: new Date().toISOString(),
+      ipAddress: '122.178.45.10',
+    };
+    setAuditLogs((prev) => [audit, ...prev]);
+    playSuccessChime();
+    showToast(`Updated property profile for ${updatedHouse.name}`);
+  };
+
+  // Record Master Rules Update Handler (God Mode)
+  const handleUpdateRecord = (updatedRecord: MaintenanceRecord) => {
+    setRecords((prev) =>
+      prev.map((r) => (r.id === updatedRecord.id ? updatedRecord : r))
+    );
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_RECORDS);
+      const list = saved ? JSON.parse(saved) : [];
+      const updated = list.map((r: any) => (r.id === updatedRecord.id ? updatedRecord : r));
+      localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(updated));
+    } catch {}
+    const audit: AuditLog = {
+      id: `al-${Date.now().toString().slice(-4)}`,
+      userId: currentUser.id,
+      userEmail: currentUser.email,
+      action: 'UPDATE_MAINTENANCE_RECORD_RULES',
+      resourceType: 'maintenance_records',
+      resourceId: updatedRecord.id,
+      timestamp: new Date().toISOString(),
+      ipAddress: '122.178.45.10',
+    };
+    setAuditLogs((prev) => [audit, ...prev]);
+    playSuccessChime();
+    showToast('Updated billing period and financial split rules');
+  };
+
   // Invoice Upload Handler
   const handleUploadInvoice = (invData: Omit<Invoice, 'id' | 'uploadedAt'>) => {
     const newInv: Invoice = {
@@ -602,6 +665,25 @@ export function App() {
     setInvoices((prev) => [newInv, ...prev]);
     playSuccessChime();
     showToast(`Uploaded bill "${invData.fileName}"`);
+  };
+
+  // Delete Invoice Handler (God Mode)
+  const handleDeleteInvoice = (invId: string) => {
+    setInvoices((prev) => prev.filter((i) => i.id !== invId));
+    playWarningChime();
+    showToast('Deleted digital invoice record.');
+  };
+
+  // Add Notification Log Handler (God Mode)
+  const handleAddNotificationLog = (newLogData: Omit<NotificationLog, 'id' | 'sentAt'>) => {
+    const newLog: NotificationLog = {
+      ...newLogData,
+      id: `n-${Date.now().toString().slice(-4)}`,
+      sentAt: new Date().toISOString(),
+    };
+    setNotificationLogs((prev) => [newLog, ...prev]);
+    playSuccessChime();
+    showToast(`Dispatched broadcast notice: "${newLog.subject}"`);
   };
 
   // Trigger Notifications Handler
@@ -892,6 +974,18 @@ export function App() {
               <RefreshCw className={`w-3 h-3 text-slate-400 ${isSyncing ? 'animate-spin text-emerald-600' : ''}`} />
             </button>
 
+            {/* Sampath Kumar God Access Badge */}
+            {currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' && (
+              <div 
+                onClick={() => setActiveTab('dashboard')}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-indigo-500/15 border border-amber-400/40 text-amber-900 font-extrabold text-[10px] sm:text-xs tracking-wide uppercase shadow-xs cursor-pointer hover:bg-amber-100/50 transition-colors"
+                title="God Maxx Access Active - Click to open Dashboard Master Editor"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                <span className="hidden sm:inline">GOD MAXX ACCESS</span>
+              </div>
+            )}
+
             {/* Active View Role Display */}
             {currentUser.role === 'OWNER' ? (
               <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs text-slate-700 max-w-[125px] sm:max-w-none">
@@ -1024,6 +1118,9 @@ export function App() {
               users={users}
               currentUser={currentUser}
               currentUserRole={currentUserRole}
+              house={house}
+              invoices={invoices}
+              notificationLogs={notificationLogs}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenAddExpense={() => setActiveTab('maintenance')}
               onOpenAddTenant={() => setActiveTab('tenants')}
@@ -1031,6 +1128,15 @@ export function App() {
               onDeleteExpense={handleDeleteExpense}
               onToggleTenantPaymentStatus={handleToggleTenantPaymentStatus}
               onExportReport={handleExportReport}
+              onUpdateHouse={handleUpdateHouse}
+              onUpdateRecord={handleUpdateRecord}
+              onUpdateUser={handleUpdateUser}
+              onAddUser={handleAddUser}
+              onDeleteUser={handleDeleteUser}
+              onAddExpense={handleAddExpense}
+              onUploadInvoice={handleUploadInvoice}
+              onDeleteInvoice={handleDeleteInvoice}
+              onAddNotificationLog={handleAddNotificationLog}
             />
           )}
 
