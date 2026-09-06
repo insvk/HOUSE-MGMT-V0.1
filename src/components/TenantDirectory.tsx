@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
+import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
+import { AvatarUploadModal } from './AvatarUploadModal';
 import { 
   Users, 
   UserPlus, 
@@ -21,7 +23,10 @@ import {
   Clock,
   FileSpreadsheet,
   FileText,
-  Download
+  Download,
+  Camera,
+  UploadCloud,
+  RotateCcw
 } from 'lucide-react';
 import { exportTenantsToExcel, exportTenantsToPDF } from '../utils/exportUtils';
 import { playSuccessChime } from '../utils/audioUtils';
@@ -62,6 +67,23 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   const [depositAmount, setDepositAmount] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [notes, setNotes] = useState('');
+  
+  // Avatar & Quick Photo Management
+  const [avatarUrl, setAvatarUrl] = useState<string>(DEFAULT_AVATARS[0].url);
+  const [showModalAvatarPresets, setShowModalAvatarPresets] = useState(false);
+  const [quickAvatarUser, setQuickAvatarUser] = useState<User | null>(null);
+  const modalFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleModalPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressAndResizeImage(file, 260, 0.85);
+      setAvatarUrl(compressed);
+    } catch (err: any) {
+      alert(err.message || 'Failed to process image');
+    }
+  };
 
   const openAddModal = () => {
     setEditingUser(null);
@@ -73,6 +95,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setRole('TENANT');
     setOccupancyStatus('active');
     setPaymentStatus('paid');
+    setAvatarUrl(DEFAULT_AVATARS[0].url);
+    setShowModalAvatarPresets(false);
     setMoveInDate(new Date().toISOString().split('T')[0]);
     setRentAmount('14000');
     setDepositAmount('70000');
@@ -91,6 +115,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setRole(user.role);
     setOccupancyStatus(user.occupancyStatus);
     setPaymentStatus(user.paymentStatus || 'paid');
+    setAvatarUrl(user.avatarUrl || DEFAULT_AVATARS[0].url);
+    setShowModalAvatarPresets(false);
     setMoveInDate(user.moveInDate || '');
     setRentAmount(user.rentAmount ? user.rentAmount.toString() : '');
     setDepositAmount(user.depositAmount ? user.depositAmount.toString() : '');
@@ -112,6 +138,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         phone,
         flatNumber,
         role,
+        avatarUrl,
         occupancyStatus,
         paymentStatus,
         moveInDate,
@@ -128,6 +155,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         phone,
         flatNumber,
         role,
+        avatarUrl,
         occupancyStatus,
         paymentStatus,
         moveInDate: moveInDate || new Date().toISOString().split('T')[0],
@@ -241,11 +269,26 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 {/* Header Info with Avatar */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                      alt={user.fullName}
-                      className="w-11 h-11 rounded-full object-cover border-2 border-slate-100 shadow-xs"
-                    />
+                    <div className="relative group/avatar shrink-0">
+                      <img
+                        src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                        alt={user.fullName}
+                        className="w-11 h-11 rounded-full object-cover border-2 border-slate-100 shadow-xs"
+                      />
+                      {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickAvatarUser(user);
+                          }}
+                          className="absolute -bottom-1 -right-1 p-1 bg-[#405189] text-white rounded-full shadow hover:bg-[#364473] transition-transform hover:scale-110 cursor-pointer"
+                          title="Change Profile Picture"
+                        >
+                          <Camera className="w-2.5 h-2.5" />
+                        </button>
+                      )}
+                    </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-800 leading-tight">
                         {user.fullName}
@@ -363,6 +406,89 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+              {/* Resident Profile Picture Picker */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative group shrink-0">
+                    <img
+                      src={avatarUrl}
+                      alt="Tenant Avatar"
+                      className="w-14 h-14 rounded-full object-cover border-2 border-[#405189] shadow-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => modalFileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 p-1.5 bg-[#405189] text-white rounded-full shadow hover:bg-[#364473] transition-transform hover:scale-110 cursor-pointer"
+                      title="Upload Photo"
+                    >
+                      <Camera className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 uppercase">Tenant Profile Photo (PFP)</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowModalAvatarPresets(!showModalAvatarPresets)}
+                        className="text-[11px] font-semibold text-[#405189] hover:underline cursor-pointer"
+                      >
+                        {showModalAvatarPresets ? 'Hide Presets' : 'Choose Preset'}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Upload custom picture or select a preset portrait</p>
+                    
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => modalFileInputRef.current?.click()}
+                        className="px-2.5 py-1 bg-white border border-slate-300 hover:border-[#405189] text-slate-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                      >
+                        <UploadCloud className="w-3 h-3 text-[#405189]" /> Upload Photo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAvatarUrl(getInitialsAvatar(fullName || 'User'))}
+                        className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 cursor-pointer font-medium"
+                      >
+                        Initials
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <input
+                  ref={modalFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleModalPhotoUpload}
+                  className="hidden"
+                />
+
+                {showModalAvatarPresets && (
+                  <div className="mt-3 pt-3 border-t border-slate-200 animate-in fade-in duration-150">
+                    <div className="text-[10px] uppercase font-bold text-slate-400 mb-2">Preset Portraits:</div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {DEFAULT_AVATARS.map((av) => (
+                        <button
+                          key={av.id}
+                          type="button"
+                          onClick={() => {
+                            setAvatarUrl(av.url);
+                            setShowModalAvatarPresets(false);
+                          }}
+                          className={`p-0.5 rounded-lg border-2 transition-all cursor-pointer ${
+                            avatarUrl === av.url ? 'border-[#405189] scale-105 shadow' : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <img src={av.url} alt={av.label} className="w-full aspect-square rounded-md object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name *</label>
@@ -547,6 +673,21 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Quick Avatar Upload Modal (Triggered by clicking camera icon on any resident card) */}
+      {quickAvatarUser && (
+        <AvatarUploadModal
+          isOpen={!!quickAvatarUser}
+          onClose={() => setQuickAvatarUser(null)}
+          currentAvatarUrl={quickAvatarUser.avatarUrl}
+          userName={quickAvatarUser.fullName}
+          userEmail={quickAvatarUser.email}
+          onSaveAvatar={(newAvatar) => {
+            onUpdateUser({ ...quickAvatarUser, avatarUrl: newAvatar });
+            setQuickAvatarUser(null);
+          }}
+        />
       )}
     </div>
   );

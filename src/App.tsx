@@ -12,6 +12,7 @@ import { AuditLogViewer } from './components/AuditLogViewer';
 import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
 import { CommandPalette } from './components/CommandPalette';
+import { AvatarUploadModal } from './components/AvatarUploadModal';
 import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
 import { playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
 import { cloudDb, isSupabaseConfigured } from './lib/supabaseClient';
@@ -44,7 +45,8 @@ import {
   Database,
   X,
   Wrench,
-  Receipt
+  Receipt,
+  Camera
 } from 'lucide-react';
 
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
@@ -149,6 +151,7 @@ export function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -254,6 +257,51 @@ export function App() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  // Current User Avatar Update & Cloud Sync
+  const handleSaveCurrentUserAvatar = async (newAvatarUrl: string) => {
+    // 1. Update current logged-in user
+    const updatedUser = { ...currentUser, avatarUrl: newAvatarUrl };
+    setCurrentUser(updatedUser);
+
+    // 2. Update users list and write to local storage vault immediately
+    setUsers((prev) => {
+      const updated = prev.map((u) =>
+        u.email.toLowerCase() === currentUser.email.toLowerCase()
+          ? { ...u, avatarUrl: newAvatarUrl }
+          : u
+      );
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch (e) {
+        console.error('LocalStorage avatar write error:', e);
+      }
+      return updated;
+    });
+
+    // 3. Persist to Supabase Cloud PostgreSQL
+    try {
+      await cloudDb.updateUserAvatar(currentUser.email, newAvatarUrl);
+    } catch (e) {
+      console.warn('Cloud DB avatar update fallback:', e);
+    }
+
+    // 4. Record Audit Log
+    const avatarAudit: AuditLog = {
+      id: `al-${Date.now().toString().slice(-4)}`,
+      userId: currentUser.id,
+      userEmail: currentUser.email,
+      action: 'UPDATE_PROFILE_AVATAR',
+      resourceType: 'users',
+      resourceId: currentUser.email,
+      timestamp: new Date().toISOString(),
+      ipAddress: '122.178.45.10',
+    };
+    setAuditLogs((prev) => [avatarAudit, ...prev]);
+
+    playSuccessChime();
+    showToast('Profile picture updated and synced to cloud!');
   };
 
   // Login Handler
@@ -482,6 +530,12 @@ export function App() {
       } catch {}
       return updated;
     });
+
+    if (currentUser.id === updatedUser.id || currentUser.email.toLowerCase() === updatedUser.email.toLowerCase()) {
+      setCurrentUser(updatedUser);
+    }
+
+    cloudDb.updateUser(updatedUser).catch(() => {});
 
     const newAudit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
@@ -889,11 +943,23 @@ export function App() {
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 className="flex items-center gap-2.5 p-1 rounded hover:bg-slate-100 transition-all text-left cursor-pointer"
               >
-                <img
-                  src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                  alt={currentUser.fullName}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-300"
-                />
+                <div className="relative group/navavatar shrink-0">
+                  <img
+                    src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                    alt={currentUser.fullName}
+                    className="w-8 h-8 rounded-full object-cover border border-slate-300"
+                  />
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAvatarModal(true);
+                    }}
+                    className="absolute -bottom-1 -right-1 p-0.5 bg-[#405189] text-white rounded-full shadow hover:bg-[#364473] transition-all cursor-pointer"
+                    title="Change Profile Photo"
+                  >
+                    <Camera className="w-2.5 h-2.5" />
+                  </span>
+                </div>
                 <div className="hidden sm:block">
                   <div className="text-xs font-bold text-slate-800 leading-tight">
                     {currentUser.fullName}
@@ -907,10 +973,17 @@ export function App() {
 
               {/* Dropdown Menu */}
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
+                <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
                   <div className="px-4 py-2 border-b border-slate-100 font-semibold text-slate-700">
                     {currentUser.fullName} ({currentUser.email})
                   </div>
+
+                  <button
+                    onClick={() => { setShowAvatarModal(true); setUserDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#405189]" /> Change Profile Photo
+                  </button>
 
                   <button
                     onClick={() => { setActiveTab('tenants'); setUserDropdownOpen(false); }}
@@ -1121,6 +1194,18 @@ export function App() {
           expense={editingExpense}
           onSave={handleSaveEditedExpense}
           onClose={() => setEditingExpense(null)}
+        />
+      )}
+
+      {/* Current Logged-in User Avatar Upload Modal */}
+      {showAvatarModal && (
+        <AvatarUploadModal
+          isOpen={showAvatarModal}
+          onClose={() => setShowAvatarModal(false)}
+          currentAvatarUrl={currentUser.avatarUrl}
+          userName={currentUser.fullName}
+          userEmail={currentUser.email}
+          onSaveAvatar={handleSaveCurrentUserAvatar}
         />
       )}
 

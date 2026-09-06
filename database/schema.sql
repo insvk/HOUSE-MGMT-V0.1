@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS houses (
   address TEXT NOT NULL DEFAULT 'Madura House, Main Road, City',
   city VARCHAR(100) DEFAULT 'Madurai',
   postal_code VARCHAR(20) DEFAULT '625001',
-  total_units INTEGER DEFAULT 6,
+  total_units INTEGER DEFAULT 5,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

@@ -111,6 +111,84 @@ export const cloudDb = {
     }
   },
 
+  // Update Existing User Details & Profile Picture
+  async updateUser(user: User): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          phone: user.phone,
+          full_name: user.fullName,
+          flat_number: user.flatNumber,
+          occupancy_status: user.occupancyStatus,
+          payment_status: user.paymentStatus,
+          avatar_url: user.avatarUrl,
+          move_in_date: user.moveInDate,
+          rent_amount: user.rentAmount,
+          deposit_amount: user.depositAmount,
+          emergency_contact: user.emergencyContact,
+          notes: user.notes,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', user.email.toLowerCase());
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('Cloud DB update user error:', err);
+      return false;
+    }
+  },
+
+  // Direct Update for User Avatar URL
+  async updateUserAvatar(email: string, avatarUrl: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email.toLowerCase());
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('Cloud DB update avatar error:', err);
+      return false;
+    }
+  },
+
+  // Upload Avatar to Cloud Storage Bucket (if bucket configured)
+  async uploadAvatar(file: File, email: string): Promise<string | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const cleanEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
+      const filePath = `avatars/${cleanEmail}_${Date.now()}.${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.warn('Cloud Storage upload avatar fallback:', err);
+      return null;
+    }
+  },
+
   // Fetch Maintenance Records & Expenses
   async getMaintenanceRecords(): Promise<MaintenanceRecord[] | null> {
     if (!isSupabaseConfigured || !supabase) return null;

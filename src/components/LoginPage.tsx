@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
+import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
 import { 
   Flag, 
   Menu, 
@@ -24,7 +25,10 @@ import {
   IndianRupee, 
   PhoneCall,
   X,
-  ChevronRight
+  ChevronRight,
+  Camera,
+  UploadCloud,
+  RotateCcw
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -58,6 +62,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [rentAmount, setRentAmount] = useState('14000');
   const [depositAmount, setDepositAmount] = useState('70000');
   const [emergencyContact, setEmergencyContact] = useState('');
+  const [signupAvatarUrl, setSignupAvatarUrl] = useState<string>(DEFAULT_AVATARS[0].url);
+  const [showAvatarPresets, setShowAvatarPresets] = useState(false);
+  const signupFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSignupPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressAndResizeImage(file, 260, 0.85);
+      setSignupAvatarUrl(compressed);
+      setSuccessMessage('Profile photo loaded successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to process image');
+    }
+  };
 
   // UI state
   const [errorMessage, setErrorMessage] = useState('');
@@ -232,7 +252,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         role: signupRole,
         occupancyStatus: 'active',
         paymentStatus: 'paid',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        avatarUrl: signupAvatarUrl || DEFAULT_AVATARS[0].url,
         moveInDate: moveInDate || new Date().toISOString().split('T')[0],
         rentAmount: rentAmount ? parseFloat(rentAmount) : 14000,
         depositAmount: depositAmount ? parseFloat(depositAmount) : 70000,
@@ -482,6 +502,90 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               )}
 
               <form onSubmit={handleSignUpSubmit} className="space-y-3 max-h-[68vh] overflow-y-auto pr-1">
+                {/* Profile Photo Selection (PFP) */}
+                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative group shrink-0">
+                      <img
+                        src={signupAvatarUrl}
+                        alt="Profile Preview"
+                        className="w-14 h-14 rounded-full object-cover border-2 border-[#405189] shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => signupFileInputRef.current?.click()}
+                        className="absolute bottom-0 right-0 p-1.5 bg-[#405189] text-white rounded-full shadow hover:bg-[#364473] transition-transform hover:scale-110 cursor-pointer"
+                        title="Upload Photo"
+                      >
+                        <Camera className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700">Profile Picture (PFP)</label>
+                        <button
+                          type="button"
+                          onClick={() => setShowAvatarPresets(!showAvatarPresets)}
+                          className="text-[11px] font-semibold text-[#405189] hover:underline cursor-pointer"
+                        >
+                          {showAvatarPresets ? 'Hide Presets' : 'Choose Preset'}
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Upload custom photo or pick an avatar</p>
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => signupFileInputRef.current?.click()}
+                          className="px-2.5 py-1 bg-white border border-slate-300 hover:border-[#405189] text-slate-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                        >
+                          <UploadCloud className="w-3 h-3 text-[#405189]" /> Upload Photo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSignupAvatarUrl(getInitialsAvatar(fullName || 'User'))}
+                          className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 cursor-pointer font-medium"
+                        >
+                          Use Initials
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <input
+                    ref={signupFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSignupPhotoUpload}
+                    className="hidden"
+                  />
+
+                  {/* Preset Avatar Gallery */}
+                  {showAvatarPresets && (
+                    <div className="mt-3 pt-3 border-t border-slate-200 animate-in fade-in duration-150">
+                      <div className="text-[10px] uppercase font-bold text-slate-400 mb-2">Select an Avatar Preset:</div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {DEFAULT_AVATARS.map((av) => (
+                          <button
+                            key={av.id}
+                            type="button"
+                            onClick={() => {
+                              setSignupAvatarUrl(av.url);
+                              setShowAvatarPresets(false);
+                            }}
+                            className={`p-0.5 rounded-lg border-2 transition-all cursor-pointer ${
+                              signupAvatarUrl === av.url ? 'border-[#405189] scale-105 shadow' : 'border-slate-200 hover:border-slate-300'
+                            }`}
+                          >
+                            <img src={av.url} alt={av.label} className="w-full aspect-square rounded-md object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Full Name & Email */}
                 <div>
                   <label className="block text-xs font-semibold text-[#4b5563] mb-1">Full Name *</label>
