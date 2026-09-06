@@ -53,6 +53,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [flatNumber, setFlatNumber] = useState('Flat 101');
+  const [signupRole, setSignupRole] = useState<UserRole>('TENANT');
   const [moveInDate, setMoveInDate] = useState(new Date().toISOString().split('T')[0]);
   const [rentAmount, setRentAmount] = useState('14000');
   const [depositAmount, setDepositAmount] = useState('70000');
@@ -65,18 +66,49 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
 
+  // Helper to fetch all available accounts across props and local encrypted vault
+  const getAllAvailableAccounts = (): User[] => {
+    const map = new Map<string, User>();
+    users.forEach((u) => map.set(u.email.toLowerCase(), u));
+    try {
+      const saved = localStorage.getItem('madura_house_users_db_v3');
+      if (saved) {
+        const parsed: User[] = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((pu) => {
+            const existing = map.get(pu.email.toLowerCase());
+            if (existing) {
+              map.set(pu.email.toLowerCase(), {
+                ...existing,
+                ...pu,
+                password: pu.password || existing.password,
+                role: pu.role || existing.role,
+              });
+            } else {
+              map.set(pu.email.toLowerCase(), pu);
+            }
+          });
+        }
+      }
+    } catch {}
+    return Array.from(map.values());
+  };
+
   // Handle Login Authentication
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
     
-    if (!loginEmail.trim()) {
+    const cleanEmail = loginEmail.trim().toLowerCase();
+    const cleanPassword = loginPassword;
+
+    if (!cleanEmail) {
       setErrorMessage('Please enter your email address');
       return;
     }
 
-    if (!loginPassword) {
+    if (!cleanPassword) {
       setErrorMessage('Please enter your password');
       return;
     }
@@ -85,15 +117,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     setTimeout(() => {
       setIsLoading(false);
-      const cleanEmail = loginEmail.trim().toLowerCase();
+      const allAccounts = getAllAvailableAccounts();
 
       // Check if user exists in the system
-      const matchedUser = users.find((u) => u.email.toLowerCase() === cleanEmail);
+      const matchedUser = allAccounts.find((u) => u.email.toLowerCase() === cleanEmail);
 
       if (matchedUser) {
-        // Validate password if user has one stored
-        if (matchedUser.password && matchedUser.password !== loginPassword) {
-          setErrorMessage('Invalid password. Please try again or use the correct credentials.');
+        // Validate password
+        if (matchedUser.password && matchedUser.password !== cleanPassword) {
+          setErrorMessage('Invalid password. Please check your credentials and try again.');
           return;
         }
 
@@ -101,26 +133,53 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
-      // Check for Owner default email
+      // Check for default Owner credentials fallback
       if (cleanEmail === 'sampathkumar@chemadur.com') {
-        const ownerUser: User = {
-          id: 'u-owner-01',
-          email: cleanEmail,
-          password: loginPassword,
-          fullName: 'Sampath Kumar',
-          phone: '+91 98421 00000',
-          flatNumber: 'Owner Suite',
-          role: 'OWNER',
-          occupancyStatus: 'active',
-          paymentStatus: 'paid',
-        };
-        onLoginSuccess(ownerUser, 'OWNER');
-        return;
+        if (cleanPassword === 'Sampath@123' || !cleanPassword) {
+          const ownerUser: User = {
+            id: 'u-owner-01',
+            email: cleanEmail,
+            password: 'Sampath@123',
+            fullName: 'Sampath Kumar',
+            phone: '+91 98421 00000',
+            flatNumber: 'Owner Suite',
+            role: 'OWNER',
+            occupancyStatus: 'active',
+            paymentStatus: 'paid',
+          };
+          onLoginSuccess(ownerUser, 'OWNER');
+          return;
+        } else {
+          setErrorMessage('Invalid password for Property Owner account.');
+          return;
+        }
+      }
+
+      // Check for default Admin Tenant credentials fallback
+      if (cleanEmail === 'admin.tenant@madurahouse.local') {
+        if (cleanPassword === 'Admin@123' || !cleanPassword) {
+          const adminTenantUser: User = {
+            id: 'u-admin-tenant-01',
+            email: cleanEmail,
+            password: 'Admin@123',
+            fullName: 'Rajesh Kumar',
+            phone: '+91 98421 11111',
+            flatNumber: 'Flat 101',
+            role: 'ADMIN_TENANT',
+            occupancyStatus: 'active',
+            paymentStatus: 'paid',
+          };
+          onLoginSuccess(adminTenantUser, 'ADMIN_TENANT');
+          return;
+        } else {
+          setErrorMessage('Invalid password for Admin Tenant account.');
+          return;
+        }
       }
 
       // If user is not found in the directory
-      setErrorMessage('Account not found with this email. Please click "Sign up" below to register your resident profile.');
-    }, 400);
+      setErrorMessage(`No account found for "${cleanEmail}". Click "Create Account" below to register.`);
+    }, 350);
   };
 
   // Handle Sign Up Registration
@@ -129,25 +188,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!fullName.trim() || !signupEmail.trim() || !signupPassword || !flatNumber.trim()) {
-      setErrorMessage('Please fill in all required fields.');
+    const cleanName = fullName.trim();
+    const cleanEmail = signupEmail.trim().toLowerCase();
+    const cleanPassword = signupPassword;
+    const cleanConfirm = confirmPassword;
+    const cleanFlat = flatNumber.trim();
+    const cleanPhone = phone.trim() || '+91 98421 00000';
+
+    if (!cleanName || !cleanEmail || !cleanPassword || !cleanFlat) {
+      setErrorMessage('Please fill in all required fields (Name, Email, Password, Flat Number).');
       return;
     }
 
-    if (signupPassword.length < 6) {
+    if (cleanPassword.length < 6) {
       setErrorMessage('Password must be at least 6 characters long.');
       return;
     }
 
-    if (signupPassword !== confirmPassword) {
+    if (cleanPassword !== cleanConfirm) {
       setErrorMessage('Passwords do not match. Please verify.');
       return;
     }
 
-    const cleanEmail = signupEmail.trim().toLowerCase();
-
-    // Check if email already registered
-    const emailExists = users.some((u) => u.email.toLowerCase() === cleanEmail);
+    const allAccounts = getAllAvailableAccounts();
+    const emailExists = allAccounts.some((u) => u.email.toLowerCase() === cleanEmail);
     if (emailExists) {
       setErrorMessage('An account with this email is already registered. Please log in.');
       return;
@@ -161,11 +225,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const newRegisteredUser: User = {
         id: `u-${Date.now().toString().slice(-4)}`,
         email: cleanEmail,
-        password: signupPassword,
-        fullName: fullName.trim(),
-        phone: phone.trim() || '+91 98421 00000',
-        flatNumber: flatNumber.trim(),
-        role: 'TENANT',
+        password: cleanPassword,
+        fullName: cleanName,
+        phone: cleanPhone,
+        flatNumber: cleanFlat,
+        role: signupRole,
         occupancyStatus: 'active',
         paymentStatus: 'paid',
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
@@ -176,9 +240,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         notes: `Registered via Portal on ${new Date().toLocaleDateString()}`,
       };
 
+      // Synchronously commit to local vault immediately
+      try {
+        const saved = localStorage.getItem('madura_house_users_db_v3');
+        const list: User[] = saved ? JSON.parse(saved) : [];
+        const filtered = Array.isArray(list) ? list.filter((u) => u.email.toLowerCase() !== cleanEmail) : [];
+        filtered.push(newRegisteredUser);
+        localStorage.setItem('madura_house_users_db_v3', JSON.stringify(filtered));
+      } catch (err) {
+        console.error('Local storage user commit error:', err);
+      }
+
       // Register into tenant store and redirect to dashboard
       onSignUpSuccess(newRegisteredUser);
-    }, 500);
+    }, 400);
   };
 
   // Google Login Account Selection
@@ -196,7 +271,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     if (!customGoogleEmail.trim()) return;
 
     const clean = customGoogleEmail.trim().toLowerCase();
-    const matched = users.find((u) => u.email.toLowerCase() === clean);
+    const allAccounts = getAllAvailableAccounts();
+    const matched = allAccounts.find((u) => u.email.toLowerCase() === clean);
 
     setShowGoogleModal(false);
     setIsLoading(true);
@@ -210,6 +286,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const newGoogleUser: User = {
           id: `u-${Date.now().toString().slice(-4)}`,
           email: clean,
+          password: 'Google@123',
           fullName: clean.split('@')[0].replace('.', ' ').toUpperCase(),
           phone: '+91 98421 00000',
           flatNumber: 'Flat 101',
@@ -221,6 +298,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           rentAmount: 14000,
           depositAmount: 70000,
         };
+
+        try {
+          const saved = localStorage.getItem('madura_house_users_db_v3');
+          const list: User[] = saved ? JSON.parse(saved) : [];
+          const filtered = Array.isArray(list) ? list.filter((u) => u.email.toLowerCase() !== clean) : [];
+          filtered.push(newGoogleUser);
+          localStorage.setItem('madura_house_users_db_v3', JSON.stringify(filtered));
+        } catch {}
+
         onSignUpSuccess(newGoogleUser);
       }
     }, 400);
@@ -487,6 +573,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 </div>
 
+                {/* Role / Account Privilege Selection */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#4b5563] mb-1">Account Role & Privilege *</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSignupRole('TENANT')}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
+                        signupRole === 'TENANT'
+                          ? 'border-[#111827] bg-[#111827] text-white shadow-xs'
+                          : 'border-[#e5e7eb] bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      Resident Tenant
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSignupRole('ADMIN_TENANT')}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
+                        signupRole === 'ADMIN_TENANT'
+                          ? 'border-[#405189] bg-[#405189] text-white shadow-xs'
+                          : 'border-[#e5e7eb] bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      Admin Tenant
+                    </button>
+                  </div>
+                </div>
+
                 {/* Move In Date & Emergency Contact */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
@@ -648,7 +763,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
             {/* List of Resident Accounts */}
             <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-              {users.map((u) => {
+              {getAllAvailableAccounts().map((u) => {
                 const isOwner = u.role === 'OWNER';
                 const isAdmin = u.role === 'ADMIN_TENANT';
 

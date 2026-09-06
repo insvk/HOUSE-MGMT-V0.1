@@ -51,6 +51,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   // Form State
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('Tenant@123');
   const [phone, setPhone] = useState('');
   const [flatNumber, setFlatNumber] = useState('');
   const [role, setRole] = useState<UserRole>('TENANT');
@@ -66,6 +67,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setEditingUser(null);
     setFullName('');
     setEmail('');
+    setPassword('Tenant@123');
     setPhone('');
     setFlatNumber('');
     setRole('TENANT');
@@ -83,6 +85,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setEditingUser(user);
     setFullName(user.fullName);
     setEmail(user.email);
+    setPassword(user.password || 'Tenant@123');
     setPhone(user.phone);
     setFlatNumber(user.flatNumber);
     setRole(user.role);
@@ -104,7 +107,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
       onUpdateUser({
         ...editingUser,
         fullName,
-        email,
+        email: email.trim().toLowerCase(),
+        password: password || editingUser.password || 'Tenant@123',
         phone,
         flatNumber,
         role,
@@ -119,7 +123,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     } else {
       onAddUser({
         fullName,
-        email,
+        email: email.trim().toLowerCase(),
+        password: password || 'Tenant@123',
         phone,
         flatNumber,
         role,
@@ -300,6 +305,13 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                     </div>
                   )}
 
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span className="text-slate-400 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Portal Login:</span>
+                    <span className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      {user.password ? 'Password Protected' : 'Active'}
+                    </span>
+                  </div>
+
                   {user.notes && (
                     <div className="p-2 rounded bg-slate-50 text-[11px] text-slate-600 mt-2">
                       <strong className="text-slate-700">Notes:</strong> {user.notes}
@@ -351,7 +363,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name *</label>
                   <input
@@ -373,6 +385,18 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Login Password *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Password@123"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs font-mono"
                   />
                 </div>
               </div>

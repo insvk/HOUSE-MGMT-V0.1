@@ -51,11 +51,34 @@ const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
 const STORAGE_KEY_RECORDS = 'madura_house_records_db_v3';
 
 export function App() {
-  // Persistent State for Users & Records
+  // Persistent State for Users & Records with automatic credential preservation
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_USERS);
-      return saved ? JSON.parse(saved) : initialUsers;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const map = new Map<string, User>();
+          // Base defaults
+          initialUsers.forEach((iu) => map.set(iu.email.toLowerCase(), iu));
+          // Overlay saved data
+          parsed.forEach((u: User) => {
+            const existing = map.get(u.email.toLowerCase());
+            if (existing) {
+              map.set(u.email.toLowerCase(), {
+                ...existing,
+                ...u,
+                password: u.password || existing.password,
+                role: u.role || existing.role,
+              });
+            } else {
+              map.set(u.email.toLowerCase(), u);
+            }
+          });
+          return Array.from(map.values());
+        }
+      }
+      return initialUsers;
     } catch {
       return initialUsers;
     }
@@ -129,7 +152,34 @@ export function App() {
       const res = await cloudDb.testConnection();
       if (res.connected) {
         const remoteUsers = await cloudDb.getUsers();
-        if (remoteUsers && remoteUsers.length > 0) setUsers(remoteUsers);
+        if (remoteUsers && remoteUsers.length > 0) {
+          // Non-destructive Smart Merge: Keep all locally registered users and their credentials!
+          setUsers((prevLocalUsers) => {
+            const userMap = new Map<string, User>();
+            // 1. Load local users first (with passwords, custom notes, created accounts)
+            prevLocalUsers.forEach((u) => userMap.set(u.email.toLowerCase(), u));
+            // 2. Overlay remote data without wiping passwords or un-synced users
+            remoteUsers.forEach((ru) => {
+              const emailKey = ru.email.toLowerCase();
+              const existing = userMap.get(emailKey);
+              if (existing) {
+                userMap.set(emailKey, {
+                  ...existing,
+                  ...ru,
+                  password: existing.password || ru.password,
+                  role: existing.role || ru.role || 'TENANT',
+                });
+              } else {
+                userMap.set(emailKey, ru);
+              }
+            });
+            const merged = Array.from(userMap.values());
+            try {
+              localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(merged));
+            } catch {}
+            return merged;
+          });
+        }
         const remoteRecords = await cloudDb.getMaintenanceRecords();
         if (remoteRecords && remoteRecords.length > 0) setRecords(remoteRecords);
         setCloudConnected(true);
@@ -217,15 +267,27 @@ export function App() {
 
   // Sign Up Handler
   const handleSignUpSuccess = (newUser: User) => {
-    // Save new user into persistent state
-    setUsers((prev) => [...prev, newUser]);
+    // 1. Save new user into persistent state & localStorage immediately
+    setUsers((prev) => {
+      const idx = prev.findIndex((u) => u.email.toLowerCase() === newUser.email.toLowerCase());
+      const updated = idx >= 0 ? prev.map((u, i) => (i === idx ? newUser : u)) : [...prev, newUser];
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch (e) {
+        console.error('LocalStorage write error:', e);
+      }
+      return updated;
+    });
     
-    // Auto-login with the newly created account
+    // 2. Auto-login with the newly created account
     setCurrentUser(newUser);
     setCurrentUserRole(newUser.role);
     setIsLoggedIn(true);
 
-    // Audit Log
+    // 3. Attempt cloud persistence
+    cloudDb.createUser(newUser).catch(() => {});
+
+    // 4. Audit Log
     const signupAudit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
       userId: newUser.id,
@@ -367,11 +429,17 @@ export function App() {
       id: `u-${Date.now().toString().slice(-4)}`,
     };
 
-    setUsers((prev) => [...prev, newUser]);
+    setUsers((prev) => {
+      const updated = [...prev, newUser];
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     const newAudit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
-      userId: 'u-owner-01',
+      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
       userEmail: currentUser.email,
       action: 'CREATE_TENANT_PROFILE',
       resourceType: 'users',
@@ -387,11 +455,17 @@ export function App() {
   };
 
   const handleUpdateUser = (updatedUser: User) => {
-    setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+    setUsers((prev) => {
+      const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     const newAudit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
-      userId: 'u-owner-01',
+      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
       userEmail: currentUser.email,
       action: 'UPDATE_TENANT_PROFILE',
       resourceType: 'users',
@@ -406,11 +480,17 @@ export function App() {
 
   const handleDeleteUser = (userId: string) => {
     const targetUser = users.find((u) => u.id === userId);
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    setUsers((prev) => {
+      const updated = prev.filter((u) => u.id !== userId);
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     const newAudit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
-      userId: 'u-owner-01',
+      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
       userEmail: currentUser.email,
       action: 'DELETE_TENANT_PROFILE',
       resourceType: 'users',
@@ -421,7 +501,7 @@ export function App() {
     setAuditLogs((prev) => [newAudit, ...prev]);
 
     playWarningChime();
-    showToast(`Removed user ${targetUser?.fullName || userId}`);
+    showToast(`Deleted resident ${targetUser?.fullName || userId}`);
   };
 
   const handleToggleTenantPaymentStatus = (userId: string) => {
