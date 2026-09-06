@@ -57,7 +57,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [flatNumber, setFlatNumber] = useState<string>(AVAILABLE_FLATS[0]);
-  const [signupRole, setSignupRole] = useState<UserRole>('TENANT');
+  const signupRole: UserRole = 'TENANT';
   const [moveInDate, setMoveInDate] = useState(new Date().toISOString().split('T')[0]);
   const [rentAmount, setRentAmount] = useState('14000');
   const [depositAmount, setDepositAmount] = useState('70000');
@@ -83,8 +83,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [googleAuthMessage, setGoogleAuthMessage] = useState<string | null>(null);
+  const [googleAuthInProgress, setGoogleAuthInProgress] = useState(false);
 
   // Helper to fetch all available accounts across props and local encrypted vault
   const getAllAvailableAccounts = (): User[] => {
@@ -276,60 +276,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }, 400);
   };
 
-  // Google Login Account Selection
-  const handleSelectGoogleAccount = (selectedUser: User) => {
-    setShowGoogleModal(false);
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess(selectedUser, selectedUser.role);
-    }, 350);
-  };
-
-  const handleCustomGoogleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customGoogleEmail.trim()) return;
-
-    const clean = customGoogleEmail.trim().toLowerCase();
-    const allAccounts = getAllAvailableAccounts();
-    const matched = allAccounts.find((u) => u.email.toLowerCase() === clean);
-
-    setShowGoogleModal(false);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      if (matched) {
-        onLoginSuccess(matched, matched.role);
-      } else {
-        // Standard tenant resident account creation for new Google user
-        const newGoogleUser: User = {
-          id: `u-${Date.now().toString().slice(-4)}`,
-          email: clean,
-          password: 'Google@123',
-          fullName: clean.split('@')[0].replace('.', ' ').toUpperCase(),
-          phone: '+91 98421 00000',
-          flatNumber: 'GF',
-          role: 'TENANT',
-          occupancyStatus: 'active',
-          paymentStatus: 'paid',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-          moveInDate: new Date().toISOString().split('T')[0],
-          rentAmount: 14000,
-          depositAmount: 70000,
-        };
-
-        try {
-          const saved = localStorage.getItem('madura_house_users_db_v3');
-          const list: User[] = saved ? JSON.parse(saved) : [];
-          const filtered = Array.isArray(list) ? list.filter((u) => u.email.toLowerCase() !== clean) : [];
-          filtered.push(newGoogleUser);
-          localStorage.setItem('madura_house_users_db_v3', JSON.stringify(filtered));
-        } catch {}
-
-        onSignUpSuccess(newGoogleUser);
-      }
-    }, 400);
+  // Google Authentication Handler
+  const handleGoogleAuthClick = () => {
+    setErrorMessage('');
+    setGoogleAuthInProgress(true);
+    setGoogleAuthMessage('GOOGLE AUTHENTICATION IS UNDERWAY');
   };
 
   return (
@@ -442,10 +393,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   )}
                 </button>
 
-                {/* Secondary Button: Continue with Google (Opens Google Identity Selector) */}
+                {/* Secondary Button: Continue with Google */}
                 <button
                   type="button"
-                  onClick={() => setShowGoogleModal(true)}
+                  onClick={handleGoogleAuthClick}
                   className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-100 text-[#374151] font-semibold text-sm border border-[#e5e7eb] flex items-center justify-center gap-2.5 transition-all shadow-sm cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -456,6 +407,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </svg>
                   <span>Continue with Google</span>
                 </button>
+
+                {/* Google Authentication Status Banner */}
+                {googleAuthMessage && (
+                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold flex items-center justify-between gap-2.5 animate-in fade-in zoom-in-95 duration-200 shadow-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative flex h-2.5 w-2.5 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                      </div>
+                      <div>
+                        <div className="font-extrabold tracking-wider uppercase text-[11px] sm:text-xs text-amber-950">
+                          {googleAuthMessage}
+                        </div>
+                        <div className="text-[10px] text-amber-700 font-normal">
+                          Google OAuth SSO single sign-on service connection initialized.
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setGoogleAuthMessage(null)}
+                      className="text-amber-600 hover:text-amber-800 text-xs font-bold p-1 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </form>
 
               {/* Bottom Sign Up Link */}
@@ -674,35 +652,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 </div>
 
-                {/* Role / Account Privilege Selection */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#4b5563] mb-1">Account Role & Privilege *</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSignupRole('TENANT')}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
-                        signupRole === 'TENANT'
-                          ? 'border-[#111827] bg-[#111827] text-white shadow-xs'
-                          : 'border-[#e5e7eb] bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      Resident Tenant
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSignupRole('ADMIN_TENANT')}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
-                        signupRole === 'ADMIN_TENANT'
-                          ? 'border-[#405189] bg-[#405189] text-white shadow-xs'
-                          : 'border-[#e5e7eb] bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      Admin Tenant
-                    </button>
-                  </div>
-                </div>
-
                 {/* Move In Date & Emergency Contact */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
@@ -738,6 +687,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   ) : (
                     'Create Resident Account & Enter Dashboard'
                   )}
+                </button>
+
+                {/* Secondary Button: Sign up with Google */}
+                <button
+                  type="button"
+                  onClick={handleGoogleAuthClick}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-100 text-[#374151] font-semibold text-xs border border-[#e5e7eb] flex items-center justify-center gap-2.5 transition-all shadow-xs cursor-pointer mt-2"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.33 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.42l4.02-3.15z" />
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                  </svg>
+                  <span>Continue with Google</span>
                 </button>
               </form>
 
@@ -827,114 +791,50 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* GOOGLE IDENTITY ACCOUNT CHOOSER POPUP MODAL                               */}
+      {/* GOOGLE AUTHENTICATION UNDERWAY MODAL                                       */}
       {/* ========================================================================= */}
-      {showGoogleModal && (
+      {googleAuthInProgress && (
         <div 
           className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setShowGoogleModal(false)}
+          onClick={() => setGoogleAuthInProgress(false)}
         >
           <div 
-            className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 text-[#1f2937]"
+            className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-150 text-[#1f2937]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Google Header */}
-            <div className="p-6 border-b border-slate-100 flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.33 24 12 24z" />
-                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.42l4.02-3.15z" />
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
-                  </svg>
-                  <span className="font-bold text-sm text-slate-800">Sign in with Google</span>
-                </div>
-                <h2 className="text-base font-bold text-slate-900">Choose an account</h2>
-                <p className="text-xs text-slate-500 mt-0.5">to continue to Madura House Maintenance Portal</p>
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-xs">
+              <svg className="w-8 h-8" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.33 24 12 24z" />
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.42l4.02-3.15z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+              </svg>
+            </div>
+
+            <div>
+              <div className="inline-block px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                Google Identity Services
               </div>
-
-              <button 
-                onClick={() => setShowGoogleModal(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <h3 className="text-base font-black text-slate-900 tracking-wide uppercase">
+                GOOGLE AUTHENTICATION IS UNDERWAY
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Connecting to Google Cloud OAuth 2.0 Identity Server for single sign-on authentication...
+              </p>
             </div>
 
-            {/* List of Resident Accounts */}
-            <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-              {getAllAvailableAccounts().map((u) => {
-                const isOwner = u.role === 'OWNER';
-                const isAdmin = u.role === 'ADMIN_TENANT';
-
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => handleSelectGoogleAccount(u)}
-                    className="w-full px-6 py-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <img
-                        src={u.avatarUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'}
-                        alt={u.fullName}
-                        className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                      />
-                      <div>
-                        <div className="text-xs font-bold text-slate-800 group-hover:text-blue-600">
-                          {u.fullName}
-                        </div>
-                        <div className="text-[11px] text-slate-500">{u.email}</div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                        isOwner ? 'bg-indigo-50 text-indigo-700' :
-                        isAdmin ? 'bg-sky-50 text-sky-700' :
-                        'bg-emerald-50 text-emerald-700'
-                      }`}>
-                        {isOwner ? 'Owner' : isAdmin ? 'Admin' : `${u.flatNumber}`}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Google gradient animated progress bar */}
+            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-gradient-to-r from-[#4285F4] via-[#34A853] via-[#FBBC05] to-[#EA4335] h-full w-full animate-pulse" />
             </div>
 
-            {/* Custom Google Email Input */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
-              <form onSubmit={handleCustomGoogleSubmit} className="space-y-2">
-                <label className="block text-[11px] font-semibold text-slate-600">
-                  Or enter another Google account:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="resident@gmail.com"
-                    value={customGoogleEmail}
-                    onChange={(e) => setCustomGoogleEmail(e.target.value)}
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-lg bg-[#262626] hover:bg-black text-white text-xs font-semibold cursor-pointer"
-                  >
-                    Continue
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>To continue, Google will share your name & email.</span>
-              <button onClick={() => setShowGoogleModal(false)} className="text-blue-600 hover:underline font-semibold cursor-pointer">
-                Cancel
-              </button>
-            </div>
-
+            <button
+              type="button"
+              onClick={() => setGoogleAuthInProgress(false)}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition-colors cursor-pointer shadow-sm"
+            >
+              Dismiss
+            </button>
           </div>
         </div>
       )}
