@@ -53,7 +53,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [flatNumber, setFlatNumber] = useState('Flat 101');
-  const [role, setRole] = useState<UserRole>('TENANT');
   const [moveInDate, setMoveInDate] = useState(new Date().toISOString().split('T')[0]);
   const [rentAmount, setRentAmount] = useState('14000');
   const [depositAmount, setDepositAmount] = useState('70000');
@@ -166,12 +165,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         fullName: fullName.trim(),
         phone: phone.trim() || '+91 98421 00000',
         flatNumber: flatNumber.trim(),
-        role: role,
+        role: 'TENANT',
         occupancyStatus: 'active',
         paymentStatus: 'paid',
-        avatarUrl: role === 'OWNER' 
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
         moveInDate: moveInDate || new Date().toISOString().split('T')[0],
         rentAmount: rentAmount ? parseFloat(rentAmount) : 14000,
         depositAmount: depositAmount ? parseFloat(depositAmount) : 70000,
@@ -475,7 +472,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       <option value="Flat 202">Flat 202</option>
                       <option value="Flat 301">Flat 301</option>
                       <option value="Flat 302">Flat 302</option>
-                      <option value="Owner Suite">Owner Suite</option>
                     </select>
                   </div>
 
@@ -489,20 +485,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#e5e7eb] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
                     />
                   </div>
-                </div>
-
-                {/* Role Level */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#4b5563] mb-1">Role Privilege Level</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as UserRole)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#e5e7eb] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
-                  >
-                    <option value="TENANT">Regular Tenant (Standard Resident View)</option>
-                    <option value="ADMIN_TENANT">Admin Tenant (Can Manage Expenses)</option>
-                    <option value="OWNER">House Owner (Property Admin)</option>
-                  </select>
                 </div>
 
                 {/* Move In Date & Emergency Contact */}
