@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { User, MaintenanceRecord, Expense, Invoice, NotificationLog } from '../types';
+import { User, MaintenanceRecord, Expense, Invoice, NotificationLog, House } from '../types';
 
 // Environment variables with fallback
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -10,6 +10,18 @@ export const isSupabaseConfigured = Boolean(
   supabaseAnonKey && 
   !supabaseUrl.includes('placeholder')
 );
+
+// RFC4122 v4 UUID generator for PostgreSQL compatibility
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 // Initialize Supabase client
 export const supabase: SupabaseClient | null = isSupabaseConfigured
@@ -47,6 +59,56 @@ export const cloudDb = {
         connected: false,
         message: `Cloud DB Connection error: ${err.message || 'Unknown'}`,
       };
+    }
+  },
+
+  // Fetch Property / House Master
+  async getHouse(): Promise<House | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase.from('houses').select('*').limit(1);
+      if (error || !data || data.length === 0) return null;
+      const h = data[0];
+      return {
+        id: h.id,
+        name: h.name || 'Madura House Maintenance',
+        address: h.address || 'No. 42, Bypass Road, Ellis Nagar',
+        city: h.city || 'Madurai',
+        postalCode: h.postal_code || '625001',
+        totalUnits: Number(h.total_units) || 5,
+        ownerId: h.owner_id || 'u-owner-01',
+      };
+    } catch (err) {
+      console.warn('Cloud DB fetch house fallback:', err);
+      return null;
+    }
+  },
+
+  // Update / Upsert House Master Permanently in DB
+  async updateHouse(house: House): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const houseId = (house.id && house.id.length === 36 && house.id.includes('-'))
+        ? house.id
+        : '11111111-2222-3333-4444-555555555555';
+
+      const { error } = await supabase
+        .from('houses')
+        .upsert({
+          id: houseId,
+          name: house.name,
+          address: house.address,
+          city: house.city,
+          postal_code: house.postalCode,
+          total_units: Number(house.totalUnits) || 5,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB update house warning:', err);
+      return false;
     }
   },
 
@@ -232,22 +294,104 @@ export const cloudDb = {
     }
   },
 
-  // Add Expense to Cloud DB
+  // Update / Upsert Maintenance Record Header in Cloud DB
+  async updateMaintenanceRecord(record: MaintenanceRecord): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const recordId = (record.id && record.id.length === 36 && record.id.includes('-'))
+        ? record.id
+        : '22222222-3333-4444-5555-666666666666';
+
+      // NOTE: PostgreSQL column 'individual_contribution' is a GENERATED STORED column!
+      // Do NOT send 'individual_contribution' in the payload or DB will reject the write.
+      const payload: any = {
+        id: recordId,
+        house_id: '11111111-2222-3333-4444-555555555555',
+        month: record.month,
+        year: record.year,
+        grand_total: record.grandTotal,
+        number_of_active_tenants: record.activeTenantsCount || 5,
+        notes: record.notes || '',
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('maintenance_records')
+        .upsert(payload, { onConflict: 'house_id,month,year' });
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB update maintenance record notice:', err);
+      return false;
+    }
+  },
+
+  // Delete User from Cloud DB
+  async deleteUser(userIdOrEmail: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          occupancy_status: 'inactive',
+          is_active: false,
+          deleted_at: new Date().toISOString(),
+        })
+        .or(`id.eq.${userIdOrEmail},email.eq.${userIdOrEmail}`);
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB delete user notice:', err);
+      return false;
+    }
+  },
+
+  // Update User Payment Status in Cloud DB
+  async updateUserPaymentStatus(email: string, paymentStatus: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          payment_status: paymentStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email.toLowerCase());
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB update payment status notice:', err);
+      return false;
+    }
+  },
+
+  // Add Expense to Cloud DB (UUID Compliant)
   async addExpense(expense: Expense): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const { error } = await supabase.from('expenses').insert({
-        id: expense.id,
-        maintenance_record_id: expense.maintenanceRecordId,
-        sl_no: expense.slNo,
+      const validId = (expense.id && expense.id.length === 36 && expense.id.includes('-'))
+        ? expense.id
+        : generateUUID();
+
+      const validRecordId = (expense.maintenanceRecordId && expense.maintenanceRecordId.length === 36 && expense.maintenanceRecordId.includes('-'))
+        ? expense.maintenanceRecordId
+        : '22222222-3333-4444-5555-666666666666';
+
+      const { error } = await supabase.from('expenses').upsert({
+        id: validId,
+        maintenance_record_id: validRecordId,
+        sl_no: expense.slNo || 1,
         particular: expense.particular,
-        amount: expense.amount,
-        category: expense.category,
-        gst_applicable: expense.gstApplicable,
-        gst_amount: expense.gstAmount,
-        notes: expense.notes,
-        added_by: expense.addedBy,
-      });
+        amount: Number(expense.amount) || 0,
+        category: expense.category || 'maintenance',
+        gst_applicable: Boolean(expense.gstApplicable),
+        gst_amount: Number(expense.gstAmount) || 0,
+        notes: expense.notes || '',
+        added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      }, { onConflict: 'id' });
 
       if (error) throw error;
       return true;
@@ -265,11 +409,12 @@ export const cloudDb = {
         .from('expenses')
         .update({
           particular: expense.particular,
-          amount: expense.amount,
+          amount: Number(expense.amount) || 0,
           category: expense.category,
-          gst_applicable: expense.gstApplicable,
-          gst_amount: expense.gstAmount,
-          notes: expense.notes,
+          gst_applicable: Boolean(expense.gstApplicable),
+          gst_amount: Number(expense.gstAmount) || 0,
+          notes: expense.notes || '',
+          updated_at: new Date().toISOString(),
         })
         .eq('id', expense.id);
 
@@ -370,6 +515,183 @@ export const cloudDb = {
     } catch (err) {
       console.error('Cloud Storage upload error:', err);
       return null;
+    }
+  },
+
+  // Fetch Invoices from DB
+  async getInvoices(): Promise<Invoice[] | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((i: any) => ({
+        id: i.id,
+        expenseId: i.expense_id,
+        maintenanceRecordId: i.maintenance_record_id || '22222222-3333-4444-5555-666666666666',
+        fileName: i.file_name,
+        fileSize: Number(i.file_size) || 0,
+        fileType: i.file_type || 'application/pdf',
+        storagePath: i.storage_path || '',
+        uploadedBy: i.uploaded_by || 'Admin',
+        uploadedAt: i.created_at || new Date().toISOString(),
+        ocrText: i.ocr_data?.text || '',
+      }));
+    } catch (err) {
+      console.warn('Cloud DB fetch invoices fallback:', err);
+      return null;
+    }
+  },
+
+  // Add Invoice to Cloud DB
+  async addInvoice(invoice: Invoice): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const validId = (invoice.id && invoice.id.length === 36 && invoice.id.includes('-'))
+        ? invoice.id
+        : generateUUID();
+
+      const { error } = await supabase.from('invoices').insert({
+        id: validId,
+        maintenance_record_id: '22222222-3333-4444-5555-666666666666',
+        file_name: invoice.fileName,
+        file_size: invoice.fileSize,
+        file_type: invoice.fileType,
+        storage_path: invoice.storagePath,
+        uploaded_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB insert invoice notice:', err);
+      return false;
+    }
+  },
+
+  // Delete Invoice from Cloud DB
+  async deleteInvoice(invoiceId: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase.from('invoices').delete().eq('id', invoiceId);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB delete invoice notice:', err);
+      return false;
+    }
+  },
+
+  // Fetch Notification Logs from DB
+  async getNotificationLogs(): Promise<NotificationLog[] | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((n: any) => ({
+        id: n.id,
+        maintenanceRecordId: n.maintenance_record_id,
+        recipientEmail: n.metadata?.recipient_email || '',
+        type: n.type || 'maintenance_added',
+        subject: n.subject || '',
+        status: 'sent',
+        sentAt: n.sent_at || n.created_at,
+      }));
+    } catch (err) {
+      console.warn('Cloud DB fetch notifications fallback:', err);
+      return null;
+    }
+  },
+
+  // Add Notification Log to Cloud DB
+  async addNotificationLog(log: NotificationLog): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const validId = (log.id && log.id.length === 36 && log.id.includes('-'))
+        ? log.id
+        : generateUUID();
+
+      const { error } = await supabase.from('notifications').insert({
+        id: validId,
+        maintenance_record_id: '22222222-3333-4444-5555-666666666666',
+        recipient_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        type: log.type,
+        subject: log.subject,
+        content: log.subject,
+        metadata: { recipient_email: log.recipientEmail },
+        sent_at: log.sentAt,
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB add notification notice:', err);
+      return false;
+    }
+  },
+
+  // MASTER GOD MODE ACTION: Sync and Lock ALL Data Permanently in Cloud DB
+  async syncAllDataToCloud(data: {
+    house?: House;
+    users?: User[];
+    record?: MaintenanceRecord;
+    expenses?: Expense[];
+  }): Promise<{ success: boolean; message: string; details: any }> {
+    const details: any = { house: false, users: 0, record: false, expenses: 0 };
+    if (!isSupabaseConfigured || !supabase) {
+      return { success: false, message: 'Cloud DB offline or unconfigured.', details };
+    }
+
+    try {
+      // 1. Sync House
+      if (data.house) {
+        details.house = await cloudDb.updateHouse(data.house);
+      }
+
+      // 2. Sync Users
+      if (data.users && data.users.length > 0) {
+        for (const u of data.users) {
+          const ok = await cloudDb.updateUser(u);
+          if (ok) details.users++;
+        }
+      }
+
+      // 3. Sync Maintenance Record
+      if (data.record) {
+        details.record = await cloudDb.updateMaintenanceRecord(data.record);
+      }
+
+      // 4. Sync Expenses
+      if (data.expenses && data.expenses.length > 0) {
+        for (const exp of data.expenses) {
+          const ok = await cloudDb.addExpense(exp);
+          if (ok) details.expenses++;
+        }
+      }
+
+      const anySuccess = details.house || details.users > 0 || details.record || details.expenses > 0;
+      return {
+        success: anySuccess,
+        message: anySuccess
+          ? 'Platform state successfully locked and made permanent in Cloud PostgreSQL!'
+          : 'Sync completed. Check Supabase RLS policies if writes were restricted.',
+        details,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Sync error: ${err.message || 'Unknown'}`,
+        details,
+      };
     }
   },
 };

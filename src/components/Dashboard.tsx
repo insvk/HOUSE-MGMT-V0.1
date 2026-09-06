@@ -31,7 +31,10 @@ import {
   Sparkles,
   Shield,
   UploadCloud,
-  Bell
+  Bell,
+  Database,
+  Terminal,
+  Copy
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -74,6 +77,8 @@ interface DashboardProps {
   onUploadInvoice: (invoice: Omit<Invoice, 'id' | 'uploadedAt'>) => void;
   onDeleteInvoice?: (invoiceId: string) => void;
   onAddNotificationLog?: (log: Omit<NotificationLog, 'id' | 'sentAt'>) => void;
+  onMasterCloudSync?: () => Promise<void>;
+  isSyncing?: boolean;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -101,6 +106,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onUploadInvoice,
   onDeleteInvoice,
   onAddNotificationLog,
+  onMasterCloudSync,
+  isSyncing = false,
 }) => {
   const [timeFilter, setTimeFilter] = useState<'All' | '1M' | '6M' | '1Y'>('1M');
   const [selectedSort, setSelectedSort] = useState<'Today' | 'Monthly' | 'Yearly'>('Monthly');
@@ -109,6 +116,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUserRole === 'OWNER';
   const [showGodModal, setShowGodModal] = useState<boolean>(false);
   const [godTab, setGodTab] = useState<GodModeTab>('property');
+  const [showCmdModal, setShowCmdModal] = useState<boolean>(false);
+  const [copiedCmd, setCopiedCmd] = useState<boolean>(false);
 
   const openMasterTab = (tab: GodModeTab) => {
     setGodTab(tab);
@@ -234,6 +243,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
               title="Upload Digital Bill / Contractor Receipt"
             >
               <Receipt className="w-3.5 h-3.5 text-purple-300" /> Upload Bill
+            </button>
+
+            {onMasterCloudSync && (
+              <button
+                type="button"
+                onClick={onMasterCloudSync}
+                disabled={isSyncing}
+                className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                title="Lock & Make All Changes Permanent in Cloud PostgreSQL DB"
+              >
+                <Database className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-300' : 'text-emerald-400'}`} />
+                {isSyncing ? 'Saving to DB...' : 'Permanent DB Sync'}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowCmdModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-sky-200 border border-sky-500/30 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              title="CMD Terminal Commands & Sync Script"
+            >
+              <Terminal className="w-3.5 h-3.5 text-sky-400" /> CMD Loader
             </button>
 
             <button
@@ -889,6 +920,100 @@ export const Dashboard: React.FC<DashboardProps> = ({
           notificationLogs={notificationLogs}
           onAddNotificationLog={onAddNotificationLog}
         />
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. CMD TERMINAL & PERMANENT DB LOADER MODAL                               */}
+      {/* ========================================================================= */}
+      {showCmdModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-xl w-full text-white shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 border-b border-indigo-500/30 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center">
+                  <Terminal className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    CMD Terminal DB Loader & Permanent Sync
+                  </h3>
+                  <p className="text-xs text-indigo-300">
+                    CLI commands to permanently seed & load all admin changes into Cloud PostgreSQL
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCmdModal(false)}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-4 text-xs">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Command Line (Run in CMD or PowerShell):
+                </span>
+                <div className="mt-1.5 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-emerald-400 flex items-center justify-between gap-3">
+                  <span className="select-all overflow-x-auto whitespace-nowrap">npm run db:sync</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('npm run db:sync');
+                      setCopiedCmd(true);
+                      setTimeout(() => setCopiedCmd(false), 2500);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-600/50 hover:bg-indigo-600 text-white font-sans text-xs flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+                  >
+                    {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedCmd ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-indigo-200/90 space-y-2">
+                <div className="flex items-center gap-2 text-indigo-300 font-bold">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>How Permanent Sync Works:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-slate-300 text-[11px]">
+                  <li>All changes made in <strong>Building Info, Billing Rules, Residents, and Expenses</strong> are instantly recorded in local vault.</li>
+                  <li>Every mutation triggers live background synchronization to <strong>Supabase Cloud PostgreSQL</strong>.</li>
+                  <li>Running <code className="text-emerald-400 font-mono">npm run db:sync</code> in CMD seeds and permanently verifies all records directly.</li>
+                  <li>If PostgreSQL RLS policies restrict writes, run <code className="text-sky-300 font-mono">database/make_permanent.sql</code> once in the Supabase SQL editor.</li>
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-wrap items-center justify-end gap-2 border-t border-slate-800">
+                {onMasterCloudSync && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await onMasterCloudSync();
+                    }}
+                    disabled={isSyncing}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+                  >
+                    <Database className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    {isSyncing ? 'Writing to DB...' : 'Sync All Data to DB Now'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowCmdModal(false)}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

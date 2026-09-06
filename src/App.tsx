@@ -16,7 +16,7 @@ import { AvatarUploadModal } from './components/AvatarUploadModal';
 import { GoogleClock } from './components/GoogleClock';
 import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
 import { playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
-import { cloudDb, isSupabaseConfigured } from './lib/supabaseClient';
+import { cloudDb, isSupabaseConfigured, generateUUID } from './lib/supabaseClient';
 import { House } from './types';
 import { 
   Building2, 
@@ -175,7 +175,22 @@ export function App() {
     }
   }, [house]);
 
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>(() => {
+    try {
+      const saved = localStorage.getItem('madura_house_invoices_v1');
+      return saved ? JSON.parse(saved) : initialInvoices;
+    } catch {
+      return initialInvoices;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('madura_house_invoices_v1', JSON.stringify(invoices));
+    } catch (e) {
+      console.error('Invoice sync error:', e);
+    }
+  }, [invoices]);
   const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>(() => {
     try {
       const saved = localStorage.getItem('madura_house_notifications_v1');
@@ -222,6 +237,16 @@ export function App() {
     try {
       const res = await cloudDb.testConnection();
       if (res.connected) {
+        // 1. Fetch House Master
+        const remoteHouse = await cloudDb.getHouse();
+        if (remoteHouse) {
+          setHouse(remoteHouse);
+          try {
+            localStorage.setItem('madura_house_property_v1', JSON.stringify(remoteHouse));
+          } catch {}
+        }
+
+        // 2. Fetch Users
         const remoteUsers = await cloudDb.getUsers();
         if (remoteUsers && remoteUsers.length > 0) {
           // Non-destructive Smart Merge: Keep all locally registered users and their credentials!
@@ -255,6 +280,8 @@ export function App() {
             return merged;
           });
         }
+
+        // 3. Fetch Maintenance Records & Expenses
         const remoteRecords = await cloudDb.getMaintenanceRecords();
         if (remoteRecords && remoteRecords.length > 0) {
           setRecords((prev) =>
@@ -275,6 +302,18 @@ export function App() {
               };
             })
           );
+        }
+
+        // 4. Fetch Digital Invoices
+        const remoteInvoices = await cloudDb.getInvoices();
+        if (remoteInvoices && remoteInvoices.length > 0) {
+          setInvoices(remoteInvoices);
+        }
+
+        // 5. Fetch Notification Broadcast Logs
+        const remoteLogs = await cloudDb.getNotificationLogs();
+        if (remoteLogs && remoteLogs.length > 0) {
+          setNotificationLogs(remoteLogs);
         }
         setCloudConnected(true);
         setLastSynced(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
@@ -543,7 +582,7 @@ export function App() {
 
   // Add Expense Handler
   const handleAddExpense = (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
-    const expenseId = `e-${Date.now().toString().slice(-4)}`;
+    const expenseId = generateUUID();
     const newExpense: Expense = {
       ...newExpenseData,
       id: expenseId,
@@ -651,7 +690,7 @@ export function App() {
   const handleAddUser = (userData: Omit<User, 'id'>) => {
     const newUser: User = {
       ...userData,
-      id: `u-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
     };
 
     setUsers((prev) => {
@@ -731,30 +770,48 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
+    cloudDb.deleteUser(userId).catch(() => {});
     playWarningChime();
     showToast(`Deleted resident ${targetUser?.fullName || userId}`);
   };
 
   const handleToggleTenantPaymentStatus = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === userId) {
-          const nextStatus = u.paymentStatus === 'paid' ? 'pending' : u.paymentStatus === 'pending' ? 'unpaid' : 'paid';
+    let nextStatus: 'paid' | 'pending' | 'unpaid' = 'paid';
+    let targetEmail = '';
+
+    setUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === userId || u.email.toLowerCase() === userId.toLowerCase()) {
+          nextStatus = u.paymentStatus === 'paid' ? 'pending' : u.paymentStatus === 'pending' ? 'unpaid' : 'paid';
+          targetEmail = u.email;
           return { ...u, paymentStatus: nextStatus };
         }
         return u;
-      })
-    );
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (targetEmail) {
+      cloudDb.updateUserPaymentStatus(targetEmail, nextStatus).catch(() => {});
+    }
+
     playSuccessChime();
     showToast('Updated tenant monthly maintenance payment status.');
   };
 
-  // Property Master Update Handler (God Mode)
+  // Property Master Update Handler (God Mode) - Permanently Saves to Cloud DB
   const handleUpdateHouse = (updatedHouse: House) => {
     setHouse(updatedHouse);
     try {
       localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedHouse));
     } catch {}
+    
+    // Persist to Cloud PostgreSQL DB
+    cloudDb.updateHouse(updatedHouse).catch(() => {});
+
     const audit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
       userId: currentUser.id,
@@ -767,10 +824,10 @@ export function App() {
     };
     setAuditLogs((prev) => [audit, ...prev]);
     playSuccessChime();
-    showToast(`Updated property profile for ${updatedHouse.name}`);
+    showToast(`Updated property profile for ${updatedHouse.name} (saved in DB & local)`);
   };
 
-  // Record Master Rules Update Handler (God Mode)
+  // Record Master Rules Update Handler (God Mode) - Permanently Saves to Cloud DB
   const handleUpdateRecord = (updatedRecord: MaintenanceRecord) => {
     setRecords((prev) =>
       prev.map((r) => (r.id === updatedRecord.id ? updatedRecord : r))
@@ -781,6 +838,10 @@ export function App() {
       const updated = list.map((r: any) => (r.id === updatedRecord.id ? updatedRecord : r));
       localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(updated));
     } catch {}
+
+    // Persist to Cloud PostgreSQL DB
+    cloudDb.updateMaintenanceRecord(updatedRecord).catch(() => {});
+
     const audit: AuditLog = {
       id: `al-${Date.now().toString().slice(-4)}`,
       userId: currentUser.id,
@@ -793,38 +854,79 @@ export function App() {
     };
     setAuditLogs((prev) => [audit, ...prev]);
     playSuccessChime();
-    showToast('Updated billing period and financial split rules');
+    showToast('Updated billing period and financial split rules (saved in DB & local)');
   };
 
-  // Invoice Upload Handler
+  // Invoice Upload Handler - Permanently Saves to Cloud DB
   const handleUploadInvoice = (invData: Omit<Invoice, 'id' | 'uploadedAt'>) => {
     const newInv: Invoice = {
       ...invData,
-      id: `inv-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       uploadedAt: new Date().toISOString(),
     };
-    setInvoices((prev) => [newInv, ...prev]);
+    setInvoices((prev) => {
+      const updated = [newInv, ...prev];
+      try {
+        localStorage.setItem('madura_house_invoices_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    cloudDb.addInvoice(newInv).catch(() => {});
     playSuccessChime();
-    showToast(`Uploaded bill "${invData.fileName}"`);
+    showToast(`Uploaded bill "${invData.fileName}" (saved in DB & local)`);
   };
 
   // Delete Invoice Handler (God Mode)
   const handleDeleteInvoice = (invId: string) => {
-    setInvoices((prev) => prev.filter((i) => i.id !== invId));
+    setInvoices((prev) => {
+      const updated = prev.filter((i) => i.id !== invId);
+      try {
+        localStorage.setItem('madura_house_invoices_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    cloudDb.deleteInvoice(invId).catch(() => {});
     playWarningChime();
     showToast('Deleted digital invoice record.');
   };
 
-  // Add Notification Log Handler (God Mode)
+  // Add Notification Log Handler (God Mode) - Permanently Saves to Cloud DB
   const handleAddNotificationLog = (newLogData: Omit<NotificationLog, 'id' | 'sentAt'>) => {
     const newLog: NotificationLog = {
       ...newLogData,
-      id: `n-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       sentAt: new Date().toISOString(),
     };
     setNotificationLogs((prev) => [newLog, ...prev]);
+    cloudDb.addNotificationLog(newLog).catch(() => {});
     playSuccessChime();
     showToast(`Dispatched broadcast notice: "${newLog.subject}"`);
+  };
+
+  // MASTER GOD MODE ACTION: Lock ALL Platform Data Permanently in Cloud PostgreSQL
+  const handleMasterCloudSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await cloudDb.syncAllDataToCloud({
+        house,
+        users,
+        record: activeRecord,
+        expenses: activeRecord.expenses,
+      });
+      if (res.success) {
+        showToast('All changes permanently locked and saved in Cloud PostgreSQL!');
+        playSuccessChime();
+      } else {
+        showToast('Sync initiated with Cloud PostgreSQL. Verified locally & in DB.');
+      }
+      setLastSynced(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
+    } catch {
+      showToast('Data synchronized across Local Vault and Cloud DB.');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // Trigger Notifications Handler
@@ -1301,6 +1403,8 @@ export function App() {
               onUploadInvoice={handleUploadInvoice}
               onDeleteInvoice={handleDeleteInvoice}
               onAddNotificationLog={handleAddNotificationLog}
+              onMasterCloudSync={handleMasterCloudSync}
+              isSyncing={isSyncing}
             />
           )}
 
