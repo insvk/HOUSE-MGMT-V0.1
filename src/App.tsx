@@ -41,7 +41,10 @@ import {
   Home,
   Plus,
   RefreshCw,
-  Database
+  Database,
+  X,
+  Wrench,
+  Receipt
 } from 'lucide-react';
 
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
@@ -91,6 +94,7 @@ export function App() {
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
 
   const [house, setHouse] = useState<House>(initialHouse);
@@ -501,119 +505,142 @@ export function App() {
   return (
     <div className="min-h-screen flex bg-[#f3f3f9] text-[#495057] font-sans antialiased">
       
+      {/* Mobile Drawer Backdrop */}
+      {mobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity animate-in fade-in duration-200"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* 1. Left Dark Navy Sidebar (Velzon Theme) */}
       <aside 
-        className={`${
-          sidebarCollapsed ? 'w-20' : 'w-64'
-        } velzon-sidebar shrink-0 transition-all duration-300 flex flex-col justify-between z-30 fixed inset-y-0 left-0`}
+        className={`velzon-sidebar shrink-0 transition-all duration-300 flex flex-col justify-between z-50 fixed inset-y-0 left-0 ${
+          mobileSidebarOpen 
+            ? 'translate-x-0 w-72 shadow-2xl' 
+            : '-translate-x-full lg:translate-x-0'
+        } ${
+          sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
+        }`}
       >
         <div>
           {/* Brand Logo Header */}
-          <div className="h-16 flex items-center px-6 gap-3 border-b border-white/10">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0ab39c] via-[#299cdb] to-[#405189] flex items-center justify-center text-white shadow-md">
-              <Building2 className="w-4 h-4" />
-            </div>
-            {!sidebarCollapsed && (
-              <div>
-                <span className="font-extrabold text-white text-base tracking-wider block leading-tight">
-                  MADURA
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-                  HOUSE MAINTENANCE
-                </span>
+          <div className="h-16 flex items-center justify-between px-5 sm:px-6 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0ab39c] via-[#299cdb] to-[#405189] flex items-center justify-center text-white shadow-md shrink-0">
+                <Building2 className="w-4 h-4" />
               </div>
-            )}
+              {(!sidebarCollapsed || mobileSidebarOpen) && (
+                <div>
+                  <span className="font-extrabold text-white text-base tracking-wider block leading-tight">
+                    MADURA
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+                    HOUSE MAINTENANCE
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Close Button on Mobile Drawer */}
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              title="Close Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation Menu */}
           <div className="py-4 px-3 space-y-1">
-            {!sidebarCollapsed && (
+            {(!sidebarCollapsed || mobileSidebarOpen) && (
               <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Menu
               </div>
             )}
 
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => { setActiveTab('dashboard'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'dashboard' ? 'active font-bold text-white' : ''
               }`}
               title="Dashboard"
             >
               <LayoutDashboard className="w-4 h-4 shrink-0 text-[#0ab39c]" />
-              {!sidebarCollapsed && <span>Dashboard</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Dashboard</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('maintenance')}
+              onClick={() => { setActiveTab('maintenance'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'maintenance' ? 'active font-bold text-white' : ''
               }`}
               title="Monthly Maintenance"
             >
               <Calendar className="w-4 h-4 shrink-0 text-[#299cdb]" />
-              {!sidebarCollapsed && <span>Maintenance & Expenses</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance & Expenses</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('tenants')}
+              onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'tenants' ? 'active font-bold text-white' : ''
               }`}
               title="Tenant Directory"
             >
               <Users className="w-4 h-4 shrink-0 text-[#f7b84b]" />
-              {!sidebarCollapsed && <span>Tenants & CRM</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Tenants & CRM</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('analytics')}
+              onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'analytics' ? 'active font-bold text-white' : ''
               }`}
               title="Financial Analytics"
             >
               <BarChart3 className="w-4 h-4 shrink-0 text-[#f06548]" />
-              {!sidebarCollapsed && <span>Financial Analytics</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('invoices')}
+              onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'invoices' ? 'active font-bold text-white' : ''
               }`}
               title="Digital Invoices"
             >
               <FileText className="w-4 h-4 shrink-0 text-[#0ab39c]" />
-              {!sidebarCollapsed && <span>Invoices & OCR</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('notifications')}
+              onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'notifications' ? 'active font-bold text-white' : ''
               }`}
               title="Email Notifications"
             >
               <Mail className="w-4 h-4 shrink-0 text-[#299cdb]" />
-              {!sidebarCollapsed && <span>Resend Notifications</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Resend Notifications</span>}
             </button>
 
             <button
-              onClick={() => setActiveTab('audit')}
+              onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
                 activeTab === 'audit' ? 'active font-bold text-white' : ''
               }`}
               title="Security Audit Log"
             >
               <ShieldCheck className="w-4 h-4 shrink-0 text-[#878a99]" />
-              {!sidebarCollapsed && <span>Security Audit Trail</span>}
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Security Audit Trail</span>}
             </button>
           </div>
         </div>
 
         {/* Sidebar Footer */}
-        {!sidebarCollapsed && (
+        {(!sidebarCollapsed || mobileSidebarOpen) && (
           <div className="p-4 border-t border-white/10 m-3 rounded bg-white/5 text-xs text-slate-400 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#0ab39c] animate-pulse" />
@@ -624,39 +651,67 @@ export function App() {
         )}
       </aside>
 
-      {/* Main Wrapper */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+      {/* Main Content Area */}
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ml-0 ${
+        sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+      }`}>
         
-        {/* 2. Top White Navigation Bar (Velzon Header) */}
-        <header className="h-16 velzon-topbar sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
+        {/* 2. Top Navigation Bar (Velzon Header) */}
+        <header className="h-16 velzon-topbar sticky top-0 z-30 px-3 sm:px-6 flex items-center justify-between shadow-xs">
           
-          {/* Left: Toggle + Search */}
-          <div className="flex items-center gap-4">
+          {/* Left: Hamburger & Search */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Desktop Collapse Toggle */}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1.5 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+              className="hidden lg:flex p-2 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
               title="Toggle Sidebar"
             >
               <Menu className="w-5 h-5" />
             </button>
 
+            {/* Mobile Drawer Open Button */}
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+              title="Open Navigation Drawer"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Mobile Mini Brand Title */}
+            <div className="lg:hidden flex items-center gap-1.5 font-bold text-xs text-slate-800 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+              <Building2 className="w-4 h-4 text-[#405189] shrink-0" />
+              <span className="truncate">MADURA HOUSE</span>
+            </div>
+
+            {/* Desktop Command Palette Search Input */}
             <button
               onClick={() => setShowCommandPalette(true)}
-              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f3f9] hover:bg-white border border-slate-200 hover:border-[#405189] px-3 py-1.5 rounded-lg text-xs text-slate-500 w-56 md:w-64 transition-all shadow-2xs cursor-pointer group"
+              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f3f9] hover:bg-white border border-slate-200 hover:border-[#405189] px-3 py-1.5 rounded-lg text-xs text-slate-500 w-44 md:w-64 transition-all shadow-2xs cursor-pointer group"
               title="Open Command Palette (Ctrl+K / Cmd+K)"
             >
-              <div className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#405189]" />
-                <span className="font-medium">Search anything...</span>
+              <div className="flex items-center gap-2 truncate">
+                <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#405189] shrink-0" />
+                <span className="font-medium truncate">Search anything...</span>
               </div>
-              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white group-hover:bg-slate-100 border border-slate-200 text-slate-500 shadow-2xs">
+              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-white group-hover:bg-slate-100 border border-slate-200 text-slate-500 shadow-2xs">
                 ⌘K
               </kbd>
+            </button>
+
+            {/* Mobile Quick Search Icon Button */}
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="sm:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600 cursor-pointer"
+              title="Search"
+            >
+              <Search className="w-4 h-4" />
             </button>
           </div>
 
           {/* Right: Role Switcher, Cloud Sync & Profile Dropdown */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             
             {/* Cloud Database Sync Pill */}
             <button
@@ -685,9 +740,8 @@ export function App() {
 
             {/* Active View Role Display */}
             {currentUser.role === 'OWNER' ? (
-              <div className="hidden lg:flex items-center gap-1.5 bg-[#f3f3f9] px-2.5 py-1 rounded border border-slate-200 text-xs text-slate-700">
-                <UserCheck className="w-3.5 h-3.5 text-[#405189]" />
-                <span className="text-slate-400 text-[11px]">Role:</span>
+              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs text-slate-700 max-w-[125px] sm:max-w-none">
+                <UserCheck className="w-3.5 h-3.5 text-[#405189] shrink-0 hidden sm:inline" />
                 <select
                   value={currentUserRole}
                   onChange={(e) => {
@@ -695,19 +749,18 @@ export function App() {
                     setCurrentUserRole(role);
                     showToast(`Switched active view role to ${role}`);
                   }}
-                  className="bg-transparent text-xs font-bold text-[#405189] cursor-pointer focus:outline-none"
+                  className="bg-transparent text-[11px] sm:text-xs font-bold text-[#405189] cursor-pointer focus:outline-none truncate w-full"
                 >
-                  <option value="OWNER">House Owner (Sampath Kumar)</option>
-                  <option value="ADMIN_TENANT">Admin Tenant (Rajesh Kumar)</option>
-                  <option value="TENANT">Regular Tenant View</option>
+                  <option value="OWNER">Owner (Sampath)</option>
+                  <option value="ADMIN_TENANT">Admin Tenant</option>
+                  <option value="TENANT">Tenant View</option>
                 </select>
               </div>
             ) : (
-              <div className="hidden lg:flex items-center gap-1.5 bg-[#f3f3f9] px-2.5 py-1 rounded border border-slate-200 text-xs text-slate-700">
-                <UserCheck className="w-3.5 h-3.5 text-[#0ab39c]" />
-                <span className="text-slate-400 text-[11px]">Role:</span>
-                <span className="text-xs font-bold text-[#0ab39c] uppercase">
-                  {currentUser.role === 'ADMIN_TENANT' ? 'Admin Tenant' : `Resident (${currentUser.flatNumber})`}
+              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs text-slate-700">
+                <UserCheck className="w-3.5 h-3.5 text-[#0ab39c] shrink-0 hidden sm:inline" />
+                <span className="text-[11px] font-bold text-[#0ab39c] uppercase truncate">
+                  {currentUser.role === 'ADMIN_TENANT' ? 'Admin Tenant' : currentUser.flatNumber}
                 </span>
               </div>
             )}
@@ -715,34 +768,16 @@ export function App() {
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullScreen}
-              className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer hidden sm:block"
+              className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer hidden lg:block"
               title="Toggle Fullscreen"
             >
               <Maximize className="w-4 h-4" />
             </button>
 
-            {/* Quick Icon Set */}
-            <button className="p-2 rounded hover:bg-slate-100 text-slate-500 relative cursor-pointer" title="Expenses count">
-              <ShoppingBag className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-[#299cdb] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                {activeRecord.expenses.length}
-              </span>
-            </button>
-
-            <button 
-              onClick={() => setActiveTab('notifications')}
-              className="p-2 rounded hover:bg-slate-100 text-slate-500 relative cursor-pointer" 
-              title="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-[#f06548] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
-            </button>
-
+            {/* Quick Settings Icon */}
             <button 
               onClick={() => setShowSettings(true)}
-              className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer" 
+              className="p-1.5 sm:p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer" 
               title="Settings & Backup"
             >
               <Settings className="w-4 h-4" />
@@ -808,7 +843,7 @@ export function App() {
         </header>
 
         {/* 3. Main Body Content Area */}
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-6 pb-24 lg:pb-6 max-w-7xl w-full mx-auto">
           {activeTab === 'dashboard' && (
             <Dashboard
               currentRecord={activeRecord}
@@ -879,10 +914,57 @@ export function App() {
         </main>
 
         {/* 4. Velzon Footer */}
-        <footer className="h-12 bg-white border-t border-slate-200 px-6 flex items-center justify-between text-xs text-slate-500">
+        <footer className="bg-white border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-500 gap-1 text-center sm:text-left mb-14 lg:mb-0">
           <div>2026 © Madura House Maintenance Management Platform.</div>
-          <div>Design & Developed with Enterprise Cloud Architecture</div>
+          <div className="hidden sm:block">Design & Developed with Enterprise Cloud Architecture</div>
         </footer>
+
+        {/* 5. Mobile Bottom Navigation Bar (Visible only on < lg screens) */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around py-1.5 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              activeTab === 'dashboard' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+            }`}
+          >
+            <LayoutDashboard className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Overview</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('maintenance')}
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              activeTab === 'maintenance' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+            }`}
+          >
+            <Wrench className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Expenses</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('tenants')}
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              activeTab === 'tenants' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+            }`}
+          >
+            <Users className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Tenants</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('invoices')}
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              activeTab === 'invoices' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+            }`}
+          >
+            <Receipt className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">Invoices</span>
+          </button>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-600 font-medium transition-colors"
+          >
+            <Menu className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px]">More</span>
+          </button>
+        </nav>
 
       </div>
 

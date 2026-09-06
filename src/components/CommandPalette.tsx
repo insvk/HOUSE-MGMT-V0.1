@@ -265,9 +265,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center pt-20 p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center pt-10 sm:pt-20 p-3 sm:p-4 animate-in fade-in duration-150">
       <div 
-        className="bg-white rounded-xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[80vh]"
+        className="bg-white rounded-xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
@@ -347,12 +347,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
         {/* Footer Shortcut Legend */}
         <div className="p-2.5 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <span><kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↑</kbd> <kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↓</kbd> to navigate</span>
             <span><kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↵</kbd> to select</span>
           </div>
+          <div className="sm:hidden text-[10px]">
+            Tap any result to execute
+          </div>
           <div className="flex items-center gap-1 font-mono text-[10px] text-slate-400">
-            <Command className="w-3 h-3" /> + K Omni-Search
+            <Command className="w-3 h-3" /> + K
           </div>
         </div>
       </div>

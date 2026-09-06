@@ -180,7 +180,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-100 px-5 pt-2 gap-4 text-xs font-semibold">
+        <div className="flex border-b border-slate-100 px-5 pt-2 gap-4 text-xs font-semibold overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
             className={`pb-2.5 transition-colors border-b-2 ${

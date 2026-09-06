@@ -86,15 +86,15 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <div className="relative flex-1 sm:flex-initial w-full sm:w-auto">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             <input
               type="text"
               placeholder="Search invoices..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-44 focus:w-56 transition-all"
+              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-full sm:w-44 sm:focus:w-56 transition-all"
             />
           </div>
 
@@ -109,7 +109,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-1.5 bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer shrink-0"
               >
                 <Upload className="w-3.5 h-3.5" /> Upload Invoice PDF
               </button>

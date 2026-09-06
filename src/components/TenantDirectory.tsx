@@ -160,16 +160,16 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           {/* Search Box */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto flex-1 sm:flex-initial">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             <input
               type="text"
               placeholder="Search tenant..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-48 focus:w-60 transition-all"
+              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-full sm:w-48 sm:focus:w-60 transition-all"
             />
           </div>
 
@@ -191,7 +191,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
           {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
             <button
               onClick={openAddModal}
-              className="px-3.5 py-1.5 bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm transition-all"
+              className="px-3.5 py-1.5 bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" /> Add Occupant
             </button>
@@ -351,7 +351,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name *</label>
                   <input
@@ -377,7 +377,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Flat / Unit Number *</label>
                   <input
@@ -402,7 +402,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Role Privilege</label>
                   <select
@@ -443,7 +443,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Monthly Rent (₹)</label>
                   <input
@@ -467,7 +467,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Move In Date</label>
                   <input

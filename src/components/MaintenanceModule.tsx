@@ -157,7 +157,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
         </div>
       </div>
 
-      {/* Main Expense Table Card */}
+      {/* Main Expense Table & Mobile Card View */}
       <div className="velzon-card overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-800">
@@ -166,7 +166,88 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
           <span className="text-xs text-slate-400 font-mono">Record: {activeRecord.id}</span>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Stacked Expense Cards (< md) */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {activeRecord.expenses.length === 0 ? (
+            <div className="text-center py-8 px-4 text-slate-400 text-xs">
+              No expense line items recorded for this month yet.
+            </div>
+          ) : (
+            activeRecord.expenses.map((exp, idx) => (
+              <div key={exp.id} className="p-3.5 space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono text-slate-400 font-bold">#{idx + 1}</span>
+                      <h3 className="text-xs font-bold text-slate-800">{exp.particular}</h3>
+                    </div>
+                    {exp.notes && (
+                      <p className="text-[11px] text-slate-500 mt-0.5">{exp.notes}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-slate-900">
+                      ₹{exp.amount.toLocaleString('en-IN')}
+                    </div>
+                    {exp.gstApplicable && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#0ab39c]/10 text-[#0ab39c] font-bold">
+                        GST +₹{exp.gstAmount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                      exp.category === 'utilities' ? 'bg-[#299cdb]/10 text-[#299cdb]' :
+                      exp.category === 'repairs' ? 'bg-[#f7b84b]/10 text-[#f7b84b]' :
+                      exp.category === 'cleaning' ? 'bg-[#0ab39c]/10 text-[#0ab39c]' :
+                      'bg-[#405189]/10 text-[#405189]'
+                    }`}>
+                      <Tag className="w-2.5 h-2.5" /> {exp.category}
+                    </span>
+                    <span className="text-[10px]">By {exp.addedBy.split(' ')[0]}</span>
+                  </div>
+
+                  {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+                    <div className="flex items-center gap-1.5">
+                      {onOpenEditExpense && (
+                        <button
+                          onClick={() => onOpenEditExpense(exp)}
+                          className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3" /> Edit
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onDeleteExpense(exp.id)}
+                        className="px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" /> Del
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Mobile Summary Footer */}
+          <div className="p-3.5 bg-slate-50 border-t border-slate-200 space-y-1 text-xs">
+            <div className="flex justify-between items-center font-bold text-slate-800">
+              <span>Total Month Maintenance:</span>
+              <span className="text-xs">₹{activeRecord.grandTotal.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-600">
+              <span>Individual Tenant Share:</span>
+              <span className="text-[#405189] font-mono font-bold">₹{activeRecord.individualContribution.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
               <tr>

@@ -66,7 +66,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
       {/* Filter and Search Bar */}
       <div className="velzon-card p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Action Filter Pills */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-md text-xs">
+        <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-md text-xs">
           {(['ALL', 'AUTH', 'CREATE', 'UPDATE', 'DELETE'] as const).map((cat) => (
             <button
               key={cat}

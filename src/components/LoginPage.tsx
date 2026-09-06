@@ -230,13 +230,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     <div className="min-h-screen w-full bg-[#fafbfc] text-[#111827] flex flex-col justify-between selection:bg-[#111827] selection:text-white relative overflow-hidden font-sans">
       
       {/* Top Left Header Brand Title */}
-      <div className="px-8 py-7 flex items-center justify-between w-full max-w-7xl mx-auto z-20">
-        <span className="font-extrabold text-lg md:text-xl tracking-tight text-[#111827] uppercase font-sans">
+      <div className="px-4 sm:px-8 py-4 sm:py-7 flex items-center justify-between w-full max-w-7xl mx-auto z-20 gap-2">
+        <span className="font-extrabold text-xs sm:text-base md:text-xl tracking-tight text-[#111827] uppercase font-sans truncate">
           MADURA HOUSE MAINTENANCE MGMT V0.1
         </span>
 
         {/* Auth Mode Toggle Button on Header */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -246,13 +246,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             }}
             className="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs transition-colors cursor-pointer"
           >
-            {authMode === 'login' ? 'Create New Account →' : '← Back to Login'}
+            {authMode === 'login' ? 'Create Account →' : '← Login'}
           </button>
         </div>
       </div>
 
       {/* Main Center Area: Split Grid */}
-      <div className="max-w-7xl w-full mx-auto px-6 sm:px-10 flex-1 grid grid-cols-1 lg:grid-cols-12 items-center z-10 py-4">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-10 flex-1 grid grid-cols-1 lg:grid-cols-12 items-center z-10 py-3 sm:py-4">
         
         {/* Left Form Area (Login or Sign Up) */}
         <div className="lg:col-span-5 max-w-md w-full mx-auto lg:mx-0 py-2">

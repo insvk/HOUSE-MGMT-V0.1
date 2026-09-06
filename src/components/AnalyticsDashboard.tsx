@@ -58,7 +58,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="velzon-card p-5 flex items-center justify-between">
+      <div className="velzon-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-[#405189]" /> Financial Analytics & Visual Trends
@@ -74,7 +74,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
               exportMaintenanceToExcel(records[0]);
             }
           }}
-          className="px-3 py-1.5 bg-[#299cdb]/10 hover:bg-[#299cdb]/20 text-[#299cdb] text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="px-3 py-1.5 bg-[#299cdb]/10 hover:bg-[#299cdb]/20 text-[#299cdb] text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
         >
           <Download className="w-3.5 h-3.5" /> Export Analytics (Excel)
         </button>
