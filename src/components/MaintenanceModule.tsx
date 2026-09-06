@@ -118,16 +118,18 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
 
           <button
             onClick={onExportExcel}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded flex items-center gap-1.5 transition-all"
+            className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Download complete monthly maintenance statement as Excel (.xlsx)"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#0ab39c]" /> Excel
+            <FileSpreadsheet className="w-4 h-4 text-[#0ab39c]" /> Excel
           </button>
 
           <button
             onClick={onExportPDF}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded flex items-center gap-1.5 transition-all"
+            className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Generate and download official audited maintenance PDF (.pdf)"
           >
-            <FileText className="w-3.5 h-3.5 text-[#f06548]" /> PDF
+            <FileText className="w-4 h-4 text-[#f06548]" /> PDF
           </button>
         </div>
       </div>

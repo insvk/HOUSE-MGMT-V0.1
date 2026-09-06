@@ -16,6 +16,7 @@ import {
   Legend
 } from 'recharts';
 import { BarChart3, PieChart as PieIcon, TrendingUp, IndianRupee, Download } from 'lucide-react';
+import { exportMaintenanceToExcel } from '../utils/exportUtils';
 
 interface AnalyticsDashboardProps {
   records: MaintenanceRecord[];
@@ -68,10 +69,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
         </div>
 
         <button
-          onClick={() => alert('Exporting Analytics Data')}
-          className="px-3 py-1.5 bg-[#299cdb]/10 hover:bg-[#299cdb]/20 text-[#299cdb] text-xs font-semibold rounded flex items-center gap-1.5"
+          onClick={() => {
+            if (records.length > 0) {
+              exportMaintenanceToExcel(records[0]);
+            }
+          }}
+          className="px-3 py-1.5 bg-[#299cdb]/10 hover:bg-[#299cdb]/20 text-[#299cdb] text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer"
         >
-          <Download className="w-3.5 h-3.5" /> Export Analytics
+          <Download className="w-3.5 h-3.5" /> Export Analytics (Excel)
         </button>
       </div>
 

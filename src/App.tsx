@@ -11,6 +11,7 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { AuditLogViewer } from './components/AuditLogViewer';
 import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
+import { exportMaintenanceToExcel, exportMaintenanceToPDF } from './utils/exportUtils';
 import { 
   Building2, 
   LayoutDashboard, 
@@ -376,8 +377,18 @@ export function App() {
   };
 
   // Export handlers
+  const handleExportExcel = () => {
+    exportMaintenanceToExcel(activeRecord, house);
+    showToast(`Downloaded official Excel (.xlsx) statement for ${activeRecord.month}/${activeRecord.year}`);
+  };
+
+  const handleExportPDF = () => {
+    exportMaintenanceToPDF(activeRecord, house);
+    showToast(`Generated and downloaded official PDF statement for ${activeRecord.month}/${activeRecord.year}`);
+  };
+
   const handleExportReport = () => {
-    showToast('Generated official maintenance statement PDF & Excel ledger.');
+    handleExportPDF();
   };
 
   // IF NOT LOGGED IN -> RENDER LOGIN / SIGN UP LANDING PAGE
@@ -690,8 +701,8 @@ export function App() {
               onAddExpense={handleAddExpense}
               onOpenEditExpense={(exp) => setEditingExpense(exp)}
               onDeleteExpense={handleDeleteExpense}
-              onExportExcel={() => showToast('Exported Excel report.')}
-              onExportPDF={() => showToast('Generated PDF report.')}
+              onExportExcel={handleExportExcel}
+              onExportPDF={handleExportPDF}
             />
           )}
 
