@@ -1,5 +1,15 @@
 export type UserRole = 'OWNER' | 'ADMIN_TENANT' | 'TENANT';
 
+export const AVAILABLE_FLATS = [
+  'GF',
+  'F01 - FRONT',
+  'F01 - BACK',
+  'F02 - FRONT',
+  'F02 - BACK',
+] as const;
+
+export type FlatNumber = typeof AVAILABLE_FLATS[number];
+
 export interface User {
   id: string;
   email: string;

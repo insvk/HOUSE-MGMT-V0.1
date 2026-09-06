@@ -83,7 +83,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       address,
       city,
       postalCode,
-      totalUnits: parseInt(totalUnits) || 6,
+      totalUnits: parseInt(totalUnits) || 5,
     });
     playSuccessChime();
     onClose();
@@ -113,7 +113,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       version: '1.0.0',
       exportTimestamp: new Date().toISOString(),
       platform: 'MADURA HOUSE MAINTENANCE MGMT V0.1',
-      house: { ...house, name, address, city, postalCode, totalUnits: parseInt(totalUnits) || 6 },
+      house: { ...house, name, address, city, postalCode, totalUnits: parseInt(totalUnits) || 5 },
       users,
       records,
       invoices,

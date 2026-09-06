@@ -145,7 +145,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
         <div className="velzon-card p-4 border-l-4 border-l-[#0ab39c]">
           <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Active Tenant Units</div>
           <div className="text-2xl font-bold text-[#0ab39c] mt-1">{activeRecord.activeTenantsCount} Flats</div>
-          <div className="text-xs text-slate-500 mt-1">Occupancy rate: 100% (6/6 Flats)</div>
+          <div className="text-xs text-slate-500 mt-1">Occupancy rate: 100% ({activeRecord.activeTenantsCount || 5}/{activeRecord.activeTenantsCount || 5} Flats)</div>
         </div>
 
         <div className="velzon-card p-4 border-l-4 border-l-[#299cdb]">

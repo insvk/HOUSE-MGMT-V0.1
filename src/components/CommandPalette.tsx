@@ -301,7 +301,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             <div className="py-12 text-center text-slate-400 text-xs">
               <Sparkles className="w-6 h-6 mx-auto mb-2 text-slate-300" />
               <p className="font-semibold text-slate-600">No matching commands or records found</p>
-              <p className="text-[11px] mt-0.5">Try searching for a flat (e.g. "101"), an expense category, or "export".</p>
+              <p className="text-[11px] mt-0.5">Try searching for a flat (e.g. "F01 - FRONT" or "GF"), an expense category, or "export".</p>
             </div>
           ) : (
             filteredItems.map((item, idx) => {

@@ -48,7 +48,7 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
   // 3. Totals & Financial Summary
   worksheetData.push([]);
   worksheetData.push(['', 'GRAND TOTAL EXPENDITURE', '', '', '', '', record.grandTotal, '', '']);
-  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', record.activeTenantsCount || 6, '', '']);
+  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', record.activeTenantsCount || 5, '', '']);
   worksheetData.push(['', 'EQUAL PER-FLAT SHARE DUE', '', '', '', '', Number(record.individualContribution.toFixed(2)), '', '']);
   worksheetData.push([]);
   worksheetData.push(['Notes / Remarks:', record.notes || 'Official audited maintenance record for Madura House.']);
@@ -149,7 +149,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.text('ACTIVE OCCUPANCY', 14 + cardWidth + 9, cardY + 6);
   doc.setFontSize(12);
   doc.setTextColor(10, 179, 156);
-  doc.text(`${record.activeTenantsCount || 6} Residential Flats`, 14 + cardWidth + 9, cardY + 14);
+  doc.text(`${record.activeTenantsCount || 5} Residential Flats`, 14 + cardWidth + 9, cardY + 14);
 
   // Card 3: Per-Tenant Contribution Due
   doc.setFillColor(240, 253, 250);

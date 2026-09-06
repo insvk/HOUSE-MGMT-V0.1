@@ -50,6 +50,18 @@ import {
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
 const STORAGE_KEY_RECORDS = 'madura_house_records_db_v3';
 
+// Helper to normalize legacy flat strings (e.g. Flat 101 -> F01 - FRONT)
+export const normalizeFlat = (flat?: string): string => {
+  if (!flat) return 'GF';
+  const trimmed = flat.trim();
+  if (trimmed === 'Flat 101') return 'F01 - FRONT';
+  if (trimmed === 'Flat 102') return 'F01 - BACK';
+  if (trimmed === 'Flat 201') return 'F02 - FRONT';
+  if (trimmed === 'Flat 202') return 'F02 - BACK';
+  if (trimmed === 'Flat 301' || trimmed === 'Flat 302') return 'GF';
+  return trimmed;
+};
+
 export function App() {
   // Persistent State for Users & Records with automatic credential preservation
   const [users, setUsers] = useState<User[]>(() => {
@@ -61,18 +73,22 @@ export function App() {
           const map = new Map<string, User>();
           // Base defaults
           initialUsers.forEach((iu) => map.set(iu.email.toLowerCase(), iu));
-          // Overlay saved data
+          // Overlay saved data with flat number normalization
           parsed.forEach((u: User) => {
             const existing = map.get(u.email.toLowerCase());
             if (existing) {
               map.set(u.email.toLowerCase(), {
                 ...existing,
                 ...u,
+                flatNumber: normalizeFlat(u.flatNumber || existing.flatNumber),
                 password: u.password || existing.password,
                 role: u.role || existing.role,
               });
             } else {
-              map.set(u.email.toLowerCase(), u);
+              map.set(u.email.toLowerCase(), {
+                ...u,
+                flatNumber: normalizeFlat(u.flatNumber),
+              });
             }
           });
           return Array.from(map.values());
@@ -166,11 +182,15 @@ export function App() {
                 userMap.set(emailKey, {
                   ...existing,
                   ...ru,
+                  flatNumber: normalizeFlat(ru.flatNumber || existing.flatNumber),
                   password: existing.password || ru.password,
                   role: existing.role || ru.role || 'TENANT',
                 });
               } else {
-                userMap.set(emailKey, ru);
+                userMap.set(emailKey, {
+                  ...ru,
+                  flatNumber: normalizeFlat(ru.flatNumber),
+                });
               }
             });
             const merged = Array.from(userMap.values());
@@ -332,7 +352,7 @@ export function App() {
         if (r.id === activeRecord.id) {
           const updatedExpenses = [newExpense, ...r.expenses];
           const newGrandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
-          const newContribution = newGrandTotal / (r.activeTenantsCount || 6);
+          const newContribution = newGrandTotal / (r.activeTenantsCount || 5);
 
           return {
             ...r,
@@ -369,7 +389,7 @@ export function App() {
         if (r.id === activeRecord.id) {
           const updatedExpenses = r.expenses.map((e) => (e.id === updatedExpense.id ? updatedExpense : e));
           const newGrandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
-          const newContribution = newGrandTotal / (r.activeTenantsCount || 6);
+          const newContribution = newGrandTotal / (r.activeTenantsCount || 5);
 
           return {
             ...r,
@@ -405,7 +425,7 @@ export function App() {
         if (r.id === activeRecord.id) {
           const updatedExpenses = r.expenses.filter((e) => e.id !== expenseId);
           const newGrandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
-          const newContribution = newGrandTotal / (r.activeTenantsCount || 6);
+          const newContribution = newGrandTotal / (r.activeTenantsCount || 5);
 
           return {
             ...r,

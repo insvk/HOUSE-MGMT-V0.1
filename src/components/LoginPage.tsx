@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { 
   Flag, 
   Menu, 
@@ -52,7 +52,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [phone, setPhone] = useState('');
-  const [flatNumber, setFlatNumber] = useState('Flat 101');
+  const [flatNumber, setFlatNumber] = useState<string>(AVAILABLE_FLATS[0]);
   const [signupRole, setSignupRole] = useState<UserRole>('TENANT');
   const [moveInDate, setMoveInDate] = useState(new Date().toISOString().split('T')[0]);
   const [rentAmount, setRentAmount] = useState('14000');
@@ -164,7 +164,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             password: 'Admin@123',
             fullName: 'Rajesh Kumar',
             phone: '+91 98421 11111',
-            flatNumber: 'Flat 101',
+            flatNumber: 'F01 - FRONT',
             role: 'ADMIN_TENANT',
             occupancyStatus: 'active',
             paymentStatus: 'paid',
@@ -289,7 +289,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           password: 'Google@123',
           fullName: clean.split('@')[0].replace('.', ' ').toUpperCase(),
           phone: '+91 98421 00000',
-          flatNumber: 'Flat 101',
+          flatNumber: 'GF',
           role: 'TENANT',
           occupancyStatus: 'active',
           paymentStatus: 'paid',
@@ -552,12 +552,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       onChange={(e) => setFlatNumber(e.target.value)}
                       className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#e5e7eb] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
                     >
-                      <option value="Flat 101">Flat 101</option>
-                      <option value="Flat 102">Flat 102</option>
-                      <option value="Flat 201">Flat 201</option>
-                      <option value="Flat 202">Flat 202</option>
-                      <option value="Flat 301">Flat 301</option>
-                      <option value="Flat 302">Flat 302</option>
+                      {AVAILABLE_FLATS.map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
                     </select>
                   </div>
 

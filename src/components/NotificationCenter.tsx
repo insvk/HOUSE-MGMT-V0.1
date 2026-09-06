@@ -43,7 +43,7 @@ Dear Residents,
 The monthly maintenance statement for *Madura House* has been generated:
 
 💰 *Total Month Expenditure:* ₹${activeRecord.grandTotal.toLocaleString('en-IN')}
-👥 *Active Flats:* ${activeRecord.activeTenantsCount || 6} Units
+👥 *Active Flats:* ${activeRecord.activeTenantsCount || 5} Units
 🏷️ *Per-Flat Share Due:* ₹${activeRecord.individualContribution.toFixed(2)}
 🗓️ *Payment Due Date:* 10th of this month
 

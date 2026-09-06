@@ -22,7 +22,7 @@ VALUES (
   'admin.tenant@madurahouse.local',
   '+91-9842111111',
   'Rajesh Kumar',
-  'Flat-101',
+  'F01 - FRONT',
   'active'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -35,7 +35,7 @@ VALUES (
   'No. 42, Bypass Road, Madurai',
   'Madurai',
   '625001',
-  6
+  5
 ) ON CONFLICT DO NOTHING;
 
 -- 4. Insert User Roles
@@ -53,6 +53,6 @@ VALUES (
   2026,
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   0.00,
-  6,
+  5,
   'September 2026 Active Maintenance Period - Madura House'
 ) ON CONFLICT DO NOTHING;

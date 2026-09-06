@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { 
   Users, 
   UserPlus, 
@@ -69,7 +69,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setEmail('');
     setPassword('Tenant@123');
     setPhone('');
-    setFlatNumber('');
+    setFlatNumber(AVAILABLE_FLATS[0]);
     setRole('TENANT');
     setOccupancyStatus('active');
     setPaymentStatus('paid');
@@ -404,14 +404,18 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Flat / Unit Number *</label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    placeholder="Flat 101"
                     value={flatNumber}
                     onChange={(e) => setFlatNumber(e.target.value)}
-                    className="w-full velzon-input px-3 py-2 text-xs"
-                  />
+                    className="w-full velzon-input px-3 py-2 text-xs font-medium"
+                  >
+                    <option value="">Select Flat / Unit...</option>
+                    {AVAILABLE_FLATS.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                    <option value="Owner Suite">Owner Suite</option>
+                  </select>
                 </div>
 
                 <div>

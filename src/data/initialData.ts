@@ -6,7 +6,7 @@ export const initialHouse: House = {
   address: 'No. 42, Bypass Road, Ellis Nagar',
   city: 'Madurai',
   postalCode: '625001',
-  totalUnits: 6,
+  totalUnits: 5,
   ownerId: 'u-owner-01',
 };
 
@@ -35,7 +35,7 @@ export const initialUsers: User[] = [
     password: 'Admin@123',
     fullName: 'Rajesh Kumar',
     phone: '+91 98421 11111',
-    flatNumber: 'Flat 101',
+    flatNumber: 'F01 - FRONT',
     role: 'ADMIN_TENANT',
     occupancyStatus: 'active',
     paymentStatus: 'paid',
@@ -56,7 +56,7 @@ export const initialMaintenanceRecords: MaintenanceRecord[] = [
     month: 9,
     year: 2026,
     grandTotal: 0,
-    activeTenantsCount: 6,
+    activeTenantsCount: 5,
     individualContribution: 0,
     notes: 'September 2026 Active Maintenance Period',
     createdBy: 'sampathkumar@chemadur.com',
