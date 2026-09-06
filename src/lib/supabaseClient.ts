@@ -252,8 +252,100 @@ export const cloudDb = {
       if (error) throw error;
       return true;
     } catch (err) {
-      console.error('Cloud DB add expense error:', err);
+      console.warn('Cloud DB add expense notice:', err);
       return false;
+    }
+  },
+
+  // Update Expense in Cloud DB
+  async updateExpense(expense: Expense): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .update({
+          particular: expense.particular,
+          amount: expense.amount,
+          category: expense.category,
+          gst_applicable: expense.gstApplicable,
+          gst_amount: expense.gstAmount,
+          notes: expense.notes,
+        })
+        .eq('id', expense.id);
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB update expense notice:', err);
+      return false;
+    }
+  },
+
+  // Delete Expense from Cloud DB
+  async deleteExpense(expenseId: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', expenseId);
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn('Cloud DB delete expense notice:', err);
+      return false;
+    }
+  },
+
+  // Fetch all Expenses for a given Maintenance Record
+  async getExpensesForRecord(recordId: string): Promise<Expense[] | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('maintenance_record_id', recordId)
+        .order('sl_no', { ascending: true });
+
+      if (error) throw error;
+
+      return (data || []).map((e: any) => ({
+        id: e.id,
+        maintenanceRecordId: e.maintenance_record_id,
+        slNo: e.sl_no,
+        particular: e.particular,
+        amount: Number(e.amount) || 0,
+        category: e.category,
+        gstApplicable: Boolean(e.gst_applicable),
+        gstAmount: Number(e.gst_amount) || 0,
+        notes: e.notes || '',
+        addedBy: e.added_by || '',
+        createdAt: e.created_at || new Date().toISOString(),
+      }));
+    } catch (err) {
+      console.warn('Cloud DB fetch record expenses fallback:', err);
+      return null;
+    }
+  },
+
+  // Real-time PostgreSQL subscription for live Expense updates
+  subscribeToExpenses(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:expenses')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime subscription fallback:', err);
+      return () => {};
     }
   },
 

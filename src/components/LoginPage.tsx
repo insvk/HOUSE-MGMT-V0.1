@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
+import { GoogleClock } from './GoogleClock';
 import { 
   Flag, 
   Menu, 
@@ -292,8 +293,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           MADURA HOUSE MAINTENANCE MGMT V0.1
         </span>
 
-        {/* Auth Mode Toggle Button on Header */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Top Right Header Controls & Live Clock */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <GoogleClock variant="header" />
+
+          {/* Auth Mode Toggle Button on Header */}
           <button
             type="button"
             onClick={() => {
@@ -725,54 +729,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
         </div>
 
-        {/* Right Graphic Area */}
-        <div className="lg:col-span-7 hidden lg:flex items-center justify-center relative min-h-[460px] select-none pointer-events-none">
+        {/* Right Graphic & God Clock Area */}
+        <div className="lg:col-span-7 hidden lg:flex flex-col items-center justify-center relative min-h-[480px] p-6">
           <div className="absolute w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl -z-10" />
 
-          <div className="relative w-full max-w-lg h-96">
-            <div className="absolute top-12 left-4 w-14 h-14 rounded-full bg-[#8b5cf6] flex items-center justify-center text-white shadow-lg shadow-purple-500/20 transform -rotate-6 animate-bounce" style={{ animationDuration: '6s' }}>
-              <Flag className="w-6 h-6 stroke-[2.5]" />
-            </div>
+          {/* Full Fidelity God Clock Display Card (Exact Reference Design) */}
+          <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-300">
+            <GoogleClock variant="card" className="shadow-2xl border-slate-300/80 bg-[#f2f2f3]" />
+          </div>
 
-            <div className="absolute top-8 left-36 w-2.5 h-2.5 rounded-full bg-[#6d28d9]" />
-
-            <div className="absolute top-6 right-24 w-12 h-12 rounded-full bg-[#3b82f6] flex items-center justify-center text-white shadow-lg shadow-blue-500/20 animate-pulse" style={{ animationDuration: '4s' }}>
-              <Menu className="w-5 h-5 stroke-[2.5]" />
-            </div>
-
-            <div className="absolute top-20 left-48 w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md bg-indigo-100">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                alt="Tenant"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="absolute top-44 left-16 w-3 h-3 rounded-full bg-[#f59e0b]" />
-
-            <div className="absolute top-48 left-28 w-12 h-12 rounded-full bg-[#f97316] flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-              <Grid className="w-5 h-5 stroke-[2.5]" />
-            </div>
-
-            <div className="absolute top-40 right-48 w-2 h-2 rounded-full bg-[#111827]" />
-
-            <div className="absolute bottom-10 left-28 w-12 h-12 rounded-full bg-[#10b981] flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-              <Disc className="w-6 h-6 stroke-[2.5]" />
-            </div>
-
-            <div className="absolute top-36 right-6 w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-xl bg-purple-100">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
-                alt="Resident"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="absolute bottom-16 right-32 w-12 h-12 rounded-full bg-[#fbbf24] flex items-center justify-center text-white shadow-lg shadow-yellow-500/20">
-              <ListFilter className="w-5 h-5 stroke-[2.5]" />
-            </div>
-
-            <div className="absolute bottom-20 right-12 w-3 h-3 rounded-full bg-[#f59e0b]" />
+          <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-500 bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-full border border-slate-200/80 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Google NTP Real-Time Synchronized • Indian Standard Time (IST)</span>
           </div>
         </div>
 
