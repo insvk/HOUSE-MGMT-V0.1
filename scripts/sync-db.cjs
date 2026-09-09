@@ -141,78 +141,45 @@ async function runSync() {
     month: 9,
     year: 2026,
     created_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    grand_total: 10200.00,
+    grand_total: 0.00,
     number_of_active_tenants: 5,
-    notes: 'September 2026 Active Maintenance Period - Madura House'
+    notes: 'September 2026 Maintenance Period - Madura House'
   };
 
   const mrRes = await api('maintenance_records?on_conflict=house_id,month,year', 'POST', permanentRecord, 'resolution=merge-duplicates');
   if (mrRes.ok || mrRes.status === 201 || mrRes.status === 200 || mrRes.status === 204) {
-    console.log(`   ✓ Maintenance Record synced: Sep 2026 (Total: ₹10,200 | Per Flat: ₹2,040)`);
+    console.log(`   ✓ Maintenance Record initialized cleanly for Sep 2026`);
   } else {
     console.log(`   ⚠️ Maintenance Record sync notice (${mrRes.status}):`, mrRes.data?.message || mrRes.data);
   }
 
-  // 4. Permanent Expenses
-  console.log('\n⏳ Step 5: Synchronizing Audited Expenses for September 2026...');
-  const permanentExpenses = [
-    {
-      id: '33333333-4444-5555-6666-777777777771',
-      maintenance_record_id: '22222222-3333-4444-5555-666666666666',
-      sl_no: 1,
-      particular: 'Common Area Electricity Bill (EB)',
-      amount: 3200.00,
-      category: 'utilities',
-      gst_applicable: false,
-      gst_amount: 0.00,
-      notes: 'TANGEDCO Meter #89214 - Staircase & Compound Lighting',
-      added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-    },
-    {
-      id: '33333333-4444-5555-6666-777777777772',
-      maintenance_record_id: '22222222-3333-4444-5555-666666666666',
-      sl_no: 2,
-      particular: 'Motor Pump & Borewell Servicing',
-      amount: 2500.00,
-      category: 'repairs',
-      gst_applicable: false,
-      gst_amount: 0.00,
-      notes: 'Borewell capacitor replacement & plumbing maintenance by Sri Meenakshi Electricals',
-      added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-    },
-    {
-      id: '33333333-4444-5555-6666-777777777773',
-      maintenance_record_id: '22222222-3333-4444-5555-666666666666',
-      sl_no: 3,
-      particular: 'Compound Cleaning & Waste Disposal',
-      amount: 1800.00,
-      category: 'cleaning',
-      gst_applicable: false,
-      gst_amount: 0.00,
-      notes: 'Monthly building corridor & perimeter sanitization service',
-      added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-    },
-    {
-      id: '33333333-4444-5555-6666-777777777774',
-      maintenance_record_id: '22222222-3333-4444-5555-666666666666',
-      sl_no: 4,
-      particular: 'Terrace Water Tank Sanitization',
-      amount: 2700.00,
-      category: 'maintenance',
-      gst_applicable: false,
-      gst_amount: 0.00,
-      notes: 'Bi-monthly overhead storage reservoir cleaning & chlorine treatment',
-      added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-    }
+  // 4. Purge legacy dummy mock expenses from database
+  console.log('\n⏳ Step 5: Purging any legacy dummy expenses...');
+  const dummyIds = [
+    '33333333-4444-5555-6666-777777777771',
+    '33333333-4444-5555-6666-777777777772',
+    '33333333-4444-5555-6666-777777777773',
+    '33333333-4444-5555-6666-777777777774',
+    'aaaa1111-2222-3333-4444-555555555551',
+    'aaaa1111-2222-3333-4444-555555555552',
+    'aaaa1111-2222-3333-4444-555555555553',
+    'aaaa1111-2222-3333-4444-555555555554',
+    'aaaa1111-2222-3333-4444-555555555555'
   ];
-
-  for (const exp of permanentExpenses) {
-    const res = await api('expenses?on_conflict=id', 'POST', exp, 'resolution=merge-duplicates');
-    if (res.ok || res.status === 201 || res.status === 200 || res.status === 204) {
-      console.log(`   ✓ Expense synced: ${exp.particular} (₹${exp.amount.toLocaleString('en-IN')})`);
-    } else {
-      console.log(`   ⚠️ Expense sync notice for ${exp.particular} (${res.status}):`, res.data?.message || res.data);
-    }
+  try {
+    await api(`expenses?id=in.(${dummyIds.join(',')})`, 'DELETE');
+    await api(`expenses?particular=ilike.*TANGEDCO*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Borewell*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Sanitization*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Disinfection*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Janitorial*`, 'DELETE');
+    await api(`expenses?particular=ilike.*AMC*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Motor*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Capacitor*`, 'DELETE');
+    await api(`expenses?particular=ilike.*Electricity*`, 'DELETE');
+    console.log('   ✓ Legacy dummy expenses purged from cloud DB.');
+  } catch (e) {
+    console.log('   Notice on dummy purge:', e);
   }
 
   // 5. Verification Read

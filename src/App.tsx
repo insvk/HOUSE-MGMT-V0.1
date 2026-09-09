@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { initialHouse, initialUsers, initialMaintenanceRecords, initialExpenses, initialInvoices, initialNotificationLogs, initialAuditLogs, isDummyLegacyAccount } from './data/initialData';
+import { initialHouse, initialUsers, initialMaintenanceRecords, initialExpenses, initialInvoices, initialNotificationLogs, initialAuditLogs, isDummyLegacyAccount, isDummyLegacyExpense } from './data/initialData';
 import { MaintenanceRecord, User, UserRole, Expense, Invoice, NotificationLog, AuditLog } from './types';
 import { LoginPage } from './components/LoginPage';
 import { Dashboard } from './components/Dashboard';
@@ -114,20 +114,24 @@ export function App() {
       if (saved) {
         const parsed: MaintenanceRecord[] = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((r) => {
-            const hasZeroExpenses = !r.expenses || r.expenses.length === 0 || r.grandTotal === 0;
-            const expensesList = hasZeroExpenses && r.month === 9 && r.year === 2026 ? initialExpenses : (r.expenses || []);
-            const grandTotal = expensesList.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+          const cleaned = parsed.map((r) => {
+            // Filter out any legacy dummy expenses
+            const cleanExpenses = (r.expenses || []).filter((e) => !isDummyLegacyExpense(e));
+            const grandTotal = cleanExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
             const tenantsCount = r.activeTenantsCount || 5;
             const individualContribution = tenantsCount > 0 ? grandTotal / tenantsCount : grandTotal;
             return {
               ...r,
-              expenses: expensesList,
-              grandTotal: grandTotal > 0 ? grandTotal : (r.grandTotal || 10200),
-              individualContribution: grandTotal > 0 ? individualContribution : (r.individualContribution || 2040),
+              expenses: cleanExpenses,
+              grandTotal: grandTotal,
+              individualContribution: individualContribution,
               activeTenantsCount: tenantsCount,
             };
           });
+          try {
+            localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(cleaned));
+          } catch {}
+          return cleaned;
         }
       }
       return initialMaintenanceRecords;
@@ -328,18 +332,19 @@ export function App() {
           setRecords((prev) =>
             remoteRecords.map((rr) => {
               const local = prev.find((p) => p.id === rr.id || (p.month === rr.month && p.year === rr.year));
-              const expenses = (rr.expenses && rr.expenses.length > 0)
+              const rawExpenses = (rr.expenses && rr.expenses.length > 0)
                 ? rr.expenses
                 : (local?.expenses && local.expenses.length > 0)
                   ? local.expenses
-                  : (rr.month === 9 && rr.year === 2026 ? initialExpenses : []);
-              const grandTotal = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                  : [];
+              const cleanExpenses = rawExpenses.filter((e) => !isDummyLegacyExpense(e));
+              const grandTotal = cleanExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
               const tenants = rr.activeTenantsCount || local?.activeTenantsCount || 5;
               return {
                 ...rr,
-                expenses,
-                grandTotal: grandTotal > 0 ? grandTotal : (rr.grandTotal || 10200),
-                individualContribution: grandTotal > 0 ? grandTotal / tenants : (rr.individualContribution || 2040),
+                expenses: cleanExpenses,
+                grandTotal: grandTotal,
+                individualContribution: tenants > 0 ? grandTotal / tenants : grandTotal,
               };
             })
           );
@@ -1484,12 +1489,16 @@ export function App() {
               activeRecord={activeRecord}
               currentUserRole={currentUserRole}
               currentUser={currentUser}
+              house={house}
+              users={users}
               onSelectRecord={(id) => setSelectedRecordId(id)}
               onAddExpense={handleAddExpense}
               onOpenEditExpense={(exp) => setEditingExpense(exp)}
               onDeleteExpense={handleDeleteExpense}
               onExportExcel={handleExportExcel}
               onExportPDF={handleExportPDF}
+              onAddNotificationLog={handleAddNotificationLog}
+              showToast={showToast}
             />
           )}
 

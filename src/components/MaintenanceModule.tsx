@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MaintenanceRecord, Expense, ExpenseCategory, UserRole, User } from '../types';
+import { MaintenanceRecord, Expense, ExpenseCategory, UserRole, User, House, NotificationLog } from '../types';
 import { 
   Plus, 
   Trash2, 
@@ -17,23 +17,32 @@ import {
   UploadCloud,
   Paperclip,
   Eye,
-  X
+  X,
+  Mail,
+  Zap,
+  Radio,
+  Send
 } from 'lucide-react';
 import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
 import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
 import { processInvoiceFile } from '../utils/imageUtils';
+import { sendExpenseAlertEmails, sendBulkMaintenanceEmails, isResendConfigured } from '../lib/resendClient';
 
 interface MaintenanceModuleProps {
   records: MaintenanceRecord[];
   activeRecord: MaintenanceRecord;
   currentUserRole: UserRole;
   currentUser?: User;
+  house?: House;
+  users?: User[];
   onSelectRecord: (recordId: string) => void;
   onAddExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
   onOpenEditExpense?: (expense: Expense) => void;
   onDeleteExpense: (expenseId: string) => void;
   onExportExcel: () => void;
   onExportPDF: () => void;
+  onAddNotificationLog?: (log: Omit<NotificationLog, 'id' | 'sentAt'>) => void;
+  showToast?: (msg: string) => void;
 }
 
 export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
@@ -41,12 +50,16 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   activeRecord,
   currentUserRole,
   currentUser,
+  house,
+  users = [],
   onSelectRecord,
   onAddExpense,
   onOpenEditExpense,
   onDeleteExpense,
   onExportExcel,
   onExportPDF,
+  onAddNotificationLog,
+  showToast,
 }) => {
   const [previewInvoice, setPreviewInvoice] = useState<InvoicePreviewData | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -60,7 +73,14 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   const [invoiceFileName, setInvoiceFileName] = useState<string | undefined>(undefined);
   const [invoiceFileType, setInvoiceFileType] = useState<string | undefined>(undefined);
   const [invoiceFileSize, setInvoiceFileSize] = useState<number | undefined>(undefined);
+  const [notifyResidentsViaResend, setNotifyResidentsViaResend] = useState(true);
+  const [isBulkResendSyncing, setIsBulkResendSyncing] = useState(false);
   const invoiceFileInputRef = useRef<HTMLInputElement>(null);
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   const handleInvoiceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,14 +100,17 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     e.preventDefault();
     if (!particular || !amount) return;
 
+    const parsedAmount = parseFloat(amount);
+    const parsedGst = gstApplicable && gstAmount ? parseFloat(gstAmount) : 0;
+
     const newExpense: Omit<Expense, 'id' | 'createdAt'> = {
       maintenanceRecordId: activeRecord.id,
       slNo: activeRecord.expenses.length + 1,
       particular,
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category,
       gstApplicable,
-      gstAmount: gstApplicable && gstAmount ? parseFloat(gstAmount) : 0,
+      gstAmount: parsedGst,
       notes,
       addedBy: currentUser?.fullName || (currentUserRole === 'OWNER' ? 'Sampath Kumar' : 'Property Administrator'),
       invoiceUrl,
@@ -98,6 +121,68 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     };
 
     onAddExpense(newExpense);
+
+    // Real-Time Sync with Resend
+    if (notifyResidentsViaResend && users.length > 0) {
+      const activeResidents = users.filter((u) => u.occupancyStatus === 'active' && u.email);
+      if (activeResidents.length > 0) {
+        const updatedTotal = activeRecord.grandTotal + parsedAmount;
+        const tenantCount = activeRecord.activeTenantsCount || (users.length > 0 ? users.length : 1);
+        const updatedShare = tenantCount > 0 ? updatedTotal / tenantCount : updatedTotal;
+
+        const updatedRecord: MaintenanceRecord = {
+          ...activeRecord,
+          grandTotal: updatedTotal,
+          individualContribution: updatedShare,
+          expenses: [
+            {
+              ...newExpense,
+              id: 'temp-' + Date.now(),
+              createdAt: new Date().toISOString(),
+            },
+            ...activeRecord.expenses,
+          ],
+        };
+
+        const targetHouse = house || {
+          id: '11111111-2222-3333-4444-555555555555',
+          name: 'Madura House Maintenance',
+          address: 'No. 42, Bypass Road, Ellis Nagar',
+          city: 'Maduravoyal',
+          postalCode: '625001',
+          totalUnits: 5,
+          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        };
+
+        sendExpenseAlertEmails({
+          expense: {
+            ...newExpense,
+            id: 'exp-' + Date.now(),
+            createdAt: new Date().toISOString(),
+          },
+          record: updatedRecord,
+          house: targetHouse,
+          recipients: activeResidents.map((r) => ({
+            email: r.email,
+            fullName: r.fullName,
+            flatNumber: r.flatNumber,
+            phone: r.phone,
+          })),
+          senderName: currentUser?.fullName || 'Sampath Kumar',
+        }).then((res) => {
+          if (onAddNotificationLog) {
+            onAddNotificationLog({
+              maintenanceRecordId: activeRecord.id,
+              recipientEmail: `broadcast (${res.sentCount} residents)`,
+              type: 'maintenance_added',
+              subject: `[Resend Alert] New Expense: ${particular} (₹${parsedAmount.toLocaleString('en-IN')})`,
+              status: res.success ? 'sent' : 'failed',
+            });
+          }
+        }).catch(() => {});
+      }
+    }
+
     setShowAddModal(false);
     setParticular('');
     setAmount('');
@@ -108,29 +193,83 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     setInvoiceFileName(undefined);
     setInvoiceFileType(undefined);
     setInvoiceFileSize(undefined);
+
+    if (showToast) {
+      showToast(`Expense "${particular}" recorded${notifyResidentsViaResend ? ' & dispatched via Resend' : ''}!`);
+    }
   };
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  const handleTriggerResendBulkSync = async () => {
+    if (!users || users.length === 0) {
+      if (showToast) showToast('No active resident accounts available to notify.');
+      return;
+    }
+    setIsBulkResendSyncing(true);
+    try {
+      const activeResidents = users.filter((u) => u.occupancyStatus === 'active' && u.email);
+      const targetHouse = house || {
+        id: '11111111-2222-3333-4444-555555555555',
+        name: 'Madura House Maintenance',
+        address: 'No. 42, Bypass Road, Ellis Nagar',
+        city: 'Maduravoyal',
+        postalCode: '625001',
+        totalUnits: 5,
+        ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      };
+
+      const result = await sendBulkMaintenanceEmails({
+        recipients: activeResidents.map((r) => ({
+          email: r.email,
+          fullName: r.fullName,
+          flatNumber: r.flatNumber,
+          phone: r.phone,
+        })),
+        record: activeRecord,
+        house: targetHouse,
+        senderName: currentUser?.fullName || 'Sampath Kumar',
+      });
+
+      if (onAddNotificationLog) {
+        onAddNotificationLog({
+          maintenanceRecordId: activeRecord.id,
+          recipientEmail: `all-residents (${result.sentCount} units)`,
+          type: 'contribution_due',
+          subject: `[Statement Sync] ${monthNames[activeRecord.month - 1]} ${activeRecord.year} Total: ₹${activeRecord.grandTotal.toLocaleString('en-IN')}`,
+          status: result.success ? 'sent' : 'failed',
+        });
+      }
+
+      if (showToast) {
+        showToast(`⚡ Resend Real-Time Sync: Dispatched latest statement to ${result.sentCount} residents!`);
+      }
+    } catch (err: any) {
+      if (showToast) showToast(`Resend sync notice: ${err?.message || 'Done'}`);
+    } finally {
+      setIsBulkResendSyncing(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
       {/* Header & Controls */}
       <div className="velzon-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#405189]" /> Monthly Maintenance & Expense Manager
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#405189]" /> Monthly Maintenance & Expense Manager
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <Zap className="w-3 h-3 text-amber-500 fill-amber-500" /> Resend Real-Time Sync
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Itemized line expenses with automatic individual contribution split
+            Madura House • Live audited line items with automated per-unit split calculation
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Month Record Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded px-2.5 py-1">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5">
             <span className="text-xs text-slate-500 font-semibold">Period:</span>
             <select
               value={activeRecord.id}
@@ -146,25 +285,41 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
           </div>
 
           {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-3.5 py-1.5 bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Line Item
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="px-3.5 py-1.5 bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-bold rounded-md flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Line Item
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTriggerResendBulkSync}
+                disabled={isBulkResendSyncing}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-[#405189] to-[#364473] hover:from-[#364473] hover:to-[#2b375c] text-white text-xs font-bold rounded-md flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
+                title="Dispatch current maintenance statement instantly to all active tenants via Resend"
+              >
+                <Send className={`w-3.5 h-3.5 ${isBulkResendSyncing ? 'animate-spin text-amber-300' : 'text-sky-300'}`} />
+                {isBulkResendSyncing ? 'Syncing...' : 'Resend Live Sync'}
+              </button>
+            </>
           )}
 
           <button
+            type="button"
             onClick={onExportExcel}
-            className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
             title="Download complete monthly maintenance statement as Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-4 h-4 text-[#0ab39c]" /> Excel
           </button>
 
           <button
+            type="button"
             onClick={onExportPDF}
-            className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="px-3 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
             title="Generate and download official audited maintenance PDF (.pdf)"
           >
             <FileText className="w-4 h-4 text-[#f06548]" /> PDF
@@ -207,8 +362,12 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
         {/* Mobile View: Stacked Expense Cards (< md) */}
         <div className="block md:hidden divide-y divide-slate-100">
           {activeRecord.expenses.length === 0 ? (
-            <div className="text-center py-8 px-4 text-slate-400 text-xs">
-              No expense line items recorded for this month yet.
+            <div className="text-center py-10 px-4 space-y-2">
+              <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+              <div className="text-xs font-bold text-slate-700">No Expenses Recorded Yet</div>
+              <p className="text-[11px] text-slate-400">
+                Click "+ Add Line Item" above to log a new expenditure.
+              </p>
             </div>
           ) : (
             activeRecord.expenses.map((exp, idx) => (
@@ -309,8 +468,16 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
             <tbody className="divide-y divide-slate-100">
               {activeRecord.expenses.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-10 text-slate-400">
-                    No expense line items recorded for this month yet.
+                  <td colSpan={7} className="text-center py-12 px-4">
+                    <div className="max-w-md mx-auto space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto shadow-2xs">
+                        <FileText className="w-5 h-5 text-slate-500" />
+                      </div>
+                      <div className="text-xs font-bold text-slate-700">No Expenses Recorded Yet</div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        The maintenance ledger is clean. Click "+ Add Line Item" above to record your first itemized expenditure with live calculations and Resend sync.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -355,7 +522,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                           {onOpenEditExpense && (
                             <button
                               onClick={() => onOpenEditExpense(exp)}
-                              className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-[#405189]"
+                              className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-[#405189] cursor-pointer"
                               title="Edit Expense"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -363,7 +530,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                           )}
                           <button
                             onClick={() => onDeleteExpense(exp.id)}
-                            className="p-1 rounded bg-red-50 hover:bg-red-100 text-red-500"
+                            className="p-1 rounded bg-red-50 hover:bg-red-100 text-red-500 cursor-pointer"
                             title="Delete Expense"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -393,12 +560,12 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
       {/* Add Line Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <Plus className="w-4 h-4 text-[#0ab39c]" /> Add Maintenance Line Item
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
             </div>
 
             <form onSubmit={handleCreateExpense} className="p-5 space-y-4">
@@ -407,7 +574,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Tank cleaning / Motor switch repair"
+                  placeholder="e.g. Tank cleaning / Motor pump repair"
                   value={particular}
                   onChange={(e) => setParticular(e.target.value)}
                   className="w-full velzon-input px-3 py-2 text-xs"
@@ -451,9 +618,9 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                   id="gstToggleAdd"
                   checked={gstApplicable}
                   onChange={(e) => setGstApplicable(e.target.checked)}
-                  className="rounded accent-[#405189] w-4 h-4"
+                  className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="gstToggleAdd" className="text-xs text-slate-700 font-medium">GST Applicable?</label>
+                <label htmlFor="gstToggleAdd" className="text-xs text-slate-700 font-medium cursor-pointer">GST Applicable?</label>
               </div>
 
               {gstApplicable && (
@@ -473,7 +640,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Notes / Bill Reference</label>
                 <textarea
                   rows={2}
-                  placeholder="Optional details or invoice number"
+                  placeholder="Optional details or voucher number"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full velzon-input px-3 py-2 text-xs"
@@ -524,6 +691,26 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                 </div>
               </div>
 
+              {/* Real-time Resend Notification Toggle Box */}
+              <div className="p-3 bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-slate-50 border border-blue-200/80 rounded-lg flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="resendExpenseAlertToggle"
+                    checked={notifyResidentsViaResend}
+                    onChange={(e) => setNotifyResidentsViaResend(e.target.checked)}
+                    className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
+                  />
+                  <label htmlFor="resendExpenseAlertToggle" className="text-xs font-bold text-slate-800 cursor-pointer flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-indigo-600" />
+                    Real-Time Resend Alert to Residents
+                  </label>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-indigo-700 border border-indigo-200 shadow-2xs">
+                  {isResendConfigured() ? 'Live API' : 'Resend Sync'}
+                </span>
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -534,9 +721,9 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-semibold shadow-sm cursor-pointer"
+                  className="px-4 py-1.5 rounded bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-bold shadow-sm cursor-pointer"
                 >
-                  Add Item
+                  Add Item & Sync
                 </button>
               </div>
             </form>

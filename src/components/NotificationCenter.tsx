@@ -74,17 +74,17 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [resendFromInput, setResendFromInput] = useState(getResendFromEmail());
   const [isConfigured, setIsConfigured] = useState(isResendConfigured());
 
-  // Derive active record and legit expense values (auto-repair if empty)
+  // Derive active record and legit expense values (dynamic calculate from actual entered data)
   const activeRecord: MaintenanceRecord = currentRecord || {
     id: 'mr-sep-2026',
     houseId: 'h-madura-01',
     month: 9,
     year: 2026,
-    grandTotal: 10200,
-    individualContribution: 2040,
-    expenses: initialExpenses,
+    grandTotal: 0,
+    individualContribution: 0,
+    expenses: [],
     activeTenantsCount: 5,
-    notes: 'September 2026 Active Maintenance Period',
+    notes: 'September 2026 Maintenance Period',
     createdBy: 'sampathkumar@chemadur.com',
     createdAt: '2026-09-01T00:00:00.000Z',
   };
@@ -92,7 +92,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   // Real-time calculation from actual expenses list
   const expensesList: Expense[] = (activeRecord.expenses && activeRecord.expenses.length > 0)
     ? activeRecord.expenses
-    : initialExpenses;
+    : [];
   
   const [notifInvoicePreview, setNotifInvoicePreview] = useState<InvoicePreviewData | null>(null);
   

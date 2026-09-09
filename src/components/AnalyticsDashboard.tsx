@@ -37,7 +37,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
   const activeRecord = records[0] || { expenses: [] };
   const categoryTotals: Record<string, number> = {};
 
-  activeRecord.expenses.forEach((exp) => {
+  (activeRecord.expenses || []).forEach((exp) => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
 

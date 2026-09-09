@@ -328,3 +328,201 @@ export async function sendBulkMaintenanceEmails({
     deliveries,
   };
 }
+
+/**
+ * Generate Real-Time Itemized Expense Alert HTML Template
+ */
+export const generateExpenseAlertHtml = ({
+  expense,
+  record,
+  house,
+  recipient,
+  senderName = 'Sampath Kumar',
+}: {
+  expense: Expense;
+  record: MaintenanceRecord;
+  house: House;
+  recipient: EmailRecipient;
+  senderName?: string;
+}): string => {
+  const monthName = monthNames[record.month - 1] || 'Current Month';
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>New Maintenance Expense Added</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+    
+    <!-- Top Header -->
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); padding: 24px 28px; color: #ffffff;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;">
+        REAL-TIME EXPENSE UPDATE • RESEND SYNC
+      </div>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff;">
+        ${house.name}
+      </h1>
+      <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">
+        ${monthName} ${record.year} Maintenance Ledger Updated
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 24px 28px;">
+      <p style="font-size: 14px; margin-top: 0; color: #334155;">
+        Dear <strong>${recipient.fullName}</strong> (${recipient.flatNumber}),
+      </p>
+      <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+        A new itemized maintenance expenditure has just been recorded for <strong>${house.name}</strong> by Property Administration.
+      </p>
+
+      <!-- Expense Summary Box -->
+      <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0ab39c; border-radius: 10px; padding: 16px; margin: 20px 0;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #0ab39c; margin-bottom: 4px;">
+          ${expense.category.toUpperCase()}
+        </div>
+        <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+          ${expense.particular}
+        </div>
+        <div style="font-size: 22px; font-weight: 800; color: #0f172a; font-family: monospace;">
+          ₹${expense.amount.toLocaleString('en-IN')}
+          ${expense.gstApplicable ? `<span style="font-size: 12px; color: #64748b; font-weight: normal;"> (+₹${expense.gstAmount} GST)</span>` : ''}
+        </div>
+        ${expense.notes ? `<div style="font-size: 12px; color: #64748b; margin-top: 6px; font-style: italic;">Note: ${expense.notes}</div>` : ''}
+        ${expense.invoiceFileName ? `<div style="font-size: 11px; color: #405189; font-weight: 600; margin-top: 8px;">📎 Attached Document: ${expense.invoiceFileName}</div>` : ''}
+      </div>
+
+      <!-- Updated Per-Unit Contribution Balance -->
+      <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #1e40af; margin-bottom: 6px;">
+          <span>Updated Total Month Expense:</span>
+          <strong>₹${record.grandTotal.toLocaleString('en-IN')}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #1e3a8a; font-weight: bold;">
+          <span>Your Updated Share Due (${recipient.flatNumber}):</span>
+          <span style="color: #059669; font-family: monospace; font-size: 15px;">₹${record.individualContribution.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">
+        Logged by: <strong>${expense.addedBy || senderName}</strong> on ${new Date().toLocaleDateString('en-IN')}<br>
+        For full details or PDF bills, log in to your Resident Portal.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 28px; font-size: 11px; color: #94a3b8; text-align: center;">
+      Automated real-time dispatch via Resend Cloud API • ${house.name}
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+};
+
+/**
+ * Dispatch Real-Time Itemized Expense Alerts via Resend
+ */
+export async function sendExpenseAlertEmails({
+  expense,
+  record,
+  house,
+  recipients,
+  senderName = 'Sampath Kumar',
+}: {
+  expense: Expense;
+  record: MaintenanceRecord;
+  house: House;
+  recipients: EmailRecipient[];
+  senderName?: string;
+}): Promise<BulkDispatchSummary> {
+  const apiKey = getResendApiKey();
+  const fromEmail = getResendFromEmail();
+  const isLive = isResendConfigured();
+
+  const deliveries: EmailDispatchResult[] = [];
+  let sentCount = 0;
+  let failedCount = 0;
+
+  for (const recipient of recipients) {
+    const subject = `[Madura House] New Maintenance Expense: ${expense.particular} (₹${expense.amount.toLocaleString('en-IN')})`;
+    const html = generateExpenseAlertHtml({ expense, record, house, recipient, senderName });
+
+    if (isLive) {
+      try {
+        const endpoint = getResendEndpoint();
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: fromEmail.includes('@') ? fromEmail : `Madura House <${fromEmail}>`,
+            to: [recipient.email],
+            subject,
+            html,
+          }),
+        });
+
+        const data = await response.json();
+        if (response.ok && data.id) {
+          sentCount++;
+          deliveries.push({
+            recipientEmail: recipient.email,
+            recipientName: recipient.fullName,
+            flatNumber: recipient.flatNumber,
+            status: 'delivered',
+            messageId: data.id,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          failedCount++;
+          deliveries.push({
+            recipientEmail: recipient.email,
+            recipientName: recipient.fullName,
+            flatNumber: recipient.flatNumber,
+            status: 'failed',
+            messageId: `resend_err_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            error: data.message || 'Rejected by Resend API',
+          });
+        }
+      } catch (err: any) {
+        failedCount++;
+        deliveries.push({
+          recipientEmail: recipient.email,
+          recipientName: recipient.fullName,
+          flatNumber: recipient.flatNumber,
+          status: 'failed',
+          messageId: `net_err_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          error: err?.message || 'Network error during Resend alert',
+        });
+      }
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      sentCount++;
+      deliveries.push({
+        recipientEmail: recipient.email,
+        recipientName: recipient.fullName,
+        flatNumber: recipient.flatNumber,
+        status: 'delivered',
+        messageId: `re_alert_sim_${Date.now().toString().slice(-6)}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  return {
+    success: sentCount > 0,
+    totalRecipients: recipients.length,
+    sentCount,
+    failedCount,
+    isLiveApi: isLive,
+    deliveries,
+  };
+}
+

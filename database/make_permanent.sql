@@ -237,9 +237,9 @@ VALUES (
   9,
   2026,
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  10200.00,
+  0.00,
   5,
-  'September 2026 Active Maintenance Period - Madura House'
+  'September 2026 Maintenance Period - Madura House'
 ) ON CONFLICT (house_id, month, year) DO UPDATE SET
   grand_total = EXCLUDED.grand_total,
   number_of_active_tenants = EXCLUDED.number_of_active_tenants,
@@ -247,65 +247,21 @@ VALUES (
   updated_at = timezone('utc'::text, now());
 
 -- ==============================================================================
--- 8. INSERT / UPSERT EXPENSES FOR SEPTEMBER 2026
+-- 8. PURGE ANY LEGACY DUMMY EXPENSES
 -- ==============================================================================
 
-INSERT INTO expenses (id, maintenance_record_id, sl_no, particular, amount, category, gst_applicable, gst_amount, notes, added_by)
-VALUES
-(
+DELETE FROM expenses
+WHERE id IN (
   '33333333-4444-5555-6666-777777777771',
-  '22222222-3333-4444-5555-666666666666',
-  1,
-  'Common Area Electricity Bill (EB)',
-  3200.00,
-  'utilities',
-  false,
-  0.00,
-  'TANGEDCO Meter #89214 - Staircase & Compound Lighting',
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-),
-(
   '33333333-4444-5555-6666-777777777772',
-  '22222222-3333-4444-5555-666666666666',
-  2,
-  'Motor Pump & Borewell Servicing',
-  2500.00,
-  'repairs',
-  false,
-  0.00,
-  'Borewell capacitor replacement & plumbing maintenance by Sri Meenakshi Electricals',
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-),
-(
   '33333333-4444-5555-6666-777777777773',
-  '22222222-3333-4444-5555-666666666666',
-  3,
-  'Compound Cleaning & Waste Disposal',
-  1800.00,
-  'cleaning',
-  false,
-  0.00,
-  'Monthly building corridor & perimeter sanitization service',
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-),
-(
   '33333333-4444-5555-6666-777777777774',
-  '22222222-3333-4444-5555-666666666666',
-  4,
-  'Terrace Water Tank Sanitization',
-  2700.00,
-  'maintenance',
-  false,
-  0.00,
-  'Bi-monthly overhead storage reservoir cleaning & chlorine treatment',
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-)
-ON CONFLICT (id) DO UPDATE SET
-  particular = EXCLUDED.particular,
-  amount = EXCLUDED.amount,
-  category = EXCLUDED.category,
-  notes = EXCLUDED.notes,
-  updated_at = timezone('utc'::text, now());
+  'aaaa1111-2222-3333-4444-555555555551',
+  'aaaa1111-2222-3333-4444-555555555552',
+  'aaaa1111-2222-3333-4444-555555555553',
+  'aaaa1111-2222-3333-4444-555555555554',
+  'aaaa1111-2222-3333-4444-555555555555'
+);
 
 -- ==============================================================================
 -- 9. VERIFICATION QUERY (RUN TO CONFIRM EVERYTHING LOADED PERMANENTLY)
