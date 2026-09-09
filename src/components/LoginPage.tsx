@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
+import { DEFAULT_CREDENTIALS } from '../data/initialData';
+import { generateUUID } from '../lib/supabaseClient';
 import { GoogleClock } from './GoogleClock';
 import { 
   Flag, 
@@ -144,58 +146,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const matchedUser = allAccounts.find((u) => u.email.toLowerCase() === cleanEmail);
 
       if (matchedUser) {
-        // Validate password
-        if (matchedUser.password && matchedUser.password !== cleanPassword) {
+        // Validate password: check stored password first, then default credentials
+        const storedPassword = matchedUser.password;
+        const defaultPassword = DEFAULT_CREDENTIALS[cleanEmail];
+        const validPassword = storedPassword || defaultPassword;
+
+        if (!validPassword || validPassword !== cleanPassword) {
           setErrorMessage('Invalid password. Please check your credentials and try again.');
           return;
         }
 
         onLoginSuccess(matchedUser, matchedUser.role);
         return;
-      }
-
-      // Check for default Owner credentials fallback
-      if (cleanEmail === 'sampathkumar@chemadur.com') {
-        if (cleanPassword === 'Sampath@123' || !cleanPassword) {
-          const ownerUser: User = {
-            id: 'u-owner-01',
-            email: cleanEmail,
-            password: 'Sampath@123',
-            fullName: 'Sampath Kumar',
-            phone: '+91 98421 00000',
-            flatNumber: 'Owner Suite',
-            role: 'OWNER',
-            occupancyStatus: 'active',
-            paymentStatus: 'paid',
-          };
-          onLoginSuccess(ownerUser, 'OWNER');
-          return;
-        } else {
-          setErrorMessage('Invalid password for Property Owner account.');
-          return;
-        }
-      }
-
-      // Check for default Admin Tenant credentials fallback
-      if (cleanEmail === 'admin.tenant@madurahouse.local') {
-        if (cleanPassword === 'Admin@123' || !cleanPassword) {
-          const adminTenantUser: User = {
-            id: 'u-admin-tenant-01',
-            email: cleanEmail,
-            password: 'Admin@123',
-            fullName: 'Rajesh Kumar',
-            phone: '+91 98421 11111',
-            flatNumber: 'F01 - FRONT',
-            role: 'ADMIN_TENANT',
-            occupancyStatus: 'active',
-            paymentStatus: 'paid',
-          };
-          onLoginSuccess(adminTenantUser, 'ADMIN_TENANT');
-          return;
-        } else {
-          setErrorMessage('Invalid password for Admin Tenant account.');
-          return;
-        }
       }
 
       // If user is not found in the directory
@@ -244,7 +206,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       setIsLoading(false);
 
       const newRegisteredUser: User = {
-        id: `u-${Date.now().toString().slice(-4)}`,
+        id: generateUUID(),
         email: cleanEmail,
         password: cleanPassword,
         fullName: cleanName,

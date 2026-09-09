@@ -47,8 +47,11 @@ User Agent: ${navigator.userAgent}`;
   };
 
   private handleResetCache = () => {
-    localStorage.removeItem('madura_records');
-    localStorage.removeItem('madura_users');
+    localStorage.removeItem('madura_house_records_db_v3');
+    localStorage.removeItem('madura_house_users_db_v3');
+    localStorage.removeItem('madura_house_property_v1');
+    localStorage.removeItem('madura_house_invoices_v1');
+    localStorage.removeItem('madura_house_notifications_v1');
     window.location.reload();
   };
 

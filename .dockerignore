@@ -4,5 +4,12 @@ dist
 .github
 .env
 .env.local
+.env.production
 *.log
 npm-debug.log*
+
+# Security: exclude credential files from Docker image
+CREDENTIALS.md
+*.docx
+*.pptx
+.agents

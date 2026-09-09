@@ -33,17 +33,10 @@ import {
   LogOut, 
   Menu, 
   Search, 
-  Bell, 
-  ShoppingBag, 
   Maximize, 
-  Moon, 
-  Grid,
   ChevronDown,
   Sparkles,
-  Home,
-  Plus,
   RefreshCw,
-  Database,
   X,
   Wrench,
   Receipt,
@@ -52,6 +45,11 @@ import {
 
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
 const STORAGE_KEY_RECORDS = 'madura_house_records_db_v3';
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 // Helper to normalize legacy flat strings (e.g. Flat 101 -> F01 - FRONT)
 export const normalizeFlat = (flat?: string): string => {
@@ -340,7 +338,6 @@ export function App() {
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     const unsubscribe = cloudDb.subscribeToExpenses((payload: any) => {
-      console.log('Realtime expense change detected:', payload);
       if (payload.eventType === 'INSERT' && payload.new) {
         const item = payload.new;
         const newExp: Expense = {
@@ -483,14 +480,14 @@ export function App() {
 
     // 4. Record Audit Log
     const avatarAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_PROFILE_AVATAR',
       resourceType: 'users',
       resourceId: currentUser.email,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [avatarAudit, ...prev]);
 
@@ -516,13 +513,13 @@ export function App() {
     }
 
     const loginAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: user.id,
       userEmail: user.email,
       action: 'USER_LOGIN_AUTHENTICATED',
       resourceType: 'auth_session',
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [loginAudit, ...prev]);
   };
@@ -551,14 +548,14 @@ export function App() {
 
     // 4. Audit Log
     const signupAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: newUser.id,
       userEmail: newUser.email,
       action: 'NEW_RESIDENT_PORTAL_SIGNUP',
       resourceType: 'users',
       resourceId: newUser.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [signupAudit, ...prev]);
 
@@ -608,14 +605,14 @@ export function App() {
     );
 
     const newAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
-      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'ADD_EXPENSE_ITEM',
       resourceType: 'expenses',
       resourceId: expenseId,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
@@ -645,14 +642,14 @@ export function App() {
     );
 
     const newAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
-      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_EXPENSE_ITEM',
       resourceType: 'expenses',
       resourceId: updatedExpense.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
@@ -702,14 +699,14 @@ export function App() {
     });
 
     const newAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
-      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'CREATE_TENANT_PROFILE',
       resourceType: 'users',
       resourceId: newUser.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
@@ -734,14 +731,14 @@ export function App() {
     cloudDb.updateUser(updatedUser).catch(() => {});
 
     const newAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
-      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_TENANT_PROFILE',
       resourceType: 'users',
       resourceId: updatedUser.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
@@ -759,14 +756,14 @@ export function App() {
     });
 
     const newAudit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
-      userId: currentUserRole === 'OWNER' ? 'u-owner-01' : 'u-admin-tenant-01',
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'DELETE_TENANT_PROFILE',
       resourceType: 'users',
       resourceId: userId,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
@@ -813,14 +810,14 @@ export function App() {
     cloudDb.updateHouse(updatedHouse).catch(() => {});
 
     const audit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_PROPERTY_PROFILE',
       resourceType: 'house',
       resourceId: updatedHouse.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [audit, ...prev]);
     playSuccessChime();
@@ -843,14 +840,14 @@ export function App() {
     cloudDb.updateMaintenanceRecord(updatedRecord).catch(() => {});
 
     const audit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_MAINTENANCE_RECORD_RULES',
       resourceType: 'maintenance_records',
       resourceId: updatedRecord.id,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [audit, ...prev]);
     playSuccessChime();
@@ -937,7 +934,7 @@ export function App() {
       maintenanceRecordId: activeRecord.id,
       recipientEmail: u.email,
       type: 'maintenance_added',
-      subject: `[Madura House] September 2026 Maintenance Notice - ₹${activeRecord.individualContribution.toFixed(2)} Due`,
+      subject: `[Madura House] ${MONTH_NAMES[(activeRecord.month - 1)] || 'Monthly'} ${activeRecord.year} Maintenance Notice - ₹${activeRecord.individualContribution.toFixed(2)} Due`,
       status: 'sent',
       sentAt: new Date().toISOString(),
     }));
@@ -953,14 +950,14 @@ export function App() {
   ) => {
     setNotificationLogs((prev) => [...newLogs, ...prev]);
     const audit: AuditLog = {
-      id: `al-${Date.now().toString().slice(-4)}`,
+      id: generateUUID(),
       userId: currentUser.id,
       userEmail: currentUser.email,
       action: 'DISPATCH_RESEND_BATCH_EMAILS',
       resourceType: 'notifications',
       resourceId: `batch-${Date.now()}`,
       timestamp: new Date().toISOString(),
-      ipAddress: '122.178.45.10',
+      ipAddress: '0.0.0.0',
     };
     setAuditLogs((prev) => [audit, ...prev]);
     showToast(`Dispatched Resend statements to ${results.length} tenants!`);

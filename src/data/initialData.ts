@@ -1,21 +1,31 @@
 import { House, User, MaintenanceRecord, Expense, Invoice, NotificationLog, AuditLog } from '../types';
 
 export const initialHouse: House = {
-  id: 'h-madura-01',
+  id: '11111111-2222-3333-4444-555555555555',
   name: 'Madura House Maintenance',
   address: 'No. 42, Bypass Road, Ellis Nagar',
   city: 'Madurai',
   postalCode: '625001',
   totalUnits: 5,
-  ownerId: 'u-owner-01',
+  ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
 };
 
 // Clean Production Accounts: Property Owner (Admin) & All 5 Resident Flat Tenants
+// Default credential constants — used only for initial login matching.
+// NOT stored in the User objects to prevent leakage via localStorage/state.
+export const DEFAULT_CREDENTIALS: Record<string, string> = {
+  'sampathkumar@chemadur.com': 'Sampath@123',
+  'admin.tenant@madurahouse.local': 'Admin@123',
+  'suresh.f01b@madurahouse.local': 'Tenant@123',
+  'kavitha.f02f@madurahouse.local': 'Tenant@123',
+  'anand.f02b@madurahouse.local': 'Tenant@123',
+  'meenakshi.gf@madurahouse.local': 'Tenant@123',
+};
+
 export const initialUsers: User[] = [
   {
-    id: 'u-owner-01',
+    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     email: 'sampathkumar@chemadur.com',
-    password: 'Sampath@123',
     fullName: 'Sampath Kumar',
     phone: '+91 98421 00000',
     flatNumber: 'Owner Suite',
@@ -30,9 +40,8 @@ export const initialUsers: User[] = [
     notes: 'Property Developer & Primary Owner of Madura House',
   },
   {
-    id: 'u-admin-tenant-01',
+    id: 'b1ffdc00-1111-4aaa-bbbb-ccccddddeeee',
     email: 'admin.tenant@madurahouse.local',
-    password: 'Admin@123',
     fullName: 'Rajesh Kumar',
     phone: '+91 98421 11111',
     flatNumber: 'F01 - FRONT',
@@ -47,9 +56,8 @@ export const initialUsers: User[] = [
     notes: 'Admin Tenant - Assists with local maintenance & contractor coordination',
   },
   {
-    id: 'u-tenant-02',
+    id: 'c2aabb11-2222-4bbb-cccc-ddddeeeeffff',
     email: 'suresh.f01b@madurahouse.local',
-    password: 'Tenant@123',
     fullName: 'Suresh Mani',
     phone: '+91 98421 22222',
     flatNumber: 'F01 - BACK',
@@ -64,9 +72,8 @@ export const initialUsers: User[] = [
     notes: 'Resident - Flat 102 Back',
   },
   {
-    id: 'u-tenant-03',
+    id: 'd3bbcc22-3333-4ccc-dddd-eeeeffff0000',
     email: 'kavitha.f02f@madurahouse.local',
-    password: 'Tenant@123',
     fullName: 'Kavitha Ramachandran',
     phone: '+91 98421 33333',
     flatNumber: 'F02 - FRONT',
@@ -81,9 +88,8 @@ export const initialUsers: User[] = [
     notes: 'Resident - Flat 201 Front',
   },
   {
-    id: 'u-tenant-04',
+    id: 'e4ccdd33-4444-4ddd-eeee-ffff00001111',
     email: 'anand.f02b@madurahouse.local',
-    password: 'Tenant@123',
     fullName: 'Anand Natarajan',
     phone: '+91 98421 44444',
     flatNumber: 'F02 - BACK',
@@ -98,9 +104,8 @@ export const initialUsers: User[] = [
     notes: 'Resident - Flat 202 Back',
   },
   {
-    id: 'u-tenant-05',
+    id: 'f5ddee44-5555-4eee-ffff-000011112222',
     email: 'meenakshi.gf@madurahouse.local',
-    password: 'Tenant@123',
     fullName: 'Meenakshi Sundaram',
     phone: '+91 98421 55555',
     flatNumber: 'GF',
@@ -119,8 +124,8 @@ export const initialUsers: User[] = [
 // Active September 2026 Maintenance Expenses (Audited & Itemized)
 export const initialExpenses: Expense[] = [
   {
-    id: 'e-sep-01',
-    maintenanceRecordId: 'mr-sep-2026',
+    id: 'aaaa1111-0001-4000-8000-000000000001',
+    maintenanceRecordId: '22222222-3333-4444-5555-666666666666',
     slNo: 1,
     particular: 'Common Area Electricity Bill (TANGEDCO EB)',
     amount: 2850,
@@ -132,8 +137,8 @@ export const initialExpenses: Expense[] = [
     createdAt: '2026-09-02T10:00:00.000Z',
   },
   {
-    id: 'e-sep-02',
-    maintenanceRecordId: 'mr-sep-2026',
+    id: 'aaaa1111-0002-4000-8000-000000000002',
+    maintenanceRecordId: '22222222-3333-4444-5555-666666666666',
     slNo: 2,
     particular: 'Water Sump Tank Cleaning & Disinfection',
     amount: 1500,
@@ -145,8 +150,8 @@ export const initialExpenses: Expense[] = [
     createdAt: '2026-09-03T11:30:00.000Z',
   },
   {
-    id: 'e-sep-03',
-    maintenanceRecordId: 'mr-sep-2026',
+    id: 'aaaa1111-0003-4000-8000-000000000003',
+    maintenanceRecordId: '22222222-3333-4444-5555-666666666666',
     slNo: 3,
     particular: 'Passenger Lift Maintenance AMC & Inspection',
     amount: 3200,
@@ -158,8 +163,8 @@ export const initialExpenses: Expense[] = [
     createdAt: '2026-09-04T14:15:00.000Z',
   },
   {
-    id: 'e-sep-04',
-    maintenanceRecordId: 'mr-sep-2026',
+    id: 'aaaa1111-0004-4000-8000-000000000004',
+    maintenanceRecordId: '22222222-3333-4444-5555-666666666666',
     slNo: 4,
     particular: 'Corridor Janitorial Cleaning & Supplies',
     amount: 1250,
@@ -171,8 +176,8 @@ export const initialExpenses: Expense[] = [
     createdAt: '2026-09-05T09:00:00.000Z',
   },
   {
-    id: 'e-sep-05',
-    maintenanceRecordId: 'mr-sep-2026',
+    id: 'aaaa1111-0005-4000-8000-000000000005',
+    maintenanceRecordId: '22222222-3333-4444-5555-666666666666',
     slNo: 5,
     particular: 'Motor Pump Electrical Service & Capacitor',
     amount: 1400,
@@ -188,8 +193,8 @@ export const initialExpenses: Expense[] = [
 // Active Maintenance Record with real itemized expenses and auto-computed split
 export const initialMaintenanceRecords: MaintenanceRecord[] = [
   {
-    id: 'mr-sep-2026',
-    houseId: 'h-madura-01',
+    id: '22222222-3333-4444-5555-666666666666',
+    houseId: '11111111-2222-3333-4444-555555555555',
     month: 9,
     year: 2026,
     grandTotal: 10200,
@@ -211,13 +216,13 @@ export const initialNotificationLogs: NotificationLog[] = [];
 // Production Audit Trail
 export const initialAuditLogs: AuditLog[] = [
   {
-    id: 'al-01',
-    userId: 'u-owner-01',
+    id: 'aaaa0000-0000-4000-8000-000000000000',
+    userId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     userEmail: 'sampathkumar@chemadur.com',
     action: 'SYSTEM_INITIALIZED_CLEAN_DEPLOYMENT',
     resourceType: 'platform_core',
     resourceId: 'madura-house-system',
     timestamp: new Date().toISOString(),
-    ipAddress: '122.178.45.10',
+    ipAddress: '0.0.0.0',
   },
 ];

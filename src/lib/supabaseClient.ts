@@ -23,6 +23,12 @@ export function generateUUID(): string {
   });
 }
 
+// Validate UUID v4 format
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
 // Initialize Supabase client
 export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
@@ -88,9 +94,7 @@ export const cloudDb = {
   async updateHouse(house: House): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const houseId = (house.id && house.id.length === 36 && house.id.includes('-'))
-        ? house.id
-        : '11111111-2222-3333-4444-555555555555';
+      const houseId = isValidUUID(house.id) ? house.id : generateUUID();
 
       const { error } = await supabase
         .from('houses')
@@ -298,15 +302,14 @@ export const cloudDb = {
   async updateMaintenanceRecord(record: MaintenanceRecord): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const recordId = (record.id && record.id.length === 36 && record.id.includes('-'))
-        ? record.id
-        : '22222222-3333-4444-5555-666666666666';
+      const recordId = isValidUUID(record.id) ? record.id : generateUUID();
+      const houseId = isValidUUID(record.houseId) ? record.houseId : '11111111-2222-3333-4444-555555555555';
 
       // NOTE: PostgreSQL column 'individual_contribution' is a GENERATED STORED column!
       // Do NOT send 'individual_contribution' in the payload or DB will reject the write.
       const payload: any = {
         id: recordId,
-        house_id: '11111111-2222-3333-4444-555555555555',
+        house_id: houseId,
         month: record.month,
         year: record.year,
         grand_total: record.grandTotal,
@@ -327,19 +330,26 @@ export const cloudDb = {
     }
   },
 
-  // Delete User from Cloud DB
+  // Delete User from Cloud DB (soft-delete)
   async deleteUser(userIdOrEmail: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const { error } = await supabase
+      // Use safe filter methods instead of string interpolation to prevent injection
+      let query = supabase
         .from('users')
         .update({
           occupancy_status: 'inactive',
           is_active: false,
           deleted_at: new Date().toISOString(),
-        })
-        .or(`id.eq.${userIdOrEmail},email.eq.${userIdOrEmail}`);
+        });
 
+      if (isValidUUID(userIdOrEmail)) {
+        query = query.eq('id', userIdOrEmail);
+      } else {
+        query = query.eq('email', userIdOrEmail.toLowerCase());
+      }
+
+      const { error } = await query;
       if (error) throw error;
       return true;
     } catch (err) {
@@ -369,16 +379,22 @@ export const cloudDb = {
   },
 
   // Add Expense to Cloud DB (UUID Compliant)
-  async addExpense(expense: Expense): Promise<boolean> {
+  async addExpense(expense: Expense, currentUserId?: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const validId = (expense.id && expense.id.length === 36 && expense.id.includes('-'))
-        ? expense.id
-        : generateUUID();
-
-      const validRecordId = (expense.maintenanceRecordId && expense.maintenanceRecordId.length === 36 && expense.maintenanceRecordId.includes('-'))
+      const validId = isValidUUID(expense.id) ? expense.id : generateUUID();
+      const validRecordId = isValidUUID(expense.maintenanceRecordId)
         ? expense.maintenanceRecordId
-        : '22222222-3333-4444-5555-666666666666';
+        : null;
+
+      if (!validRecordId) {
+        console.warn('Cloud DB addExpense: invalid maintenanceRecordId, skipping');
+        return false;
+      }
+
+      const addedBy = currentUserId && isValidUUID(currentUserId)
+        ? currentUserId
+        : 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
       const { error } = await supabase.from('expenses').upsert({
         id: validId,
@@ -390,7 +406,7 @@ export const cloudDb = {
         gst_applicable: Boolean(expense.gstApplicable),
         gst_amount: Number(expense.gstAmount) || 0,
         notes: expense.notes || '',
-        added_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        added_by: addedBy,
       }, { onConflict: 'id' });
 
       if (error) throw error;
@@ -548,22 +564,28 @@ export const cloudDb = {
   },
 
   // Add Invoice to Cloud DB
-  async addInvoice(invoice: Invoice): Promise<boolean> {
+  async addInvoice(invoice: Invoice, currentUserId?: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const validId = (invoice.id && invoice.id.length === 36 && invoice.id.includes('-'))
-        ? invoice.id
-        : generateUUID();
+      const validId = isValidUUID(invoice.id) ? invoice.id : generateUUID();
+      const recordId = isValidUUID(invoice.maintenanceRecordId)
+        ? invoice.maintenanceRecordId
+        : null;
+      const uploadedBy = currentUserId && isValidUUID(currentUserId)
+        ? currentUserId
+        : 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
-      const { error } = await supabase.from('invoices').insert({
+      const insertData: any = {
         id: validId,
-        maintenance_record_id: '22222222-3333-4444-5555-666666666666',
         file_name: invoice.fileName,
         file_size: invoice.fileSize,
         file_type: invoice.fileType,
         storage_path: invoice.storagePath,
-        uploaded_by: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      });
+        uploaded_by: uploadedBy,
+      };
+      if (recordId) insertData.maintenance_record_id = recordId;
+
+      const { error } = await supabase.from('invoices').insert(insertData);
 
       if (error) throw error;
       return true;
@@ -613,23 +635,29 @@ export const cloudDb = {
   },
 
   // Add Notification Log to Cloud DB
-  async addNotificationLog(log: NotificationLog): Promise<boolean> {
+  async addNotificationLog(log: NotificationLog, currentUserId?: string): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const validId = (log.id && log.id.length === 36 && log.id.includes('-'))
-        ? log.id
-        : generateUUID();
+      const validId = isValidUUID(log.id) ? log.id : generateUUID();
+      const recipientId = currentUserId && isValidUUID(currentUserId)
+        ? currentUserId
+        : 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+      const recordId = isValidUUID(log.maintenanceRecordId)
+        ? log.maintenanceRecordId
+        : null;
 
-      const { error } = await supabase.from('notifications').insert({
+      const insertData: any = {
         id: validId,
-        maintenance_record_id: '22222222-3333-4444-5555-666666666666',
-        recipient_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        recipient_id: recipientId,
         type: log.type,
         subject: log.subject,
         content: log.subject,
         metadata: { recipient_email: log.recipientEmail },
         sent_at: log.sentAt,
-      });
+      };
+      if (recordId) insertData.maintenance_record_id = recordId;
+
+      const { error } = await supabase.from('notifications').insert(insertData);
 
       if (error) throw error;
       return true;

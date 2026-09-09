@@ -278,30 +278,30 @@ export async function sendBulkMaintenanceEmails({
             timestamp: new Date().toISOString(),
           });
         } else {
-          // If Resend rejected (e.g. testing domain restrictions on free tier)
-          console.warn(`Resend API response:`, data);
-          // Graceful fallback to verified delivered status with API response reference
-          sentCount++;
+          // Resend rejected the email — report as FAILED, not delivered
+          console.warn(`Resend API rejection for ${recipient.email}:`, data);
+          failedCount++;
           deliveries.push({
             recipientEmail: recipient.email,
             recipientName: recipient.fullName,
             flatNumber: recipient.flatNumber,
-            status: 'delivered',
-            messageId: `resend_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            status: 'failed',
+            messageId: `resend_err_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             timestamp: new Date().toISOString(),
-            error: data.message || undefined,
+            error: data.message || 'Email delivery rejected by Resend API',
           });
         }
       } catch (err: any) {
         console.error('Resend dispatch error for', recipient.email, err);
-        sentCount++;
+        failedCount++;
         deliveries.push({
           recipientEmail: recipient.email,
           recipientName: recipient.fullName,
           flatNumber: recipient.flatNumber,
-          status: 'delivered',
-          messageId: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          status: 'failed',
+          messageId: `msg_err_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           timestamp: new Date().toISOString(),
+          error: err?.message || 'Network error during email dispatch',
         });
       }
     } else {
