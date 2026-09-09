@@ -129,6 +129,41 @@ export function App() {
     }
   });
 
+
+  const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      showToast('Network restored. Reconnecting to servers...');
+      if (isSupabaseConfigured) handleSyncCloudDb();
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      setCloudConnected(false);
+      showToast('You are offline. Application is running in local mode.');
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    let cleanupResume: (() => void) | undefined;
+    if (window.electronAPI) {
+      cleanupResume = window.electronAPI.onSystemResume(() => {
+        showToast('System woke from sleep. Re-syncing...');
+        if (navigator.onLine && isSupabaseConfigured) {
+          handleSyncCloudDb();
+        }
+      });
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (cleanupResume) cleanupResume();
+    };
+  }, []);
+
   // Sync to localStorage
   useEffect(() => {
     try {
@@ -579,6 +614,11 @@ export function App() {
 
   // Add Expense Handler
   const handleAddExpense = (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
+    if (isOffline) {
+      showToast('Cannot add expense while offline.');
+      playWarningChime();
+      return;
+    }
     const expenseId = generateUUID();
     const newExpense: Expense = {
       ...newExpenseData,
@@ -623,6 +663,11 @@ export function App() {
 
   // Edit Expense Handler
   const handleSaveEditedExpense = (updatedExpense: Expense) => {
+    if (isOffline) {
+      showToast('Cannot edit expense while offline.');
+      playWarningChime();
+      return;
+    }
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id === activeRecord.id) {
@@ -660,6 +705,11 @@ export function App() {
 
   // Delete Expense Handler
   const handleDeleteExpense = (expenseId: string) => {
+    if (isOffline) {
+      showToast('Cannot delete expense while offline.');
+      playWarningChime();
+      return;
+    }
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id === activeRecord.id) {
@@ -685,6 +735,11 @@ export function App() {
 
   // User Management Handlers
   const handleAddUser = (userData: Omit<User, 'id'>) => {
+    if (isOffline) {
+      showToast('Cannot register users while offline.');
+      playWarningChime();
+      return;
+    }
     const newUser: User = {
       ...userData,
       id: generateUUID(),
@@ -716,6 +771,11 @@ export function App() {
   };
 
   const handleUpdateUser = (updatedUser: User) => {
+    if (isOffline) {
+      showToast('Cannot update users while offline.');
+      playWarningChime();
+      return;
+    }
     setUsers((prev) => {
       const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
       try {
@@ -746,6 +806,11 @@ export function App() {
   };
 
   const handleDeleteUser = (userId: string) => {
+    if (isOffline) {
+      showToast('Cannot delete users while offline.');
+      playWarningChime();
+      return;
+    }
     const targetUser = users.find((u) => u.id === userId);
     setUsers((prev) => {
       const updated = prev.filter((u) => u.id !== userId);
@@ -1317,11 +1382,11 @@ export function App() {
                     <Camera className="w-2.5 h-2.5" />
                   </span>
                 </div>
-                <div className="hidden sm:block">
-                  <div className="text-xs font-bold text-slate-800 leading-tight">
+                <div className="hidden sm:block text-left whitespace-nowrap">
+                  <div className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[120px]">
                     {currentUser.fullName}
                   </div>
-                  <div className="text-[10px] text-slate-400 capitalize">
+                  <div className="text-[10px] text-slate-400 capitalize truncate max-w-[120px]">
                     {currentUserRole.toLowerCase().replace('_', ' ')} • {currentUser.flatNumber}
                   </div>
                 </div>

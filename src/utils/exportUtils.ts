@@ -75,7 +75,19 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
   XLSX.utils.book_append_sheet(workbook, worksheet, `${monthName} ${record.year}`);
 
   // Write and trigger download
-  XLSX.writeFile(workbook, fileName);
+  if (window.electronAPI) {
+    const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+    window.electronAPI.showSaveDialog({
+      defaultPath: fileName,
+      filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+    }).then(async (result: any) => {
+      if (!result.canceled && result.filePath && window.electronAPI) {
+        await window.electronAPI.writeFile(result.filePath, new Uint8Array(buffer));
+      }
+    });
+  } else {
+    XLSX.writeFile(workbook, fileName);
+  }
 };
 
 /**
@@ -275,7 +287,19 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.text('Page 1 of 1', pageWidth - 25, 288);
 
   // Download PDF directly
-  doc.save(fileName);
+  if (window.electronAPI) {
+    const buffer = doc.output('arraybuffer');
+    window.electronAPI.showSaveDialog({
+      defaultPath: fileName,
+      filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+    }).then(async (result: any) => {
+      if (!result.canceled && result.filePath && window.electronAPI) {
+        await window.electronAPI.writeFile(result.filePath, new Uint8Array(buffer));
+      }
+    });
+  } else {
+    doc.save(fileName);
+  }
 };
 
 /**
@@ -332,7 +356,20 @@ export const exportTenantsToExcel = (users: User[], house?: House) => {
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tenant Directory');
-  XLSX.writeFile(workbook, fileName);
+  
+  if (window.electronAPI) {
+    const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+    window.electronAPI.showSaveDialog({
+      defaultPath: fileName,
+      filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+    }).then(async (result: any) => {
+      if (!result.canceled && result.filePath && window.electronAPI) {
+        await window.electronAPI.writeFile(result.filePath, new Uint8Array(buffer));
+      }
+    });
+  } else {
+    XLSX.writeFile(workbook, fileName);
+  }
 };
 
 /**
@@ -415,7 +452,19 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
   doc.setTextColor(148, 163, 184);
   doc.text('Certified Confidential Property Record • Madura House Management Platform V0.1', 14, Math.min(finalY + 12, 195));
 
-  doc.save(fileName);
+  if (window.electronAPI) {
+    const buffer = doc.output('arraybuffer');
+    window.electronAPI.showSaveDialog({
+      defaultPath: fileName,
+      filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+    }).then(async (result: any) => {
+      if (!result.canceled && result.filePath && window.electronAPI) {
+        await window.electronAPI.writeFile(result.filePath, new Uint8Array(buffer));
+      }
+    });
+  } else {
+    doc.save(fileName);
+  }
 };
 
 /**
@@ -436,13 +485,27 @@ export const exportAuditLogsToCSV = (logs: AuditLog[]) => {
   ]);
 
   const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', fileName);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  
+  if (window.electronAPI) {
+    const encoder = new TextEncoder();
+    const buffer = encoder.encode(csvContent);
+    window.electronAPI.showSaveDialog({
+      defaultPath: fileName,
+      filters: [{ name: 'CSV File', extensions: ['csv'] }]
+    }).then(async (result: any) => {
+      if (!result.canceled && result.filePath && window.electronAPI) {
+        await window.electronAPI.writeFile(result.filePath, buffer);
+      }
+    });
+  } else {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 

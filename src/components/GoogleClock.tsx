@@ -45,73 +45,31 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
     return (
       <>
         <div
-          className={`flex items-center gap-2 sm:gap-3 bg-white/90 hover:bg-white border border-slate-200/90 px-2.5 sm:px-3 py-1.5 rounded-xl shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group ${className}`}
+          className={`flex items-center gap-2 sm:gap-3 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group ${className}`}
           onClick={() => setIsModalOpen(true)}
           title="Google NTP Atomic Clock (IST) • Click for Full Precision Chronometer"
         >
-          {/* Main Digits */}
-          <div className="flex items-baseline gap-1 font-mono tabular-nums">
-            <span className="font-bold text-sm sm:text-base md:text-lg tracking-tight text-slate-900">
-              {timeString}
-            </span>
-            {!is24Hour && (
-              <span className="text-[10px] font-bold text-slate-500 uppercase font-sans">
-                {ampm}
-              </span>
-            )}
-          </div>
-
-          {/* Sun & Date Info (Hidden on smaller screens) */}
-          <div className="hidden xl:flex flex-col text-[10px] leading-tight text-slate-600 border-l border-slate-200 pl-2.5">
-            <div className="flex items-center gap-1 font-medium whitespace-nowrap">
-              <Sun className="w-3 h-3 text-amber-500 shrink-0" />
-              <span className="text-slate-800 font-semibold font-mono tabular-nums">{sunTimes.sunrise} – {sunTimes.sunset}</span>
-              <span className="text-slate-400">({sunTimes.duration})</span>
-            </div>
-            <div className="text-slate-500 font-medium whitespace-nowrap">
-              {dateString}
-            </div>
-          </div>
-
-          {/* 12h / 24h Pill Segment Switch */}
-          <div
-            className="flex items-center bg-slate-100 rounded-full p-0.5 border border-slate-200/80 shadow-2xs shrink-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setIs24Hour(false)}
-              className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold transition-all cursor-pointer ${
-                !is24Hour
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              12h
-            </button>
-            <button
-              type="button"
-              onClick={() => setIs24Hour(true)}
-              className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold transition-all cursor-pointer ${
-                is24Hour
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              24h
-            </button>
-          </div>
-
           {/* Live Sync Status Indicator Pulse */}
-          <div
-            className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60"
-            title={`Synced with ${source} • Latency: ${latencyMs}ms • Drift: ${Math.round(driftMs)}ms`}
-          >
+          <div className="flex items-center shrink-0" title={`Synced with ${source} • RTT: ${latencyMs}ms`}>
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
             </span>
-            <span className="text-[9px] uppercase tracking-wider hidden md:inline">IST</span>
+          </div>
+
+          {/* Main Digits */}
+          <div className="flex items-baseline gap-1 font-mono tabular-nums tracking-tight">
+            <span className="font-bold text-sm text-slate-800">
+              {timeString}
+            </span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase">
+              {is24Hour ? 'IST' : ampm}
+            </span>
+          </div>
+
+          {/* Date Info */}
+          <div className="hidden lg:block text-[11px] text-slate-500 border-l border-slate-200 pl-3 font-medium whitespace-nowrap">
+            {dayName}, {monthShort} {dayOfMonth}
           </div>
         </div>
 

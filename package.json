@@ -2,14 +2,33 @@
   "name": "madura-house-maintenance",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "description": "Enterprise House Maintenance Management Application",
+  "author": "Madura House",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:desktop": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "db:sync": "node scripts/sync-db.cjs",
     "db:seed": "node scripts/sync-db.cjs"
+  },
+  "build": {
+    "appId": "com.madurahouse.app",
+    "productName": "Madura House Maintenance",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
@@ -29,9 +48,14 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
+    "electron-updater": "^6.8.9",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vite-plugin-electron": "^1.1.2",
+    "vite-plugin-electron-renderer": "^1.0.0"
   }
 }
