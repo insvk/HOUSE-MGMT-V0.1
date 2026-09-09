@@ -176,7 +176,7 @@ export async function syncGoogleTime(): Promise<{
       const drift = trueEpoch - t1;
 
       globalDriftMs = drift;
-      globalSource = 'worldtimeapi.org (IST)';
+      globalSource = 'WorldTimeAPI';
       globalLatencyMs = t1 - t0;
       globalLastSyncedAt = new Date();
       globalSyncStatus = 'synced';
@@ -194,7 +194,7 @@ export async function syncGoogleTime(): Promise<{
 
   // Fallback 2: Local System clock with 0 drift
   globalSyncStatus = 'offline';
-  globalSource = 'Local System Clock (IST)';
+  globalSource = 'Local System Clock';
   globalLatencyMs = 0;
   globalLastSyncedAt = new Date();
 
@@ -307,6 +307,9 @@ export function useGoogleTime() {
     seconds,
     ampm,
     dayName,
+    monthShort,
+    dayOfMonth,
+    year,
     dateString,
     sunTimes,
     is24Hour,

@@ -693,16 +693,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
         {/* Right Graphic & God Clock Area */}
         <div className="lg:col-span-7 hidden lg:flex flex-col items-center justify-center relative min-h-[480px] p-6">
-          <div className="absolute w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl -z-10" />
+          <div className="absolute w-[440px] h-[440px] bg-gradient-to-tr from-indigo-100/50 via-sky-100/30 to-emerald-100/40 rounded-full blur-3xl -z-10" />
 
-          {/* Full Fidelity God Clock Display Card (Exact Reference Design) */}
-          <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-300">
-            <GoogleClock variant="card" className="shadow-2xl border-slate-300/80 bg-[#f2f2f3]" />
+          {/* Full Fidelity God Clock Display Card */}
+          <div className="w-full max-w-xl animate-in fade-in zoom-in-95 duration-300">
+            <GoogleClock variant="card" />
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-500 bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-full border border-slate-200/80 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Google NTP Real-Time Synchronized • Indian Standard Time (IST)</span>
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-slate-500 bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-slate-200/70 shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Official Property Management System • Atomic Precision Synchronized</span>
           </div>
         </div>
 
