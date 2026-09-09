@@ -1530,11 +1530,13 @@ export function App() {
             <NotificationCenter
               logs={notificationLogs}
               currentUserRole={currentUserRole}
+              currentUser={currentUser}
               currentRecord={activeRecord}
               house={house}
               users={users}
               onTriggerNotifications={handleTriggerNotifications}
               onDispatchBulkEmails={handleBulkEmailDispatched}
+              showToast={showToast}
             />
           )}
 
