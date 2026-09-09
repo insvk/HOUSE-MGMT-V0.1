@@ -1,7 +1,7 @@
 /**
  * Google NTP Time Synchronization Engine & Astronomical Calculator (IST)
  * Connects directly to time.google.com via NTP HTTP bridge to guarantee atomic precision
- * Provides astronomical sunrise/sunset calculations for Madura House (Madurai, Tamil Nadu: 9.9252° N, 78.1198° E)
+ * Provides astronomical sunrise/sunset calculations for Madura House (Maduravoyal, Tamil Nadu: 13.0674° N, 80.1712° E)
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -27,9 +27,9 @@ export interface GoogleTimeState {
 }
 
 /**
- * High-precision NOAA Solar calculation algorithm adapted for Madurai, Tamil Nadu (IST UTC+5:30)
+ * High-precision NOAA Solar calculation algorithm adapted for Maduravoyal, Tamil Nadu (IST UTC+5:30)
  */
-export function calculateSunTimes(date: Date, lat = 9.9252, lng = 78.1198): SunTimes {
+export function calculateSunTimes(date: Date, lat = 13.0674, lng = 80.1712): SunTimes {
   try {
     const startOfYear = new Date(date.getFullYear(), 0, 1);
     const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)) + 1;

@@ -347,10 +347,10 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                         </h2>
                         <p className="text-xs text-slate-600 mt-1">
                           {selectedInvoice.fileName.includes('TNEB')
-                            ? 'Madurai Metro Distribution Circle, KK Nagar Division, Madurai - 625020'
+                            ? 'Maduravoyal Distribution Circle, Chennai Division, Maduravoyal - 600095'
                             : selectedInvoice.fileName.includes('Motor')
-                            ? 'GSTIN: 33AAACB2234M1Z5 • 42, Vakkil New Street, Simmakkal, Madurai'
-                            : 'Property Maintenance Administration • KK Nagar, Madurai, TN - 625020'}
+                            ? 'GSTIN: 33AAACB2234M1Z5 • 42, Trunk Road, Maduravoyal'
+                            : 'Property Maintenance Administration • Maduravoyal, TN - 600095'}
                         </p>
                       </div>
 
@@ -455,7 +455,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                     <div className="space-y-1 text-xs text-slate-500 max-w-xs">
                       <div className="font-semibold text-slate-700">Payment Remarks:</div>
                       <div>Settled via NEFT / UPI Transaction Ref #AXIS982341.</div>
-                      <div className="text-[10px] text-slate-400">All disputes subject to Madurai jurisdiction.</div>
+                      <div className="text-[10px] text-slate-400">All disputes subject to Maduravoyal jurisdiction.</div>
                     </div>
 
                     <div className="w-full sm:w-60 space-y-1.5 text-xs">

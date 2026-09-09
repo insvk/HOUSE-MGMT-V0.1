@@ -90,4 +90,4 @@ For step-by-step database setup and cloud deployment instructions, consult the [
 ---
 
 ## 📄 License
-Internal Property Management Platform • Madura House, Bypass Road, Ellis Nagar, Madurai - 625001.
+Internal Property Management Platform • Madura House, Bypass Road, Ellis Nagar, Maduravoyal - 625001.

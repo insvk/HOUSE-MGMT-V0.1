@@ -1142,7 +1142,7 @@ export function App() {
               <div className="w-2 h-2 rounded-full bg-[#0ab39c] animate-pulse" />
               <span className="font-semibold text-slate-300">v1.0 Enterprise</span>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono">Madurai, TN</span>
+            <span className="text-[10px] text-slate-500 font-mono">Maduravoyal, TN</span>
           </div>
         )}
       </aside>

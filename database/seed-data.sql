@@ -32,8 +32,8 @@ VALUES (
   '11111111-2222-3333-4444-555555555555',
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   'Madura House',
-  'No. 42, Bypass Road, Madurai',
-  'Madurai',
+  'No. 42, Bypass Road, Maduravoyal',
+  'Maduravoyal',
   '625001',
   5
 ) ON CONFLICT DO NOTHING;

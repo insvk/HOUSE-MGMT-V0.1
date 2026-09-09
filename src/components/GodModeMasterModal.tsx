@@ -629,7 +629,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     value={houseCity}
                     onChange={(e) => setHouseCity(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
-                    placeholder="e.g. Madurai"
+                    placeholder="e.g. Maduravoyal"
                   />
                 </div>
 

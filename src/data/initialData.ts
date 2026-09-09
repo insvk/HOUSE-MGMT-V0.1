@@ -4,7 +4,7 @@ export const initialHouse: House = {
   id: '11111111-2222-3333-4444-555555555555',
   name: 'Madura House Maintenance',
   address: 'No. 42, Bypass Road, Ellis Nagar',
-  city: 'Madurai',
+  city: 'Maduravoyal',
   postalCode: '625001',
   totalUnits: 5,
   ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',

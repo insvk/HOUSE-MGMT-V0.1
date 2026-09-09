@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS houses (
   owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
   name VARCHAR(255) NOT NULL DEFAULT 'Madura House Maintenance',
   address TEXT NOT NULL DEFAULT 'No. 42, Bypass Road, Ellis Nagar',
-  city VARCHAR(100) DEFAULT 'Madurai',
+  city VARCHAR(100) DEFAULT 'Maduravoyal',
   postal_code VARCHAR(20) DEFAULT '625001',
   total_units INTEGER DEFAULT 5,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -279,7 +279,7 @@ VALUES (
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   'Madura House Maintenance',
   'No. 42, Bypass Road, Ellis Nagar',
-  'Madurai',
+  'Maduravoyal',
   '625001',
   5
 ) ON CONFLICT (id) DO UPDATE SET

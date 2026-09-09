@@ -11,7 +11,7 @@
 | Parameter | Details |
 |---|---|
 | **Platform Name** | Madura House Maintenance Management (`V0.1`) |
-| **Property Address** | No. 42, Bypass Road, Ellis Nagar, Madurai, Tamil Nadu - 625001 |
+| **Property Address** | No. 42, Bypass Road, Ellis Nagar, Maduravoyal, Tamil Nadu - 625001 |
 | **Total Managed Units** | 5 Units (`GF`, `F01 - FRONT`, `F01 - BACK`, `F02 - FRONT`, `F02 - BACK`) |
 | **Local Access URL** | [http://localhost:5173](http://localhost:5173) |
 | **GitHub Repository** | [https://github.com/insvk/HOUSE-MGMT-V0.1](https://github.com/insvk/HOUSE-MGMT-V0.1) (`main` branch) |

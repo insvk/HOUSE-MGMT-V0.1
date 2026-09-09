@@ -163,10 +163,10 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           id: 'h-madura-01',
           name: 'Madura House Maintenance',
           address: 'No. 42, Bypass Road, Ellis Nagar',
-          city: 'Madurai',
+          city: 'Maduravoyal',
           postalCode: '625001',
           totalUnits: 5,
-          ownerId: 'u-owner-01',
+          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
         },
         senderName: 'Sampath Kumar',
       });
@@ -357,7 +357,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
-                <span>Property: <strong>{house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, {house?.city || 'Madurai'}</strong></span>
+                <span>Property: <strong>{house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, {house?.city || 'Maduravoyal'}</strong></span>
                 <span>Due Date: <strong>10th {monthName} {activeRecord.year}</strong></span>
               </div>
             </div>

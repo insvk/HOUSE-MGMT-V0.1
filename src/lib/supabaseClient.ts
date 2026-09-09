@@ -79,10 +79,10 @@ export const cloudDb = {
         id: h.id,
         name: h.name || 'Madura House Maintenance',
         address: h.address || 'No. 42, Bypass Road, Ellis Nagar',
-        city: h.city || 'Madurai',
+        city: h.city || 'Maduravoyal',
         postalCode: h.postal_code || '625001',
         totalUnits: Number(h.total_units) || 5,
-        ownerId: h.owner_id || 'u-owner-01',
+        ownerId: h.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       };
     } catch (err) {
       console.warn('Cloud DB fetch house fallback:', err);

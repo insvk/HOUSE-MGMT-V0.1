@@ -150,7 +150,7 @@ async function runSync() {
     owner_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     name: 'Madura House Maintenance',
     address: 'No. 42, Bypass Road, Ellis Nagar',
-    city: 'Madurai',
+    city: 'Maduravoyal',
     postal_code: '625001',
     total_units: 5
   };

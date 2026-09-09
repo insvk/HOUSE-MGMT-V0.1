@@ -317,7 +317,7 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
         <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
           <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Sun className="w-3.5 h-3.5 text-amber-500" />
-            <span>Madurai Solar</span>
+            <span>Maduravoyal Solar</span>
           </div>
           <div className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight font-mono tabular-nums">
             {sunTimes.sunrise} – {sunTimes.sunset}
@@ -334,10 +334,10 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             <span>Location</span>
           </div>
           <div className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight truncate">
-            Madurai, TN
+            Maduravoyal, TN
           </div>
           <div className="text-[11px] font-medium text-slate-500 truncate font-mono">
-            9.9252° N, 78.1198° E
+            13.0674° N, 80.1712° E
           </div>
         </div>
 

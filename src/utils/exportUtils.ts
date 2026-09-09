@@ -19,7 +19,7 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
   const worksheetData: (string | number)[][] = [
     ['MADURA HOUSE MAINTENANCE MANAGEMENT PLATFORM'],
     [`OFFICIAL MONTHLY MAINTENANCE STATEMENT - ${monthName.toUpperCase()} ${record.year}`],
-    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} - ${house?.postalCode || '625001'}`],
+    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`],
     [`Statement Reference ID: ${record.id.toUpperCase()}`],
     [], // Blank line
     // Table Header
@@ -121,7 +121,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Property: ${house?.name || 'Madura House'}, ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} - ${house?.postalCode || '625001'}`, 14, 40);
+  doc.text(`Property: ${house?.name || 'Madura House'}, ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`, 14, 40);
   doc.text(`Statement Ref: #${record.id.toUpperCase()}  •  Audited By: Property Administration  •  Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 45);
 
   // 3. Three Metric Highlight Cards
@@ -286,7 +286,7 @@ export const exportTenantsToExcel = (users: User[], house?: House) => {
 
   const worksheetData: (string | number)[][] = [
     ['MADURA HOUSE RESIDENTIAL DIRECTORY & LEASE LEDGER'],
-    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} - ${house?.postalCode || '625001'}`],
+    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`],
     [`Generated On: ${new Date().toLocaleString('en-IN')}`],
     [],
     ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Payment Status', 'Monthly Rent (INR)', 'Security Deposit (INR)', 'Move-In Date', 'Emergency Contact']
@@ -363,7 +363,7 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(203, 213, 225);
-  doc.text(`Official Register • Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Madurai'} • Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 17);
+  doc.text(`Official Register • Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} • Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 17);
 
   const tableData = users.map((u, idx) => [
     (idx + 1).toString(),

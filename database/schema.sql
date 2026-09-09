@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS houses (
   owner_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   name VARCHAR(255) NOT NULL DEFAULT 'Madura House',
   address TEXT NOT NULL DEFAULT 'Madura House, Main Road, City',
-  city VARCHAR(100) DEFAULT 'Madurai',
+  city VARCHAR(100) DEFAULT 'Maduravoyal',
   postal_code VARCHAR(20) DEFAULT '625001',
   total_units INTEGER DEFAULT 5,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
