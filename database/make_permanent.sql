@@ -15,6 +15,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255),
   phone VARCHAR(20),
   full_name VARCHAR(255) NOT NULL,
   flat_number VARCHAR(50),
@@ -174,95 +175,17 @@ CREATE POLICY "audit_logs_all_policy" ON audit_logs FOR ALL TO public USING (tru
 -- ==============================================================================
 
 -- Owner: Sampath Kumar
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
+INSERT INTO users (id, email, password, phone, full_name, flat_number, occupancy_status)
 VALUES (
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   'sampathkumar@chemadur.com',
+  'Sampath@123',
   '+91 98421 00000',
   'Sampath Kumar',
   'Owner Suite',
   'active'
 ) ON CONFLICT (email) DO UPDATE SET
-  phone = EXCLUDED.phone,
-  full_name = EXCLUDED.full_name,
-  flat_number = EXCLUDED.flat_number,
-  occupancy_status = EXCLUDED.occupancy_status,
-  updated_at = timezone('utc'::text, now());
-
--- Admin Tenant: Rajesh Kumar (F01 - FRONT)
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
-VALUES (
-  'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
-  'admin.tenant@madurahouse.local',
-  '+91 98421 11111',
-  'Rajesh Kumar',
-  'F01 - FRONT',
-  'active'
-) ON CONFLICT (email) DO UPDATE SET
-  phone = EXCLUDED.phone,
-  full_name = EXCLUDED.full_name,
-  flat_number = EXCLUDED.flat_number,
-  occupancy_status = EXCLUDED.occupancy_status,
-  updated_at = timezone('utc'::text, now());
-
--- Tenant 2: Suresh Mani (F01 - BACK)
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
-VALUES (
-  'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-  'suresh.f01b@madurahouse.local',
-  '+91 98421 22222',
-  'Suresh Mani',
-  'F01 - BACK',
-  'active'
-) ON CONFLICT (email) DO UPDATE SET
-  phone = EXCLUDED.phone,
-  full_name = EXCLUDED.full_name,
-  flat_number = EXCLUDED.flat_number,
-  occupancy_status = EXCLUDED.occupancy_status,
-  updated_at = timezone('utc'::text, now());
-
--- Tenant 3: Priya Sharma (F02 - FRONT)
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
-VALUES (
-  'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-  'priya.f02f@madurahouse.local',
-  '+91 98421 33333',
-  'Priya Sharma',
-  'F02 - FRONT',
-  'active'
-) ON CONFLICT (email) DO UPDATE SET
-  phone = EXCLUDED.phone,
-  full_name = EXCLUDED.full_name,
-  flat_number = EXCLUDED.flat_number,
-  occupancy_status = EXCLUDED.occupancy_status,
-  updated_at = timezone('utc'::text, now());
-
--- Tenant 4: Ananth Raman (F02 - BACK)
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
-VALUES (
-  'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
-  'ananth.f02b@madurahouse.local',
-  '+91 98421 44444',
-  'Ananth Raman',
-  'F02 - BACK',
-  'active'
-) ON CONFLICT (email) DO UPDATE SET
-  phone = EXCLUDED.phone,
-  full_name = EXCLUDED.full_name,
-  flat_number = EXCLUDED.flat_number,
-  occupancy_status = EXCLUDED.occupancy_status,
-  updated_at = timezone('utc'::text, now());
-
--- Tenant 5: Karthik Swaminathan (GF)
-INSERT INTO users (id, email, phone, full_name, flat_number, occupancy_status)
-VALUES (
-  'f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66',
-  'karthik.gf@madurahouse.local',
-  '+91 98421 55555',
-  'Karthik Swaminathan',
-  'GF',
-  'active'
-) ON CONFLICT (email) DO UPDATE SET
+  password = EXCLUDED.password,
   phone = EXCLUDED.phone,
   full_name = EXCLUDED.full_name,
   flat_number = EXCLUDED.flat_number,

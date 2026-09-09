@@ -261,8 +261,8 @@ export function App() {
                   ...existing,
                   ...ru,
                   flatNumber: normalizeFlat(ru.flatNumber || existing.flatNumber),
-                  password: existing.password || ru.password,
-                  role: existing.role || ru.role || 'TENANT',
+                  password: ru.password || existing.password,
+                  role: ru.role || existing.role || 'TENANT',
                 });
               } else {
                 userMap.set(emailKey, {

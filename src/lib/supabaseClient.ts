@@ -130,6 +130,7 @@ export const cloudDb = {
       return (data || []).map((u: any) => ({
         id: u.id,
         email: u.email,
+        password: u.password,
         phone: u.phone || '',
         fullName: u.full_name || '',
         flatNumber: u.flat_number || 'GF',
@@ -156,6 +157,7 @@ export const cloudDb = {
       const { error } = await supabase.from('users').insert({
         id: user.id,
         email: user.email,
+        password: user.password,
         phone: user.phone,
         full_name: user.fullName,
         flat_number: user.flatNumber,
@@ -184,6 +186,7 @@ export const cloudDb = {
       const { error } = await supabase
         .from('users')
         .update({
+          password: user.password,
           phone: user.phone,
           full_name: user.fullName,
           flat_number: user.flatNumber,
