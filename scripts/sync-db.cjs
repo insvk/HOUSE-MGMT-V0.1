@@ -79,8 +79,19 @@ async function runSync() {
   }
   console.log('✅ Connected to Cloud PostgreSQL!\n');
 
-  // 1. Permanent Users
-  console.log('⏳ Step 2: Synchronizing All Permanent Admin & Resident Accounts...');
+  // 1. Permanent Admin User & Dummy Account Purge
+  console.log('⏳ Step 2: Purging legacy mock dummy accounts & synchronizing Admin Account...');
+  
+  // Clean up any old dummy users ending in @madurahouse.local
+  try {
+    const purgeRes = await api('users?email=like.*madurahouse.local', 'DELETE');
+    if (purgeRes.ok) {
+      console.log('   ✓ Purged legacy dummy accounts from database');
+    }
+  } catch (err) {
+    // Non-fatal if table doesn't have rows
+  }
+
   const permanentUsers = [
     {
       id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
@@ -89,46 +100,6 @@ async function runSync() {
       full_name: 'Sampath Kumar',
       flat_number: 'Owner Suite',
       occupancy_status: 'active',
-    },
-    {
-      id: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
-      email: 'admin.tenant@madurahouse.local',
-      phone: '+91 98421 11111',
-      full_name: 'Rajesh Kumar',
-      flat_number: 'F01 - FRONT',
-      occupancy_status: 'active',
-    },
-    {
-      id: 'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-      email: 'suresh.f01b@madurahouse.local',
-      phone: '+91 98421 22222',
-      full_name: 'Suresh Mani',
-      flat_number: 'F01 - BACK',
-      occupancy_status: 'active',
-    },
-    {
-      id: 'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-      email: 'priya.f02f@madurahouse.local',
-      phone: '+91 98421 33333',
-      full_name: 'Priya Sharma',
-      flat_number: 'F02 - FRONT',
-      occupancy_status: 'active',
-    },
-    {
-      id: 'e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
-      email: 'ananth.f02b@madurahouse.local',
-      phone: '+91 98421 44444',
-      full_name: 'Ananth Raman',
-      flat_number: 'F02 - BACK',
-      occupancy_status: 'active',
-    },
-    {
-      id: 'f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66',
-      email: 'karthik.gf@madurahouse.local',
-      phone: '+91 98421 55555',
-      full_name: 'Karthik Swaminathan',
-      flat_number: 'GF',
-      occupancy_status: 'active',
     }
   ];
 
@@ -136,7 +107,7 @@ async function runSync() {
   for (const u of permanentUsers) {
     const res = await api('users?on_conflict=email', 'POST', u, 'resolution=merge-duplicates');
     if (res.ok || res.status === 201 || res.status === 200 || res.status === 204) {
-      console.log(`   ✓ User synced: ${u.full_name} (${u.email}) -> ${u.flat_number}`);
+      console.log(`   ✓ Admin user synced: ${u.full_name} (${u.email}) -> ${u.flat_number}`);
       usersSaved++;
     } else {
       console.log(`   ⚠️ User notice for ${u.email} (${res.status}):`, res.data?.message || res.data);

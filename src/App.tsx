@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { initialHouse, initialUsers, initialMaintenanceRecords, initialExpenses, initialInvoices, initialNotificationLogs, initialAuditLogs } from './data/initialData';
+import { initialHouse, initialUsers, initialMaintenanceRecords, initialExpenses, initialInvoices, initialNotificationLogs, initialAuditLogs, isDummyLegacyAccount } from './data/initialData';
 import { MaintenanceRecord, User, UserRole, Expense, Invoice, NotificationLog, AuditLog } from './types';
 import { LoginPage } from './components/LoginPage';
 import { Dashboard } from './components/Dashboard';
@@ -64,7 +64,7 @@ export const normalizeFlat = (flat?: string): string => {
 };
 
 export function App() {
-  // Persistent State for Users & Records with automatic credential preservation
+  // Persistent State for Users & Records with automatic credential preservation & dummy purge
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_USERS);
@@ -72,10 +72,11 @@ export function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const map = new Map<string, User>();
-          // Base defaults
+          // Base defaults (Admin/Owner)
           initialUsers.forEach((iu) => map.set(iu.email.toLowerCase(), iu));
-          // Overlay saved data with flat number normalization
+          // Overlay saved data, automatically purging any legacy dummy accounts
           parsed.forEach((u: User) => {
+            if (!u.email || isDummyLegacyAccount(u.email)) return;
             const existing = map.get(u.email.toLowerCase());
             if (existing) {
               map.set(u.email.toLowerCase(), {
@@ -92,7 +93,13 @@ export function App() {
               });
             }
           });
-          return Array.from(map.values());
+          const result = Array.from(map.values());
+          // Synchronize cleansed list back to storage immediately
+          try {
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(result));
+            localStorage.setItem('madura_house_users_db_v3', JSON.stringify(result));
+          } catch {}
+          return result;
         }
       }
       return initialUsers;
@@ -289,6 +296,7 @@ export function App() {
             prevLocalUsers.forEach((u) => userMap.set(u.email.toLowerCase(), u));
             // 2. Overlay remote data without wiping passwords or un-synced users
             remoteUsers.forEach((ru) => {
+              if (!ru.email || isDummyLegacyAccount(ru.email)) return;
               const emailKey = ru.email.toLowerCase();
               const existing = userMap.get(emailKey);
               if (existing) {
@@ -1475,6 +1483,7 @@ export function App() {
               records={records}
               activeRecord={activeRecord}
               currentUserRole={currentUserRole}
+              currentUser={currentUser}
               onSelectRecord={(id) => setSelectedRecordId(id)}
               onAddExpense={handleAddExpense}
               onOpenEditExpense={(exp) => setEditingExpense(exp)}
@@ -1503,6 +1512,7 @@ export function App() {
             <InvoiceGallery
               invoices={invoices}
               currentUserRole={currentUserRole}
+              currentUser={currentUser}
               onUploadInvoice={handleUploadInvoice}
             />
           )}

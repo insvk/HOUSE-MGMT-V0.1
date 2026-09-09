@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Invoice, UserRole } from '../types';
+import { Invoice, UserRole, User } from '../types';
 import { 
   FileText, 
   Upload, 
@@ -26,12 +26,14 @@ import {
 interface InvoiceGalleryProps {
   invoices: Invoice[];
   currentUserRole: UserRole;
+  currentUser?: User;
   onUploadInvoice: (invoice: Omit<Invoice, 'id' | 'uploadedAt'>) => void;
 }
 
 export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
   invoices,
   currentUserRole,
+  currentUser,
   onUploadInvoice,
 }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -49,7 +51,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
       fileSize: Math.floor(Math.random() * 800000) + 200000,
       fileType: isPdf ? 'application/pdf' : 'image/png',
       storagePath: `invoices/2026/09/${fileName}`,
-      uploadedBy: currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin.tenant@madurahouse.local',
+      uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin@chemadur.com'),
       ocrText: customText || `OCR EXTRACTED SUMMARY FOR ${fileName}: Amount Rs. ${(Math.random() * 2000 + 1000).toFixed(2)}. Verified Tax Invoice. Madura House Maintenance.`,
     };
 
@@ -67,7 +69,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
           fileSize: file.size,
           fileType: isPdf ? 'application/pdf' : 'image/jpeg',
           storagePath: `invoices/${Date.now()}_${file.name}`,
-          uploadedBy: currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin.tenant@madurahouse.local',
+          uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin@chemadur.com'),
           ocrText: `OCR EXTRACTED SUMMARY FOR ${file.name}: Official verified maintenance receipt under Madura House administration.`,
         };
         onUploadInvoice(newInv);

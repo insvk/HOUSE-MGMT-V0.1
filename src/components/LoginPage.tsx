@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
-import { DEFAULT_CREDENTIALS } from '../data/initialData';
+import { DEFAULT_CREDENTIALS, isDummyLegacyAccount } from '../data/initialData';
 import { generateUUID } from '../lib/supabaseClient';
 import { GoogleClock } from './GoogleClock';
 import { 
@@ -92,13 +92,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   // Helper to fetch all available accounts across props and local encrypted vault
   const getAllAvailableAccounts = (): User[] => {
     const map = new Map<string, User>();
-    users.forEach((u) => map.set(u.email.toLowerCase(), u));
+    users.filter((u) => u.email && !isDummyLegacyAccount(u.email)).forEach((u) => map.set(u.email.toLowerCase(), u));
     try {
       const saved = localStorage.getItem('madura_house_users_db_v3');
       if (saved) {
         const parsed: User[] = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           parsed.forEach((pu) => {
+            if (!pu.email || isDummyLegacyAccount(pu.email)) return;
             const existing = map.get(pu.email.toLowerCase());
             if (existing) {
               map.set(pu.email.toLowerCase(), {
@@ -538,7 +539,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Ramesh Krishnan"
+                    placeholder="e.g. Anand Sundaram"
                     className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#e5e7eb] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
                   />
                 </div>
@@ -550,7 +551,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     required
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="ramesh@madurahouse.local"
+                    placeholder="resident@example.com"
                     className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#e5e7eb] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
                   />
                 </div>

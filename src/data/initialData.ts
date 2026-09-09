@@ -10,11 +10,29 @@ export const initialHouse: House = {
   ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
 };
 
-// Clean Production Accounts: Property Owner (Admin) & All 5 Resident Flat Tenants
+// Clean Production Accounts: Property Owner (Admin)
 // Default credential constants — used only for initial login matching.
 // NOT stored in the User objects to prevent leakage via localStorage/state.
 export const DEFAULT_CREDENTIALS: Record<string, string> = {
   'sampathkumar@chemadur.com': 'Sampath@123',
+};
+
+/**
+ * Utility to identify legacy dummy mock accounts and prevent their resurrection
+ */
+export const isDummyLegacyAccount = (email?: string): boolean => {
+  if (!email) return true;
+  const lower = email.toLowerCase().trim();
+  if (lower === 'sampathkumar@chemadur.com') return false; // Primary Admin / Owner Account is permanently legitimate
+  if (
+    lower.endsWith('@madurahouse.local') ||
+    lower.endsWith('@test.local') ||
+    lower.includes('admin.tenant@') ||
+    lower.includes('mock.tenant@')
+  ) {
+    return true;
+  }
+  return false;
 };
 
 export const initialUsers: User[] = [
@@ -102,7 +120,7 @@ export const initialExpenses: Expense[] = [
     gstApplicable: false,
     gstAmount: 0,
     notes: 'Weekly staircase sweeping, phenyl, mop heads & janitorial supplies',
-    addedBy: 'admin.tenant@madurahouse.local',
+    addedBy: 'sampathkumar@chemadur.com',
     createdAt: '2026-09-05T09:00:00.000Z',
     invoiceFileName: 'Sri_Murugan_Stores_Janitorial_Voucher.jpg',
     invoiceFileType: 'image/jpeg',
@@ -120,7 +138,7 @@ export const initialExpenses: Expense[] = [
     gstApplicable: false,
     gstAmount: 0,
     notes: 'Replaced 36MFD starter capacitor and greased borewell pump bearings',
-    addedBy: 'admin.tenant@madurahouse.local',
+    addedBy: 'sampathkumar@chemadur.com',
     createdAt: '2026-09-06T08:30:00.000Z',
     invoiceFileName: 'Sri_Balaji_Electricals_Service_Bill.pdf',
     invoiceFileType: 'application/pdf',

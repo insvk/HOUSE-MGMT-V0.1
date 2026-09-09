@@ -36,22 +36,12 @@ The Property Owner has unrestricted authority over all financial ledgers, tenant
 
 ---
 
-### 🛡️ 3. Admin Tenant Account (Onsite Property Co-Admin)
+### 🛡️ 3. Dynamic Tenant Accounts & Resident Directory
 
-The Admin Tenant assists with day-to-day coordination with contractors, electricians, and plumbers, as well as tracking resident payments.
-
-| Field | Credentials / Value |
-|---|---|
-| **Full Name** | Rajesh Kumar |
-| **Email Address** | `admin.tenant@madurahouse.local` |
-| **Password** | `Admin@123` |
-| **Role** | `ADMIN_TENANT` (Operations & Coordination) |
-| **Flat / Unit** | `F01 - FRONT` |
-| **Monthly Rent** | ₹14,000 / month |
-| **Security Deposit** | ₹70,000 |
-| **Contact Phone** | `+91 98421 11111` |
-| **Emergency Contact** | `+91 98421 88888` |
-| **Permissions** | • Log maintenance requests and record contractor receipts<br>• Coordinate utility repairs and enter maintenance costs<br>• Verify monthly tenant payment status<br>• Upload contractor invoices and payment proofs |
+All resident and tenant accounts are dynamic. Only the Primary Property Owner/Admin account is seeded by default.
+- Residents register themselves via the portal login screen using the **Create Account** tab.
+- The Property Owner / Admin can also register, manage, and promote residents to `ADMIN_TENANT` directly from the **Tenant Directory** dashboard.
+- Default temporary passwords for admin-created resident profiles follow the standard pattern: `Tenant@123` (or custom defined).
 
 ---
 

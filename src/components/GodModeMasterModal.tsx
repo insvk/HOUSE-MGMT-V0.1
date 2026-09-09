@@ -499,7 +499,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
     if (onAddNotificationLog) {
       onAddNotificationLog({
         maintenanceRecordId: currentRecord.id,
-        recipientEmail: announcementRecipient === 'all' ? 'all-residents@madurahouse.local' : announcementRecipient,
+        recipientEmail: announcementRecipient === 'all' ? 'all-residents@chemadur.com' : announcementRecipient,
         type: announcementType,
         subject: announcementSubject.trim(),
         status: 'sent',

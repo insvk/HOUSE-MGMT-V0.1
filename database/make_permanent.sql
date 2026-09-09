@@ -171,8 +171,10 @@ DROP POLICY IF EXISTS "audit_logs_all_policy" ON audit_logs;
 CREATE POLICY "audit_logs_all_policy" ON audit_logs FOR ALL TO public USING (true) WITH CHECK (true);
 
 -- ==============================================================================
--- 4. INSERT / UPSERT PERMANENT USERS
+-- 4. PURGE LEGACY DUMMY USERS & INSERT / UPSERT PERMANENT OWNER ACCOUNT
 -- ==============================================================================
+
+DELETE FROM users WHERE email LIKE '%@madurahouse.local' OR email LIKE 'admin.tenant%';
 
 -- Owner: Sampath Kumar
 INSERT INTO users (id, email, password, phone, full_name, flat_number, occupancy_status)
@@ -219,8 +221,7 @@ VALUES (
 -- ==============================================================================
 
 INSERT INTO roles (user_id, house_id, role_type) VALUES
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '11111111-2222-3333-4444-555555555555', 'OWNER'),
-('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', '11111111-2222-3333-4444-555555555555', 'ADMIN_TENANT')
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '11111111-2222-3333-4444-555555555555', 'OWNER')
 ON CONFLICT (user_id, house_id) DO UPDATE SET
   role_type = EXCLUDED.role_type,
   updated_at = timezone('utc'::text, now());

@@ -515,7 +515,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   type="text"
                   value={resendFromInput}
                   onChange={(e) => setResendFromInput(e.target.value)}
-                  placeholder="notifications@madurahouse.local"
+                  placeholder="notifications@chemadur.com"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">

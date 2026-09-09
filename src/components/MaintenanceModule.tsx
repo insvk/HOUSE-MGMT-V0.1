@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MaintenanceRecord, Expense, ExpenseCategory, UserRole } from '../types';
+import { MaintenanceRecord, Expense, ExpenseCategory, UserRole, User } from '../types';
 import { 
   Plus, 
   Trash2, 
@@ -27,6 +27,7 @@ interface MaintenanceModuleProps {
   records: MaintenanceRecord[];
   activeRecord: MaintenanceRecord;
   currentUserRole: UserRole;
+  currentUser?: User;
   onSelectRecord: (recordId: string) => void;
   onAddExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
   onOpenEditExpense?: (expense: Expense) => void;
@@ -39,6 +40,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   records,
   activeRecord,
   currentUserRole,
+  currentUser,
   onSelectRecord,
   onAddExpense,
   onOpenEditExpense,
@@ -87,7 +89,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
       gstApplicable,
       gstAmount: gstApplicable && gstAmount ? parseFloat(gstAmount) : 0,
       notes,
-      addedBy: currentUserRole === 'OWNER' ? 'Sampath Kumar' : 'Rajesh Kumar',
+      addedBy: currentUser?.fullName || (currentUserRole === 'OWNER' ? 'Sampath Kumar' : 'Property Administrator'),
       invoiceUrl,
       invoiceFileName,
       invoiceFileType,

@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { User, MaintenanceRecord, Expense, Invoice, NotificationLog, House } from '../types';
+import { isDummyLegacyAccount } from '../data/initialData';
 
 // Environment variables with fallback
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -116,7 +117,7 @@ export const cloudDb = {
     }
   },
 
-  // Fetch Users
+  // Fetch Users (Filtered: legitimate production accounts only)
   async getUsers(): Promise<User[] | null> {
     if (!isSupabaseConfigured || !supabase) return null;
     try {
@@ -127,23 +128,25 @@ export const cloudDb = {
 
       if (error) throw error;
 
-      return (data || []).map((u: any) => ({
-        id: u.id,
-        email: u.email,
-        password: u.password,
-        phone: u.phone || '',
-        fullName: u.full_name || '',
-        flatNumber: u.flat_number || 'GF',
-        role: u.role || 'TENANT',
-        occupancyStatus: u.occupancy_status || 'active',
-        paymentStatus: u.payment_status || 'paid',
-        avatarUrl: u.avatar_url,
-        moveInDate: u.move_in_date,
-        rentAmount: u.rent_amount ? Number(u.rent_amount) : 0,
-        depositAmount: u.deposit_amount ? Number(u.deposit_amount) : 0,
-        emergencyContact: u.emergency_contact,
-        notes: u.notes,
-      }));
+      return (data || [])
+        .filter((u: any) => u.email && !isDummyLegacyAccount(u.email))
+        .map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          password: u.password,
+          phone: u.phone || '',
+          fullName: u.full_name || '',
+          flatNumber: u.flat_number || 'GF',
+          role: u.role || 'TENANT',
+          occupancyStatus: u.occupancy_status || 'active',
+          paymentStatus: u.payment_status || 'paid',
+          avatarUrl: u.avatar_url,
+          moveInDate: u.move_in_date,
+          rentAmount: u.rent_amount ? Number(u.rent_amount) : 0,
+          depositAmount: u.deposit_amount ? Number(u.deposit_amount) : 0,
+          emergencyContact: u.emergency_contact,
+          notes: u.notes,
+        }));
     } catch (err) {
       console.warn('Cloud DB fetch users fallback:', err);
       return null;

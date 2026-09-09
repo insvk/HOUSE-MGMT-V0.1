@@ -53,7 +53,7 @@ export const getResendFromEmail = (): string => {
     const saved = localStorage.getItem(RESEND_FROM_STORAGE_KEY);
     if (saved && saved.trim()) return saved.trim();
   }
-  return (import.meta.env.VITE_RESEND_FROM_EMAIL || 'notifications@madurahouse.local').trim();
+  return (import.meta.env.VITE_RESEND_FROM_EMAIL || 'notifications@chemadur.com').trim();
 };
 
 export const setResendFromEmail = (fromEmail: string): void => {

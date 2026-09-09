@@ -495,7 +495,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ramesh Krishnan"
+                    placeholder="e.g. Anand Sundaram"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
@@ -507,7 +507,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                   <input
                     type="email"
                     required
-                    placeholder="tenant@madurahouse.local"
+                    placeholder="resident@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
