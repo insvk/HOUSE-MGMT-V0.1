@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { MaintenanceRecord, User, UserRole, Expense, House, Invoice, NotificationLog } from '../types';
 import { GodModeMasterModal, GodModeTab } from './GodModeMasterModal';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
+import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
 import { 
   Building2, 
   IndianRupee, 
@@ -111,6 +113,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const [timeFilter, setTimeFilter] = useState<'All' | '1M' | '6M' | '1Y'>('1M');
   const [selectedSort, setSelectedSort] = useState<'Today' | 'Monthly' | 'Yearly'>('Monthly');
+  const [dashboardInvoicePreview, setDashboardInvoicePreview] = useState<InvoicePreviewData | null>(null);
 
   // God Mode Master Modal State (Exclusively for Sampath Kumar / Owner)
   const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUserRole === 'OWNER';
@@ -629,9 +632,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 ) : (
                   currentRecord.expenses.map((exp) => (
                     <tr key={exp.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 align-top">
                         <div className="font-semibold text-slate-800">{exp.particular}</div>
                         <div className="text-[10px] text-slate-400">{new Date(exp.createdAt).toLocaleDateString()}</div>
+                        <InvoiceAttachmentPill
+                          expense={exp}
+                          onOpenPreview={(inv) => setDashboardInvoicePreview(inv)}
+                          onQuickAttach={onOpenEditExpense}
+                        />
                       </td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
@@ -1016,6 +1024,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
+      {/* Universal Invoice Preview Modal */}
+      <InvoicePreviewModal
+        invoice={dashboardInvoicePreview}
+        onClose={() => setDashboardInvoicePreview(null)}
+      />
     </div>
   );
 };

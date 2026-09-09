@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MaintenanceRecord, Expense, ExpenseCategory, UserRole } from '../types';
 import { 
   Plus, 
@@ -13,8 +13,15 @@ import {
   Edit3,
   CheckCircle2,
   Filter,
-  Download
+  Download,
+  UploadCloud,
+  Paperclip,
+  Eye,
+  X
 } from 'lucide-react';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
+import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
+import { processInvoiceFile } from '../utils/imageUtils';
 
 interface MaintenanceModuleProps {
   records: MaintenanceRecord[];
@@ -39,6 +46,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   onExportExcel,
   onExportPDF,
 }) => {
+  const [previewInvoice, setPreviewInvoice] = useState<InvoicePreviewData | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [particular, setParticular] = useState('');
   const [amount, setAmount] = useState('');
@@ -46,6 +54,25 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   const [gstApplicable, setGstApplicable] = useState(false);
   const [gstAmount, setGstAmount] = useState('');
   const [notes, setNotes] = useState('');
+  const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined);
+  const [invoiceFileName, setInvoiceFileName] = useState<string | undefined>(undefined);
+  const [invoiceFileType, setInvoiceFileType] = useState<string | undefined>(undefined);
+  const [invoiceFileSize, setInvoiceFileSize] = useState<number | undefined>(undefined);
+  const invoiceFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleInvoiceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const processed = await processInvoiceFile(file);
+      setInvoiceUrl(processed.dataUrl);
+      setInvoiceFileName(processed.fileName);
+      setInvoiceFileType(processed.fileType);
+      setInvoiceFileSize(processed.fileSize);
+    } catch (err: any) {
+      alert(err.message || 'Failed to process file');
+    }
+  };
 
   const handleCreateExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +88,11 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
       gstAmount: gstApplicable && gstAmount ? parseFloat(gstAmount) : 0,
       notes,
       addedBy: currentUserRole === 'OWNER' ? 'Sampath Kumar' : 'Rajesh Kumar',
+      invoiceUrl,
+      invoiceFileName,
+      invoiceFileType,
+      invoiceFileSize,
+      ocrText: invoiceFileName ? `Verified invoice document: ${invoiceFileName}` : undefined,
     };
 
     onAddExpense(newExpense);
@@ -70,6 +102,10 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     setNotes('');
     setGstApplicable(false);
     setGstAmount('');
+    setInvoiceUrl(undefined);
+    setInvoiceFileName(undefined);
+    setInvoiceFileType(undefined);
+    setInvoiceFileSize(undefined);
   };
 
   const monthNames = [
@@ -184,6 +220,12 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                     {exp.notes && (
                       <p className="text-[11px] text-slate-500 mt-0.5">{exp.notes}</p>
                     )}
+                    <InvoiceAttachmentPill
+                      expense={exp}
+                      onOpenPreview={(inv) => setPreviewInvoice(inv)}
+                      onQuickAttach={onOpenEditExpense}
+                      size="sm"
+                    />
                   </div>
                   <div className="text-right">
                     <div className="text-xs font-bold text-slate-900">
@@ -252,7 +294,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
             <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
               <tr>
                 <th className="py-3 px-4">#</th>
-                <th className="py-3 px-4">Particulars / Description</th>
+                <th className="py-3 px-4">Particulars & Invoice Attachment</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 text-right">Amount (₹)</th>
                 <th className="py-3 px-4 text-center">GST Detail</th>
@@ -272,10 +314,15 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
               ) : (
                 activeRecord.expenses.map((exp, idx) => (
                   <tr key={exp.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{idx + 1}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 font-mono text-slate-400 align-top">{idx + 1}</td>
+                    <td className="py-3.5 px-4 align-top">
                       <div className="font-bold text-slate-800">{exp.particular}</div>
                       {exp.notes && <div className="text-[11px] text-slate-500 mt-0.5">{exp.notes}</div>}
+                      <InvoiceAttachmentPill
+                        expense={exp}
+                        onOpenPreview={(inv) => setPreviewInvoice(inv)}
+                        onQuickAttach={onOpenEditExpense}
+                      />
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
@@ -431,17 +478,61 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
                 />
               </div>
 
+              {/* Invoice Attachment Upload */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Attach Invoice File (PDF / JPG / PNG)
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => invoiceFileInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-[#405189]" />
+                    {invoiceFileName ? 'Replace Invoice File' : 'Upload Invoice PDF / JPG'}
+                  </button>
+                  <input
+                    ref={invoiceFileInputRef}
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={handleInvoiceUpload}
+                    className="hidden"
+                  />
+
+                  {invoiceFileName && (
+                    <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded text-indigo-900 text-xs">
+                      <Paperclip className="w-3.5 h-3.5 text-indigo-600" />
+                      <span className="font-semibold truncate max-w-[150px]">{invoiceFileName}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInvoiceUrl(undefined);
+                          setInvoiceFileName(undefined);
+                          setInvoiceFileType(undefined);
+                          setInvoiceFileSize(undefined);
+                        }}
+                        className="text-rose-500 hover:text-rose-700 font-bold ml-1 cursor-pointer"
+                        title="Remove file"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-semibold shadow-sm"
+                  className="px-4 py-1.5 rounded bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-semibold shadow-sm cursor-pointer"
                 >
                   Add Item
                 </button>
@@ -450,6 +541,12 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
           </div>
         </div>
       )}
+
+      {/* Universal Invoice Preview Modal */}
+      <InvoicePreviewModal
+        invoice={previewInvoice}
+        onClose={() => setPreviewInvoice(null)}
+      />
     </div>
   );
 };

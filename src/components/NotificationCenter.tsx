@@ -35,6 +35,8 @@ import {
   BulkDispatchSummary 
 } from '../lib/resendClient';
 import { initialExpenses } from '../data/initialData';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
+import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
 
 interface NotificationCenterProps {
   logs: NotificationLog[];
@@ -91,6 +93,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const expensesList: Expense[] = (activeRecord.expenses && activeRecord.expenses.length > 0)
     ? activeRecord.expenses
     : initialExpenses;
+  
+  const [notifInvoicePreview, setNotifInvoicePreview] = useState<InvoicePreviewData | null>(null);
   
   const calculatedGrandTotal: number = expensesList.reduce((sum: number, e: Expense) => sum + (Number(e.amount) || 0), 0);
   const payingUnits: number = activeRecord.activeTenantsCount || 5;
@@ -381,10 +385,18 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   <tbody className="divide-y divide-slate-100">
                     {expensesList.map((exp, idx) => (
                       <tr key={exp.id || idx} className="hover:bg-slate-50">
-                        <td className="py-1.5 px-3 text-slate-400 font-mono">#{idx + 1}</td>
-                        <td className="py-1.5 px-3 font-medium text-slate-800">{exp.particular}</td>
-                        <td className="py-1.5 px-3 uppercase text-[10px] font-bold text-[#405189]">{exp.category}</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold text-slate-900">
+                        <td className="py-2 px-3 text-slate-400 font-mono align-top">#{idx + 1}</td>
+                        <td className="py-2 px-3 font-medium text-slate-800 align-top">
+                          <div className="font-semibold text-slate-900">{exp.particular}</div>
+                          {exp.notes && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{exp.notes}</div>}
+                          <InvoiceAttachmentPill
+                            expense={exp}
+                            onOpenPreview={(inv) => setNotifInvoicePreview(inv)}
+                            size="sm"
+                          />
+                        </td>
+                        <td className="py-2 px-3 uppercase text-[10px] font-bold text-[#405189] align-top">{exp.category}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 align-top">
                           ₹{exp.amount.toLocaleString('en-IN')}
                         </td>
                       </tr>
@@ -700,6 +712,12 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           </div>
         </div>
       )}
+
+      {/* Universal Invoice Preview Modal */}
+      <InvoicePreviewModal
+        invoice={notifInvoicePreview}
+        onClose={() => setNotifInvoicePreview(null)}
+      />
     </div>
   );
 };

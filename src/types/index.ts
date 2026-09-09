@@ -52,6 +52,11 @@ export interface Expense {
   notes?: string;
   addedBy: string;
   createdAt: string;
+  invoiceUrl?: string;
+  invoiceFileName?: string;
+  invoiceFileType?: string;
+  invoiceFileSize?: number;
+  ocrText?: string;
 }
 
 export interface MaintenanceRecord {

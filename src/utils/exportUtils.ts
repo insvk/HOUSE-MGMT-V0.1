@@ -23,18 +23,19 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
     [`Statement Reference ID: ${record.id.toUpperCase()}`],
     [], // Blank line
     // Table Header
-    ['S.No', 'Particulars / Description', 'Category', 'Base Amount (INR)', 'GST Applicable', 'GST Amount (INR)', 'Total Amount (INR)', 'Added By', 'Date Recorded']
+    ['S.No', 'Particulars / Description', 'Category', 'Attached Invoice / Voucher', 'Base Amount (INR)', 'GST Applicable', 'GST Amount (INR)', 'Total Amount (INR)', 'Added By', 'Date Recorded']
   ];
 
   // 2. Line Items
   if (record.expenses.length === 0) {
-    worksheetData.push(['-', 'No maintenance expenses recorded for this billing cycle', '-', 0, 'No', 0, 0, '-', '-']);
+    worksheetData.push(['-', 'No maintenance expenses recorded for this billing cycle', '-', '-', 0, 'No', 0, 0, '-', '-']);
   } else {
     record.expenses.forEach((exp: Expense, index: number) => {
       worksheetData.push([
         index + 1,
         exp.particular,
         exp.category.toUpperCase(),
+        exp.invoiceFileName || 'Pending Upload',
         exp.amount,
         exp.gstApplicable ? 'Yes' : 'No',
         exp.gstAmount || 0,
@@ -47,9 +48,9 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
 
   // 3. Totals & Financial Summary
   worksheetData.push([]);
-  worksheetData.push(['', 'GRAND TOTAL EXPENDITURE', '', '', '', '', record.grandTotal, '', '']);
-  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', record.activeTenantsCount || 5, '', '']);
-  worksheetData.push(['', 'EQUAL PER-FLAT SHARE DUE', '', '', '', '', Number(record.individualContribution.toFixed(2)), '', '']);
+  worksheetData.push(['', 'GRAND TOTAL EXPENDITURE', '', '', '', '', '', record.grandTotal, '', '']);
+  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', '', record.activeTenantsCount || 5, '', '']);
+  worksheetData.push(['', 'EQUAL PER-FLAT SHARE DUE', '', '', '', '', '', Number(record.individualContribution.toFixed(2)), '', '']);
   worksheetData.push([]);
   worksheetData.push(['Notes / Remarks:', record.notes || 'Official audited maintenance record for Madura House.']);
   worksheetData.push(['Generated On:', new Date().toLocaleString('en-IN')]);
@@ -179,7 +180,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
     ? [['-', 'No expenses recorded for this billing cycle yet', '-', '0.00', '0.00', '0.00', '-']]
     : record.expenses.map((exp: Expense, idx: number) => [
         (idx + 1).toString(),
-        exp.particular,
+        exp.invoiceFileName ? `${exp.particular}\n[Voucher: ${exp.invoiceFileName}]` : exp.particular,
         exp.category.toUpperCase(),
         `Rs. ${exp.amount.toLocaleString('en-IN')}`,
         exp.gstApplicable ? `Rs. ${exp.gstAmount || 0}` : 'Exempt',

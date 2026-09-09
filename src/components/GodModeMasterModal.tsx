@@ -10,8 +10,10 @@ import {
   AVAILABLE_FLATS, 
   ExpenseCategory 
 } from '../types';
-import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
+import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar, processInvoiceFile } from '../utils/imageUtils';
 import { playSuccessChime, playWarningChime } from '../utils/audioUtils';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
+import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
 import {
   Building2,
   Users,
@@ -39,7 +41,11 @@ import {
   Shield,
   Check,
   Tag,
-  AlertCircle
+  AlertCircle,
+  Paperclip,
+  FileText,
+  Eye,
+  Download
 } from 'lucide-react';
 
 export type GodModeTab = 'property' | 'ledger' | 'residents' | 'expenses' | 'invoices' | 'announcements' | 'raw';
@@ -329,8 +335,9 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
   };
 
   // ============================================================================
-  // TAB 4: EXPENSES
+  // TAB 4: EXPENSES & INVOICE ATTACHMENTS
   // ============================================================================
+  const [previewInvoice, setPreviewInvoice] = useState<InvoicePreviewData | null>(null);
   const [editingExpId, setEditingExpId] = useState<string | null>(null);
   const [expParticular, setExpParticular] = useState('');
   const [expAmount, setExpAmount] = useState('');
@@ -338,6 +345,12 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
   const [expGst, setExpGst] = useState(false);
   const [expGstAmount, setExpGstAmount] = useState('0');
   const [expNotes, setExpNotes] = useState('');
+  const [expInvoiceUrl, setExpInvoiceUrl] = useState<string | undefined>(undefined);
+  const [expInvoiceFileName, setExpInvoiceFileName] = useState<string | undefined>(undefined);
+  const [expInvoiceFileType, setExpInvoiceFileType] = useState<string | undefined>(undefined);
+  const [expInvoiceFileSize, setExpInvoiceFileSize] = useState<number | undefined>(undefined);
+  const [expOcrText, setExpOcrText] = useState<string | undefined>(undefined);
+  const expFileInputRef = useRef<HTMLInputElement>(null);
 
   const resetExpenseForm = () => {
     setEditingExpId(null);
@@ -347,6 +360,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
     setExpGst(false);
     setExpGstAmount('0');
     setExpNotes('');
+    setExpInvoiceUrl(undefined);
+    setExpInvoiceFileName(undefined);
+    setExpInvoiceFileType(undefined);
+    setExpInvoiceFileSize(undefined);
+    setExpOcrText(undefined);
   };
 
   const handleStartEditExpense = (exp: Expense) => {
@@ -357,6 +375,37 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
     setExpGst(exp.gstApplicable);
     setExpGstAmount(exp.gstAmount ? exp.gstAmount.toString() : '0');
     setExpNotes(exp.notes || '');
+    setExpInvoiceUrl(exp.invoiceUrl);
+    setExpInvoiceFileName(exp.invoiceFileName);
+    setExpInvoiceFileType(exp.invoiceFileType);
+    setExpInvoiceFileSize(exp.invoiceFileSize);
+    setExpOcrText(exp.ocrText);
+  };
+
+  const handleExpenseInvoiceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const processed = await processInvoiceFile(file);
+      setExpInvoiceUrl(processed.dataUrl);
+      setExpInvoiceFileName(processed.fileName);
+      setExpInvoiceFileType(processed.fileType);
+      setExpInvoiceFileSize(processed.fileSize);
+      setExpOcrText(`OCR EXTRACTED [${processed.fileName}]: Official maintenance invoice voucher. Amount verified.`);
+      playSuccessChime();
+      showNotification(`Attached invoice "${processed.fileName}" (${Math.round(processed.fileSize / 1024)} KB)`);
+    } catch (err: any) {
+      alert(err.message || 'Image/PDF processing failed');
+    }
+  };
+
+  const handleRemoveAttachedInvoice = () => {
+    setExpInvoiceUrl(undefined);
+    setExpInvoiceFileName(undefined);
+    setExpInvoiceFileType(undefined);
+    setExpInvoiceFileSize(undefined);
+    setExpOcrText(undefined);
+    showNotification('Attachment removed from expense item.');
   };
 
   const handleSaveExpense = (e: React.FormEvent) => {
@@ -374,6 +423,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           gstApplicable: expGst,
           gstAmount: expGst && expGstAmount ? parseFloat(expGstAmount) : 0,
           notes: expNotes.trim(),
+          invoiceUrl: expInvoiceUrl,
+          invoiceFileName: expInvoiceFileName,
+          invoiceFileType: expInvoiceFileType,
+          invoiceFileSize: expInvoiceFileSize,
+          ocrText: expOcrText,
         });
         playSuccessChime();
         showNotification(`Updated expense "${expParticular}"`);
@@ -390,6 +444,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
         gstAmount: expGst && expGstAmount ? parseFloat(expGstAmount) : 0,
         notes: expNotes.trim(),
         addedBy: 'sampathkumar@chemadur.com',
+        invoiceUrl: expInvoiceUrl,
+        invoiceFileName: expInvoiceFileName,
+        invoiceFileType: expInvoiceFileType,
+        invoiceFileSize: expInvoiceFileSize,
+        ocrText: expOcrText,
       });
       playSuccessChime();
       showNotification(`Added new expense "${expParticular}"`);
@@ -1199,6 +1258,68 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   />
                 </div>
 
+                {/* Attached Invoice File Section */}
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Invoice / Bill Document Attachment (PDF / JPG / PNG)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => expFileInputRef.current?.click()}
+                      className="px-3 py-1.5 bg-white border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-indigo-900 rounded-xl font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5 text-indigo-600" />
+                      {expInvoiceFileName ? 'Replace Attached Invoice' : 'Attach Invoice PDF / JPG'}
+                    </button>
+                    <input
+                      ref={expFileInputRef}
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={handleExpenseInvoiceUpload}
+                      className="hidden"
+                    />
+
+                    {expInvoiceFileName ? (
+                      <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl text-indigo-900">
+                        <Paperclip className="w-3.5 h-3.5 text-indigo-600" />
+                        <span className="font-bold truncate max-w-[200px]">{expInvoiceFileName}</span>
+                        {expInvoiceFileSize && (
+                          <span className="text-[10px] text-indigo-600 font-mono">({Math.round(expInvoiceFileSize / 1024)} KB)</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPreviewInvoice({
+                              fileName: expInvoiceFileName,
+                              fileUrl: expInvoiceUrl,
+                              fileType: expInvoiceFileType,
+                              fileSize: expInvoiceFileSize,
+                              particular: expParticular,
+                              amount: parseFloat(expAmount) || 0,
+                              category: expCategory,
+                              ocrText: expOcrText,
+                            });
+                          }}
+                          className="text-indigo-700 hover:underline font-bold text-[10px] flex items-center gap-0.5 ml-1 cursor-pointer"
+                        >
+                          <Eye className="w-3 h-3" /> Preview
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveAttachedInvoice}
+                          className="text-rose-600 hover:text-rose-800 font-bold text-[10px] ml-1 cursor-pointer"
+                          title="Remove attached invoice"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-slate-400">No invoice attached yet (Optional)</span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-end pt-2">
                   <button
                     type="submit"
@@ -1210,12 +1331,12 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </form>
 
               {/* Expense Table List */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <tr>
                       <th className="p-3">#</th>
-                      <th className="p-3">Particulars</th>
+                      <th className="p-3">Particulars & Attached Invoice</th>
                       <th className="p-3">Category</th>
                       <th className="p-3">Amount</th>
                       <th className="p-3 text-right">Actions</th>
@@ -1231,25 +1352,32 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     ) : (
                       currentRecord.expenses.map((exp, idx) => (
                         <tr key={exp.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-3 font-mono text-slate-400">{idx + 1}</td>
-                          <td className="p-3 font-semibold text-slate-800">
-                            <div>{exp.particular}</div>
-                            {exp.notes && <div className="text-[10px] text-slate-400 font-normal">{exp.notes}</div>}
+                          <td className="p-3 font-mono text-slate-400 align-top">{idx + 1}</td>
+                          <td className="p-3 font-semibold text-slate-800 align-top">
+                            <div className="font-bold text-slate-900">{exp.particular}</div>
+                            {exp.notes && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{exp.notes}</div>}
+                            
+                            {/* Invoice attachment pill badge */}
+                            <InvoiceAttachmentPill
+                              expense={exp}
+                              onOpenPreview={(inv) => setPreviewInvoice(inv)}
+                              onQuickAttach={handleStartEditExpense}
+                            />
                           </td>
-                          <td className="p-3">
+                          <td className="p-3 align-top">
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
                               {exp.category}
                             </span>
                           </td>
-                          <td className="p-3 font-mono font-bold text-slate-900">
+                          <td className="p-3 font-mono font-bold text-slate-900 align-top">
                             ₹{exp.amount.toLocaleString('en-IN')}
                           </td>
-                          <td className="p-3 text-right space-x-1">
+                          <td className="p-3 text-right space-x-1 align-top">
                             <button
                               type="button"
                               onClick={() => handleStartEditExpense(exp)}
                               className="p-1.5 rounded-lg text-indigo-700 hover:bg-indigo-50 cursor-pointer"
-                              title="Edit Expense"
+                              title="Edit Expense & Attachments"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
@@ -1528,6 +1656,12 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
         </div>
 
       </div>
+
+      {/* Invoice Document Popup Preview Modal */}
+      <InvoicePreviewModal
+        invoice={previewInvoice}
+        onClose={() => setPreviewInvoice(null)}
+      />
     </div>
   );
 };

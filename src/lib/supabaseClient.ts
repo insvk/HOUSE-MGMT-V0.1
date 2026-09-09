@@ -293,6 +293,11 @@ export const cloudDb = {
           notes: e.notes,
           addedBy: e.added_by,
           createdAt: e.created_at,
+          invoiceUrl: e.invoice_url || e.invoiceUrl,
+          invoiceFileName: e.invoice_file_name || e.invoiceFileName,
+          invoiceFileType: e.invoice_file_type || e.invoiceFileType,
+          invoiceFileSize: e.invoice_file_size || e.invoiceFileSize,
+          ocrText: e.ocr_text || e.ocrText,
         })),
       }));
     } catch (err) {
@@ -399,7 +404,7 @@ export const cloudDb = {
         ? currentUserId
         : 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
-      const { error } = await supabase.from('expenses').upsert({
+      const payload: any = {
         id: validId,
         maintenance_record_id: validRecordId,
         sl_no: expense.slNo || 1,
@@ -410,7 +415,33 @@ export const cloudDb = {
         gst_amount: Number(expense.gstAmount) || 0,
         notes: expense.notes || '',
         added_by: addedBy,
-      }, { onConflict: 'id' });
+      };
+
+      if (expense.invoiceUrl) payload.invoice_url = expense.invoiceUrl;
+      if (expense.invoiceFileName) payload.invoice_file_name = expense.invoiceFileName;
+      if (expense.invoiceFileType) payload.invoice_file_type = expense.invoiceFileType;
+      if (expense.invoiceFileSize) payload.invoice_file_size = expense.invoiceFileSize;
+      if (expense.ocrText) payload.ocr_text = expense.ocrText;
+
+      let { error } = await supabase.from('expenses').upsert(payload, { onConflict: 'id' });
+      
+      // Fallback without extended invoice columns if schema doesn't have them
+      if (error && error.message && error.message.includes('column')) {
+        const basePayload = {
+          id: validId,
+          maintenance_record_id: validRecordId,
+          sl_no: expense.slNo || 1,
+          particular: expense.particular,
+          amount: Number(expense.amount) || 0,
+          category: expense.category || 'maintenance',
+          gst_applicable: Boolean(expense.gstApplicable),
+          gst_amount: Number(expense.gstAmount) || 0,
+          notes: expense.notes || '',
+          added_by: addedBy,
+        };
+        const res = await supabase.from('expenses').upsert(basePayload, { onConflict: 'id' });
+        error = res.error;
+      }
 
       if (error) throw error;
       return true;
@@ -424,9 +455,29 @@ export const cloudDb = {
   async updateExpense(expense: Expense): Promise<boolean> {
     if (!isSupabaseConfigured || !supabase) return false;
     try {
-      const { error } = await supabase
+      const updateData: any = {
+        particular: expense.particular,
+        amount: Number(expense.amount) || 0,
+        category: expense.category,
+        gst_applicable: Boolean(expense.gstApplicable),
+        gst_amount: Number(expense.gstAmount) || 0,
+        notes: expense.notes || '',
+        updated_at: new Date().toISOString(),
+      };
+
+      if (expense.invoiceUrl !== undefined) updateData.invoice_url = expense.invoiceUrl;
+      if (expense.invoiceFileName !== undefined) updateData.invoice_file_name = expense.invoiceFileName;
+      if (expense.invoiceFileType !== undefined) updateData.invoice_file_type = expense.invoiceFileType;
+      if (expense.invoiceFileSize !== undefined) updateData.invoice_file_size = expense.invoiceFileSize;
+      if (expense.ocrText !== undefined) updateData.ocr_text = expense.ocrText;
+
+      let { error } = await supabase
         .from('expenses')
-        .update({
+        .update(updateData)
+        .eq('id', expense.id);
+
+      if (error && error.message && error.message.includes('column')) {
+        const baseUpdate = {
           particular: expense.particular,
           amount: Number(expense.amount) || 0,
           category: expense.category,
@@ -434,8 +485,10 @@ export const cloudDb = {
           gst_amount: Number(expense.gstAmount) || 0,
           notes: expense.notes || '',
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', expense.id);
+        };
+        const res = await supabase.from('expenses').update(baseUpdate).eq('id', expense.id);
+        error = res.error;
+      }
 
       if (error) throw error;
       return true;
@@ -486,6 +539,11 @@ export const cloudDb = {
         notes: e.notes || '',
         addedBy: e.added_by || '',
         createdAt: e.created_at || new Date().toISOString(),
+        invoiceUrl: e.invoice_url || e.invoiceUrl,
+        invoiceFileName: e.invoice_file_name || e.invoiceFileName,
+        invoiceFileType: e.invoice_file_type || e.invoiceFileType,
+        invoiceFileSize: e.invoice_file_size || e.invoiceFileSize,
+        ocrText: e.ocr_text || e.ocrText,
       }));
     } catch (err) {
       console.warn('Cloud DB fetch record expenses fallback:', err);

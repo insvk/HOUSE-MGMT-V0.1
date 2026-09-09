@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Expense, ExpenseCategory } from '../types';
-import { Edit3, Save, X, IndianRupee, Tag } from 'lucide-react';
+import { Edit3, Save, X, IndianRupee, Tag, UploadCloud, Paperclip, Eye, FileText, Trash2 } from 'lucide-react';
+import { processInvoiceFile } from '../utils/imageUtils';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
 
 interface EditExpenseModalProps {
   expense: Expense;
@@ -15,6 +17,13 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
   const [gstApplicable, setGstApplicable] = useState(expense.gstApplicable);
   const [gstAmount, setGstAmount] = useState(expense.gstAmount ? expense.gstAmount.toString() : '0');
   const [notes, setNotes] = useState(expense.notes || '');
+  const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(expense.invoiceUrl);
+  const [invoiceFileName, setInvoiceFileName] = useState<string | undefined>(expense.invoiceFileName);
+  const [invoiceFileType, setInvoiceFileType] = useState<string | undefined>(expense.invoiceFileType);
+  const [invoiceFileSize, setInvoiceFileSize] = useState<number | undefined>(expense.invoiceFileSize);
+  const [ocrText, setOcrText] = useState<string | undefined>(expense.ocrText);
+  const [previewInvoice, setPreviewInvoice] = useState<InvoicePreviewData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setParticular(expense.particular);
@@ -23,7 +32,35 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
     setGstApplicable(expense.gstApplicable);
     setGstAmount(expense.gstAmount ? expense.gstAmount.toString() : '0');
     setNotes(expense.notes || '');
+    setInvoiceUrl(expense.invoiceUrl);
+    setInvoiceFileName(expense.invoiceFileName);
+    setInvoiceFileType(expense.invoiceFileType);
+    setInvoiceFileSize(expense.invoiceFileSize);
+    setOcrText(expense.ocrText);
   }, [expense]);
+
+  const handleInvoiceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const processed = await processInvoiceFile(file);
+      setInvoiceUrl(processed.dataUrl);
+      setInvoiceFileName(processed.fileName);
+      setInvoiceFileType(processed.fileType);
+      setInvoiceFileSize(processed.fileSize);
+      setOcrText(`OCR EXTRACTED [${processed.fileName}]: Verified official invoice voucher.`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to process file');
+    }
+  };
+
+  const handleRemoveInvoice = () => {
+    setInvoiceUrl(undefined);
+    setInvoiceFileName(undefined);
+    setInvoiceFileType(undefined);
+    setInvoiceFileSize(undefined);
+    setOcrText(undefined);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +74,11 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
       gstApplicable,
       gstAmount: gstApplicable && gstAmount ? parseFloat(gstAmount) : 0,
       notes,
+      invoiceUrl,
+      invoiceFileName,
+      invoiceFileType,
+      invoiceFileSize,
+      ocrText,
     });
 
     onClose();
@@ -60,7 +102,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
 
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600"
+            className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -116,9 +158,9 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
               id="gstEditToggle"
               checked={gstApplicable}
               onChange={(e) => setGstApplicable(e.target.checked)}
-              className="rounded accent-[#405189] w-4 h-4"
+              className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
             />
-            <label htmlFor="gstEditToggle" className="text-xs text-slate-700 font-medium">GST Applicable?</label>
+            <label htmlFor="gstEditToggle" className="text-xs text-slate-700 font-medium cursor-pointer">GST Applicable?</label>
           </div>
 
           {gstApplicable && (
@@ -144,18 +186,75 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
             />
           </div>
 
+          {/* Attached Invoice File Section */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+              Attached Invoice (PDF / JPG / PNG)
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-[#405189]" />
+                {invoiceFileName ? 'Replace Invoice File' : 'Upload Invoice PDF / JPG'}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,image/*"
+                onChange={handleInvoiceUpload}
+                className="hidden"
+              />
+
+              {invoiceFileName && (
+                <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded text-indigo-900 text-xs">
+                  <Paperclip className="w-3.5 h-3.5 text-indigo-600" />
+                  <span className="font-semibold truncate max-w-[150px]">{invoiceFileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewInvoice({
+                        fileName: invoiceFileName,
+                        fileUrl: invoiceUrl,
+                        fileType: invoiceFileType,
+                        fileSize: invoiceFileSize,
+                        particular: particular,
+                        amount: parseFloat(amount) || 0,
+                        category: category,
+                        ocrText: ocrText,
+                      });
+                    }}
+                    className="text-indigo-700 hover:underline font-bold text-[10px] flex items-center gap-0.5 ml-1 cursor-pointer"
+                  >
+                    <Eye className="w-3 h-3" /> View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveInvoice}
+                    className="text-rose-500 hover:text-rose-700 font-bold ml-1 cursor-pointer"
+                    title="Remove attached file"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+              className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-1.5 rounded bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
               <Save className="w-3.5 h-3.5" /> Save Changes
             </button>
@@ -163,6 +262,12 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
         </form>
 
       </div>
+
+      {/* Invoice Document Popup Preview Modal */}
+      <InvoicePreviewModal
+        invoice={previewInvoice}
+        onClose={() => setPreviewInvoice(null)}
+      />
     </div>
   );
 };

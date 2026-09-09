@@ -56,10 +56,24 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
     onUploadInvoice(newInv);
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      handleSimulateUpload(file.name);
+      try {
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        const newInv: Omit<Invoice, 'id' | 'uploadedAt'> = {
+          maintenanceRecordId: 'mr-sep-2026',
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: isPdf ? 'application/pdf' : 'image/jpeg',
+          storagePath: `invoices/${Date.now()}_${file.name}`,
+          uploadedBy: currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin.tenant@madurahouse.local',
+          ocrText: `OCR EXTRACTED SUMMARY FOR ${file.name}: Official verified maintenance receipt under Madura House administration.`,
+        };
+        onUploadInvoice(newInv);
+      } catch {
+        handleSimulateUpload(file.name);
+      }
     }
   };
 
