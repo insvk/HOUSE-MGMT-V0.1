@@ -248,38 +248,65 @@ export async function sendBulkMaintenanceEmails({
     const html = generateMaintenanceEmailHtml({ recipient, record, house, senderName });
 
     if (isLive) {
-      // Live Resend API Call
+      // Live Resend API Call (Try Vercel /api/send-email proxy first, then direct endpoint)
       try {
-        const endpoint = getResendEndpoint();
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: fromEmail.includes('@') ? fromEmail : `Madura House <${fromEmail}>`,
-            to: [recipient.email],
-            subject,
-            html,
-          }),
-        });
+        let sent = false;
+        let resData: any = null;
 
-        const data = await response.json();
+        // 1. Try Vercel Serverless proxy
+        try {
+          const proxyRes = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apiKey,
+              from: fromEmail.includes('@') ? fromEmail : `Madura House <${fromEmail}>`,
+              to: [recipient.email],
+              subject,
+              html,
+            }),
+          });
+          if (proxyRes.ok) {
+            resData = await proxyRes.json();
+            if (resData && resData.id) sent = true;
+          }
+        } catch {}
 
-        if (response.ok && data.id) {
+        // 2. Fallback to direct Resend endpoint if proxy not reached
+        if (!sent) {
+          const endpoint = getResendEndpoint();
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: fromEmail.includes('@') ? fromEmail : `Madura House <${fromEmail}>`,
+              to: [recipient.email],
+              subject,
+              html,
+            }),
+          });
+          resData = await response.json();
+          if (response.ok && resData?.id) {
+            sent = true;
+          }
+        }
+
+        if (sent && resData?.id) {
           sentCount++;
           deliveries.push({
             recipientEmail: recipient.email,
             recipientName: recipient.fullName,
             flatNumber: recipient.flatNumber,
             status: 'delivered',
-            messageId: data.id,
+            messageId: resData.id,
             timestamp: new Date().toISOString(),
           });
         } else {
           // Resend rejected the email — report as FAILED, not delivered
-          console.warn(`Resend API rejection for ${recipient.email}:`, data);
+          console.warn(`Resend API rejection for ${recipient.email}:`, resData);
           failedCount++;
           deliveries.push({
             recipientEmail: recipient.email,
@@ -288,7 +315,7 @@ export async function sendBulkMaintenanceEmails({
             status: 'failed',
             messageId: `resend_err_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             timestamp: new Date().toISOString(),
-            error: data.message || 'Email delivery rejected by Resend API',
+            error: resData?.message || 'Email delivery rejected by Resend API',
           });
         }
       } catch (err: any) {

@@ -78,18 +78,20 @@ export function App() {
           parsed.forEach((u: User) => {
             if (!u.email || isDummyLegacyAccount(u.email)) return;
             const existing = map.get(u.email.toLowerCase());
+            const isOwner = u.email.toLowerCase() === 'sampathkumar@chemadur.com';
             if (existing) {
               map.set(u.email.toLowerCase(), {
                 ...existing,
                 ...u,
                 flatNumber: normalizeFlat(u.flatNumber || existing.flatNumber),
                 password: u.password || existing.password,
-                role: u.role || existing.role,
+                role: isOwner ? 'OWNER' : (u.role || existing.role),
               });
             } else {
               map.set(u.email.toLowerCase(), {
                 ...u,
                 flatNumber: normalizeFlat(u.flatNumber),
+                role: isOwner ? 'OWNER' : (u.role || 'TENANT'),
               });
             }
           });
