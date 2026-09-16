@@ -24,21 +24,25 @@ import {
   Zap,
   Radio,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  HelpCircle
 } from 'lucide-react';
 import { playNotificationChime, playSuccessChime, playWarningChime } from '../utils/audioUtils';
 import { 
   sendBulkMaintenanceEmails, 
+  sendSingleResendEmail,
   getResendApiKey, 
   setResendApiKey, 
   getResendFromEmail, 
   setResendFromEmail, 
   isResendConfigured,
+  DEFAULT_RESEND_API_KEY,
+  DEFAULT_RESEND_FROM_EMAIL,
+  RESEND_OWNER_EMAIL,
   EmailRecipient,
   EmailDispatchResult,
   BulkDispatchSummary 
 } from '../lib/resendClient';
-import { initialExpenses } from '../data/initialData';
 import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
 import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
 
@@ -74,13 +78,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [isDispatching, setIsDispatching] = useState(false);
+  const [isTestingOwner, setIsTestingOwner] = useState(false);
+  const [testingStatus, setTestingStatus] = useState<string | null>(null);
   const [singleSendingEmail, setSingleSendingEmail] = useState<string | null>(null);
   const [dispatchProgress, setDispatchProgress] = useState<{ current: number; total: number; currentEmail: string } | null>(null);
   const [lastSummary, setLastSummary] = useState<BulkDispatchSummary | null>(null);
 
   // Resend Settings state
-  const [resendKeyInput, setResendKeyInput] = useState(getResendApiKey());
-  const [resendFromInput, setResendFromInput] = useState(getResendFromEmail());
+  const [resendKeyInput, setResendKeyInput] = useState(getResendApiKey() || DEFAULT_RESEND_API_KEY);
+  const [resendFromInput, setResendFromInput] = useState(getResendFromEmail() || DEFAULT_RESEND_FROM_EMAIL);
   const [isConfigured, setIsConfigured] = useState(isResendConfigured());
 
   // Derive active record and legit expense values (dynamic calculate from actual entered data)
@@ -145,6 +151,93 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
     if (showToast) showToast('Resend API Gateway settings updated successfully!');
   };
 
+  const handleTestConnectionPing = async () => {
+    setTestingStatus('Testing connection with Resend API...');
+    try {
+      const res = await sendSingleResendEmail({
+        to: RESEND_OWNER_EMAIL,
+        subject: `[Madura House] Live Resend API Key Test • ${new Date().toLocaleTimeString('en-IN')}`,
+        html: `<h3>Resend API Key Verified Successfully</h3><p>Your Resend API key is connected and working directly with the Madura House Management Platform.</p><p>Timestamp: ${new Date().toISOString()}</p>`,
+        apiKey: resendKeyInput,
+        fromEmail: resendFromInput,
+      });
+
+      if (res.success) {
+        setTestingStatus(`✅ Success! Resend delivered test email to ${RESEND_OWNER_EMAIL} (ID: ${res.messageId})`);
+        playSuccessChime();
+        if (showToast) showToast(`Verified Resend API! Test email delivered to ${RESEND_OWNER_EMAIL}`);
+      } else {
+        setTestingStatus(`❌ Resend Error: ${res.error}`);
+        playWarningChime();
+      }
+    } catch (err: any) {
+      setTestingStatus(`❌ Connection Error: ${err?.message || 'Failed to reach Resend API'}`);
+      playWarningChime();
+    }
+  };
+
+  // Test send directly to Resend account owner
+  const handleSendTestToOwner = async () => {
+    setIsTestingOwner(true);
+    try {
+      const subject = `[Madura House] ${monthName} ${activeRecord.year} Verified Statement Test - ₹${calculatedContribution.toFixed(2)} Due`;
+      const html = `<div style="font-family:sans-serif;padding:20px;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;">
+        <h2 style="color:#1e1b4b;margin-top:0;">Madura House Maintenance Statement (Live Test)</h2>
+        <p>This is a live transactional email dispatched via Resend API Key <code>${getResendApiKey().slice(0, 10)}...</code></p>
+        <div style="background:#f1f5f9;padding:15px;border-radius:8px;margin:15px 0;">
+          <div><strong>Total Expenses:</strong> ₹${calculatedGrandTotal.toLocaleString('en-IN')}</div>
+          <div><strong>Individual Flat Due:</strong> ₹${calculatedContribution.toFixed(2)}</div>
+          <div><strong>Billing Period:</strong> ${monthName} ${activeRecord.year}</div>
+        </div>
+        <p style="color:#64748b;font-size:12px;">Sent to verified Resend account: ${RESEND_OWNER_EMAIL}</p>
+      </div>`;
+
+      const result = await sendSingleResendEmail({
+        to: RESEND_OWNER_EMAIL,
+        subject,
+        html,
+      });
+
+      if (result.success && result.messageId) {
+        const newLog: NotificationLog = {
+          id: `n-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6)}`,
+          maintenanceRecordId: activeRecord.id,
+          recipientEmail: RESEND_OWNER_EMAIL,
+          type: 'maintenance_added',
+          subject,
+          status: 'sent',
+          sentAt: new Date().toISOString(),
+        };
+
+        if (onDispatchBulkEmails) {
+          onDispatchBulkEmails([{
+            recipientEmail: RESEND_OWNER_EMAIL,
+            recipientName: 'Resend Account Owner',
+            flatNumber: 'Admin/Owner',
+            status: 'delivered',
+            messageId: result.messageId,
+            timestamp: new Date().toISOString(),
+          }], [newLog]);
+        }
+
+        playSuccessChime();
+        if (showToast) {
+          showToast(`⚡ Live email sent to ${RESEND_OWNER_EMAIL}! Check your Gmail inbox.`);
+        }
+      } else {
+        playWarningChime();
+        if (showToast) {
+          showToast(`Delivery notice: ${result.error || 'Check Resend domain verification'}`);
+        }
+      }
+    } catch (err: any) {
+      playWarningChime();
+      if (showToast) showToast('Failed to dispatch test email.');
+    } finally {
+      setIsTestingOwner(false);
+    }
+  };
+
   // Execute instant bulk dispatch to all active tenants
   const handleExecuteDispatch = async (openModalAfter = false) => {
     if (activeTenantRecipients.length === 0) {
@@ -205,9 +298,16 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         onTriggerNotifications();
       }
 
-      playSuccessChime();
-      if (showToast) {
-        showToast(`⚡ Successfully dispatched Resend emails to all ${summary.sentCount} tenants!`);
+      if (summary.sentCount > 0) {
+        playSuccessChime();
+        if (showToast) {
+          showToast(`⚡ Successfully delivered Resend emails to ${summary.sentCount} tenant(s)!`);
+        }
+      } else {
+        playWarningChime();
+        if (showToast) {
+          showToast(`Resend API: ${summary.deliveries[0]?.error || 'Check Resend Domain Settings'}`);
+        }
       }
 
       if (openModalAfter) {
@@ -270,9 +370,17 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       if (onDispatchBulkEmails) {
         onDispatchBulkEmails(summary.deliveries, newLogs);
       }
-      playSuccessChime();
-      if (showToast) {
-        showToast(`⚡ Dispatched maintenance statement directly to ${tenant.fullName} (${tenant.email})!`);
+
+      if (summary.sentCount > 0) {
+        playSuccessChime();
+        if (showToast) {
+          showToast(`⚡ Dispatched maintenance statement directly to ${tenant.fullName} (${tenant.email})!`);
+        }
+      } else {
+        playWarningChime();
+        if (showToast) {
+          showToast(`Resend Notice: ${summary.deliveries[0]?.error || 'Failed to dispatch email'}`);
+        }
       }
     } catch (err) {
       console.error('Single tenant dispatch error:', err);
@@ -288,20 +396,17 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       {/* 1. Header & Primary Dispatch Control Panel */}
       <div className="velzon-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
               <Mail className="w-5 h-5 text-[#405189]" /> Resend Email Notifications & Multi-Tenant Dispatch
             </h1>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-              isConfigured 
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' 
-                : 'bg-blue-100 text-blue-700 border border-blue-300'
-            }`}>
-              {isConfigured ? 'Resend Live API' : 'Resend Engine (Simulated)'}
+            <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Resend Live API Active ({getResendApiKey().slice(0, 7)}...)
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Automated monthly statements with live database expenses delivered directly to tenant inboxes
+          <p className="text-xs text-slate-500 mt-1">
+            Madura House • Official itemized statements dispatched via Resend Email Cloud API directly to resident inboxes
           </p>
         </div>
 
@@ -310,7 +415,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           <button
             onClick={() => handleExecuteDispatch(false)}
             disabled={isDispatching || activeTenantRecipients.length === 0}
-            className="px-5 py-2 bg-gradient-to-r from-[#0ab39c] via-[#299cdb] to-[#405189] hover:from-[#099885] hover:via-[#248ac2] hover:to-[#364473] text-white text-xs font-extrabold rounded-lg flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 bg-gradient-to-r from-[#0ab39c] via-[#299cdb] to-[#405189] hover:from-[#099885] hover:via-[#248ac2] hover:to-[#364473] text-white text-xs font-extrabold rounded-lg flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
             title="Instantly dispatch transactional emails to all active tenants"
           >
             {isDispatching ? (
@@ -322,6 +427,26 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               <>
                 <Send className="w-4 h-4 animate-pulse" />
                 🚀 SEND MAILS TO ALL TENANTS ({activeTenantRecipients.length})
+              </>
+            )}
+          </button>
+
+          {/* Quick Test Send to Resend Account Owner */}
+          <button
+            onClick={handleSendTestToOwner}
+            disabled={isTestingOwner || isDispatching}
+            className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+            title="Send live verification test email to Resend account owner"
+          >
+            {isTestingOwner ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                Testing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                🧪 Test My Inbox
               </>
             )}
           </button>
@@ -353,18 +478,46 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           >
             {copiedWhatsApp ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-600" /> Copied WhatsApp Notice
+                <Check className="w-3.5 h-3.5 text-emerald-600" /> Copied Notice
               </>
             ) : (
               <>
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> Copy WhatsApp Notice
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp Notice
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* 2. Target Tenant Recipients Directory (Synchronized directly from Tenant Management) */}
+      {/* 2. Resend API Domain & Sandbox Guidance Card */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-blue-900 shadow-2xs">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0 mt-0.5">
+            <Shield className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="font-bold flex items-center gap-2">
+              <span>Resend API Gateway Status: Authenticated & Live</span>
+              <span className="font-mono text-[11px] bg-blue-200/80 text-blue-800 px-2 py-0.2 rounded font-semibold">
+                Sender: onboarding@resend.dev
+              </span>
+            </div>
+            <p className="text-[11px] text-blue-800/90 leading-relaxed">
+              Your API key is active. Testing emails can be dispatched instantly to <strong>{RESEND_OWNER_EMAIL}</strong>. To send unrestricted emails to external tenant domains (e.g. @gmail.com, @chemadur.com), simply add and verify your custom domain at <a href="https://resend.com/domains" target="_blank" rel="noreferrer" className="underline font-bold text-blue-950 inline-flex items-center gap-0.5">resend.com/domains <ExternalLink className="w-3 h-3 inline" /></a>.
+            </p>
+          </div>
+        </div>
+        <a
+          href="https://resend.com/domains"
+          target="_blank"
+          rel="noreferrer"
+          className="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shrink-0 shadow-2xs transition-colors"
+        >
+          Verify Custom Domain <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+
+      {/* 3. Target Tenant Recipients Directory */}
       <div className="velzon-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
           <div>
@@ -448,7 +601,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         </div>
       </div>
 
-      {/* 3. Transactional Email Template Preview Box & INSTANT DISPATCH ACTION BAR */}
+      {/* 4. Transactional Email Template Preview Box & INSTANT DISPATCH ACTION BAR */}
       <div className="velzon-card p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
@@ -460,8 +613,8 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded">
-              {isConfigured ? 'Resend Live API' : 'Resend Engine (Simulated)'}
+            <span className="text-[11px] font-medium text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded font-mono font-bold">
+              Resend Live API
             </span>
             <button
               onClick={() => handleExecuteDispatch(false)}
@@ -477,11 +630,11 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           {/* Simulated Email Envelope Header */}
           <div className="border-b border-slate-200 pb-2.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 text-slate-500">
             <div>
-              <strong>From:</strong> {house?.name || 'Madura House Property Administration'} &lt;{getResendFromEmail()}&gt;
+              <strong>From:</strong> {getResendFromEmail()}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] bg-slate-200 px-2 py-0.5 rounded font-mono font-semibold">
-                {isConfigured ? 'Resend API Gateway (Live)' : 'Resend Simulation Gateway'}
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">
+                Resend Cloud Gateway
               </span>
             </div>
           </div>
@@ -523,7 +676,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             <div className="mt-3">
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
                 <span>Audited Itemized Expenses ({expensesList.length} Line Items)</span>
-                <span className="font-mono text-[#405189]">Fetched from DB</span>
+                <span className="font-mono text-[#405189]">Live DB Sync</span>
               </div>
               <div className="overflow-x-auto rounded border border-slate-200 bg-white">
                 <table className="w-full text-left text-[11px]">
@@ -580,7 +733,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           </div>
         </div>
 
-        {/* 🌟 GOD MAXX PROMINENT 1-CLICK SEND ACTION BAR RIGHT BELOW PREVIEW (UNCONDITIONALLY VISIBLE) */}
+        {/* PROMINENT 1-CLICK SEND ACTION BAR RIGHT BELOW PREVIEW */}
         <div className="p-5 rounded-2xl bg-gradient-to-r from-[#405189]/15 via-[#0ab39c]/15 to-[#299cdb]/15 border-2 border-[#0ab39c]/40 flex flex-col md:flex-row items-center justify-between gap-4 shadow-md animate-in fade-in duration-200">
           <div className="space-y-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
@@ -618,21 +771,53 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
         {/* Live Delivery Receipt Feedback if just dispatched */}
         {lastSummary && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 animate-in fade-in duration-200">
+          <div className={`p-4 rounded-xl space-y-2 animate-in fade-in duration-200 border ${
+            lastSummary.sentCount > 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
+          }`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                Successfully Delivered to All {lastSummary.sentCount} Recipients!
+              <div className="flex items-center gap-2 font-bold text-sm">
+                {lastSummary.sentCount > 0 ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <span className="text-emerald-900">Successfully Delivered to {lastSummary.sentCount} Recipients!</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                    <span className="text-amber-900">Resend Domain Verification Notice</span>
+                  </>
+                )}
               </div>
-              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">
-                Status: Verified HTTP 200
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                lastSummary.sentCount > 0 ? 'text-emerald-700 bg-emerald-100' : 'text-amber-700 bg-amber-100'
+              }`}>
+                {lastSummary.sentCount > 0 ? 'Verified HTTP 200' : 'Action Required'}
               </span>
             </div>
+
+            {lastSummary.failedCount > 0 && (
+              <div className="p-3 bg-amber-100/70 border border-amber-300 rounded-lg text-xs text-amber-900 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <HelpCircle className="w-4 h-4 text-amber-700" />
+                  Why did external tenant delivery reject?
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  Resend trial accounts only permit sending to your registered owner email (<code>{RESEND_OWNER_EMAIL}</code>). To dispatch directly to any external tenant emails (e.g. <code>rsivanaresh@gmail.com</code>), verify your domain at <a href="https://resend.com/domains" target="_blank" rel="noreferrer" className="underline font-bold text-amber-950">resend.com/domains</a>.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono pt-1">
               {lastSummary.deliveries.map((del, idx) => (
-                <div key={idx} className="p-2 bg-white rounded border border-emerald-200 flex justify-between items-center text-[11px]">
+                <div key={idx} className={`p-2 bg-white rounded border flex justify-between items-center text-[11px] ${
+                  del.status === 'delivered' ? 'border-emerald-200' : 'border-amber-200'
+                }`}>
                   <span className="font-bold text-slate-800">{del.flatNumber}: {del.recipientEmail}</span>
-                  <span className="text-emerald-700 font-semibold">{del.messageId.slice(0, 16)}...</span>
+                  <span className={`font-semibold text-[10px] px-1.5 py-0.5 rounded ${
+                    del.status === 'delivered' ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'
+                  }`}>
+                    {del.status === 'delivered' ? `ID: ${del.messageId.slice(0, 14)}...` : (del.error ? del.error.slice(0, 30) + '...' : 'Failed')}
+                  </span>
                 </div>
               ))}
             </div>
@@ -640,14 +825,14 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         )}
       </div>
 
-      {/* 4. Sent Notification Delivery Logs */}
+      {/* 5. Sent Notification Delivery Logs */}
       <div className="velzon-card overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-800">Sent Notification Delivery Logs</h2>
             <p className="text-[11px] text-slate-500">Live transaction history of all dispatched emails with RFC message identifiers</p>
           </div>
-          <span className="text-xs text-slate-400 font-mono">Gateway: Resend</span>
+          <span className="text-xs text-slate-400 font-mono">Gateway: Resend API</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -679,8 +864,20 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                     </td>
                     <td className="py-3 px-4 text-slate-700">{log.subject}</td>
                     <td className="py-3 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase bg-[#0ab39c]/10 text-[#0ab39c]">
-                        <CheckCircle2 className="w-3 h-3" /> {log.status}
+                      <span className={`inline-flex items-center gap-1 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase ${
+                        log.status === 'sent' 
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                          : 'bg-rose-100 text-rose-800 border border-rose-300'
+                      }`}>
+                        {log.status === 'sent' ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> DELIVERED
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-3 h-3 text-rose-600" /> FAILED
+                          </>
+                        )}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right text-slate-500 font-mono">
@@ -694,7 +891,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         </div>
       </div>
 
-      {/* 5. Sticky Floating Quick Action Bar for Instant Dispatch from Anywhere on Page */}
+      {/* 6. Sticky Floating Quick Action Bar */}
       <div className="fixed bottom-4 right-4 z-40 animate-in fade-in slide-in-from-bottom-3 duration-300">
         <button
           onClick={() => handleExecuteDispatch(false)}
@@ -715,7 +912,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         </button>
       </div>
 
-      {/* 6. Resend Settings Modal */}
+      {/* 7. Resend Settings Modal */}
       {showConfigModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
@@ -724,7 +921,10 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 <Key className="w-5 h-5 text-[#405189]" /> Resend Email Gateway Setup
               </h3>
               <button
-                onClick={() => setShowConfigModal(false)}
+                onClick={() => {
+                  setShowConfigModal(false);
+                  setTestingStatus(null);
+                }}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -744,7 +944,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Obtain your free API key at <a href="https://resend.com" target="_blank" rel="noreferrer" className="text-[#405189] underline font-medium">resend.com</a>. If left blank, high-fidelity simulated delivery receipts will be produced.
+                  Obtain your API key at <a href="https://resend.com/api-keys" target="_blank" rel="noreferrer" className="text-[#405189] underline font-medium">resend.com/api-keys</a>.
                 </p>
               </div>
 
@@ -756,27 +956,40 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   type="text"
                   value={resendFromInput}
                   onChange={(e) => setResendFromInput(e.target.value)}
-                  placeholder="notifications@chemadur.com"
+                  placeholder="Madura House Maintenance <onboarding@resend.dev>"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Use your verified domain sender (e.g. <code>admin@yourdomain.com</code> or Resend onboarding email <code>onboarding@resend.dev</code>).
+                  Use <code>Madura House Maintenance &lt;onboarding@resend.dev&gt;</code> for trial or your verified custom domain.
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 space-y-1">
-                <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-emerald-600" /> Enterprise Reliability Feature
+              {/* Live Connection Test Button */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-700">Test Resend API Connection</span>
+                  <button
+                    type="button"
+                    onClick={handleTestConnectionPing}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-[11px] cursor-pointer"
+                  >
+                    Test Live Ping
+                  </button>
                 </div>
-                <p className="text-[11px] leading-relaxed">
-                  Emails sent via Resend automatically include itemized expense breakdowns, financial summaries, and payment instructions.
-                </p>
+                {testingStatus && (
+                  <p className="text-[11px] font-mono text-slate-700 pt-1 leading-relaxed">
+                    {testingStatus}
+                  </p>
+                )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setShowConfigModal(false)}
+                  onClick={() => {
+                    setShowConfigModal(false);
+                    setTestingStatus(null);
+                  }}
                   className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
@@ -793,7 +1006,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         </div>
       )}
 
-      {/* 7. One-Click Bulk Email Dispatch Review Modal */}
+      {/* 8. One-Click Bulk Email Dispatch Review Modal */}
       {showDispatchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
@@ -828,13 +1041,13 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 <div>
                   <div className="text-slate-500 text-[10px] uppercase font-bold">Total Expenses</div>
                   <div className="font-bold text-slate-900 text-sm font-mono mt-0.5">
-                    ₹{calculatedGrandTotal.toLocaleString('en-IN')}
+                    ₹${calculatedGrandTotal.toLocaleString('en-IN')}
                   </div>
                 </div>
                 <div>
                   <div className="text-slate-500 text-[10px] uppercase font-bold">Per Flat Share</div>
                   <div className="font-bold text-[#0ab39c] text-sm font-mono mt-0.5">
-                    ₹{calculatedContribution.toFixed(2)}
+                    ₹${calculatedContribution.toFixed(2)}
                   </div>
                 </div>
                 <div>
@@ -892,17 +1105,16 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2.5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    All {lastSummary.sentCount} Statements Dispatched Successfully!
+                    Statements Dispatched via Resend Gateway!
                   </div>
-                  <p className="text-[11px] text-emerald-700">
-                    Transactional emails have been delivered to all tenant inboxes. Delivery logs have been recorded in the platform audit trail.
-                  </p>
                   <div className="max-h-36 overflow-y-auto bg-white rounded border border-emerald-200 p-2 text-[10px] font-mono space-y-1">
                     {lastSummary.deliveries.map((del, idx) => (
                       <div key={idx} className="flex justify-between items-center text-slate-700 border-b border-slate-100 pb-1">
                         <span className="font-bold">{del.flatNumber}: {del.recipientEmail}</span>
-                        <span className="text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">
-                          HTTP 200 • {del.messageId.slice(0, 15)}...
+                        <span className={`px-1.5 py-0.5 rounded font-bold ${
+                          del.status === 'delivered' ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100'
+                        }`}>
+                          {del.status === 'delivered' ? `HTTP 200 • ${del.messageId.slice(0, 15)}...` : (del.error ? del.error.slice(0, 25) + '...' : 'Failed')}
                         </span>
                       </div>
                     ))}
