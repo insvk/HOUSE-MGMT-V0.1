@@ -630,7 +630,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           {/* Simulated Email Envelope Header */}
           <div className="border-b border-slate-200 pb-2.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 text-slate-500">
             <div>
-              <strong>From:</strong> {getResendFromEmail()}
+              <strong>From:</strong> {getResendFromEmail()} • <span className="text-blue-700 font-semibold">Replies directly to: {RESEND_OWNER_EMAIL}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">

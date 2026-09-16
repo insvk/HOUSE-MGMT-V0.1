@@ -195,7 +195,7 @@ export const generateMaintenanceEmailHtml = ({
       <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; font-size: 12px; color: #1e40af; line-height: 1.6; margin-bottom: 24px;">
         <strong>Remittance Options:</strong><br>
         1. <strong>UPI / QR Transfer:</strong> Pay to property admin via UPI ID on file.<br>
-        2. <strong>Bank Transfer / Cash:</strong> Contact Property Administrator <strong>${senderName}</strong> (+91 98421 00000).<br>
+        2. <strong>Direct Email / Contact:</strong> Contact Property Administrator <strong>${senderName}</strong> (Email: <a href="mailto:production.chemadura26@gmail.com" style="color:#1e40af;font-weight:bold;">production.chemadura26@gmail.com</a> • Phone: +91 98421 00000).<br>
         3. Payment receipts will be audited and marked 'Paid' in your Resident Portal.
       </div>
 
@@ -204,14 +204,14 @@ export const generateMaintenanceEmailHtml = ({
         Warm regards,<br>
         <strong style="color: #1e293b;">${senderName}</strong><br>
         Property Developer & Primary Owner<br>
-        ${house.name}
+        ${house.name} • <a href="mailto:production.chemadura26@gmail.com" style="color:#405189;">production.chemadura26@gmail.com</a>
       </p>
 
     </div>
 
     <!-- Footer -->
     <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; font-size: 11px; color: #94a3b8; text-align: center;">
-      This is an official transactional maintenance statement dispatched via Resend Email Cloud API for Madura House Maintenance Management V0.1.
+      This is an official transactional maintenance statement dispatched via Resend Email Cloud API for Madura House Maintenance Management V0.1. Direct replies route to production.chemadura26@gmail.com.
     </div>
 
   </div>
@@ -229,12 +229,14 @@ export async function sendSingleResendEmail({
   html,
   fromEmail,
   apiKey,
+  replyTo = RESEND_OWNER_EMAIL,
 }: {
   to: string;
   subject: string;
   html: string;
   fromEmail?: string;
   apiKey?: string;
+  replyTo?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const activeKey = apiKey || getResendApiKey();
   const activeFrom = fromEmail || getResendFromEmail();
@@ -246,6 +248,7 @@ export async function sendSingleResendEmail({
       body: JSON.stringify({
         apiKey: activeKey,
         from: activeFrom,
+        replyTo: replyTo || RESEND_OWNER_EMAIL,
         to: [to],
         subject,
         html,
@@ -299,6 +302,7 @@ export async function sendBulkMaintenanceEmails({
           html,
           fromEmail,
           apiKey,
+          replyTo: RESEND_OWNER_EMAIL,
         });
 
         if (dispatchResult.success && dispatchResult.messageId) {
@@ -439,13 +443,13 @@ export const generateExpenseAlertHtml = ({
 
       <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">
         Logged by: <strong>${expense.addedBy || senderName}</strong> on ${new Date().toLocaleDateString('en-IN')}<br>
-        For full details or PDF bills, log in to your Resident Portal.
+        Direct Inquiries & Invoices: <a href="mailto:production.chemadura26@gmail.com" style="color:#405189;font-weight:bold;">production.chemadura26@gmail.com</a>
       </p>
     </div>
 
     <!-- Footer -->
     <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 28px; font-size: 11px; color: #94a3b8; text-align: center;">
-      Automated real-time dispatch via Resend Cloud API • ${house.name}
+      Automated real-time dispatch via Resend Cloud API • ${house.name} • Replies to production.chemadura26@gmail.com
     </div>
   </div>
 </body>
@@ -489,6 +493,7 @@ export async function sendExpenseAlertEmails({
           html,
           fromEmail,
           apiKey,
+          replyTo: RESEND_OWNER_EMAIL,
         });
 
         if (dispatchResult.success && dispatchResult.messageId) {

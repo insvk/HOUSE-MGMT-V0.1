@@ -17,12 +17,11 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { from, to, subject, html, apiKey } = req.body || {};
+  const { from, to, subject, html, apiKey, replyTo, reply_to } = req.body || {};
   
   // Default fallback API key encoded
   const fallbackKey = Buffer.from('cmVfTHcyUmdEQzFfRHRRSmFIZTJlNmlCYmJiTEQ4NzZXbThM', 'base64').toString('utf8');
 
-  // Use provided key, server environment key, or the authenticated project key
   const activeKey =
     apiKey ||
     process.env.RESEND_API_KEY ||
@@ -33,10 +32,25 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Resend API key is required' });
   }
 
-  // Ensure 'from' is properly structured
-  let sender = from || 'Madura House Maintenance <onboarding@resend.dev>';
-  if (!sender.includes('@')) {
-    sender = 'Madura House Maintenance <onboarding@resend.dev>';
+  // Smart Sender & Reply-To Handling:
+  // Resend requires unverified domains / @gmail.com to send via onboarding@resend.dev,
+  // while directing all customer replies to the user's real email (production.chemadura26@gmail.com).
+  let rawFrom = (from || '').trim();
+  let replyAddress = replyTo || reply_to || 'production.chemadura26@gmail.com';
+  let sender = 'Madura House Maintenance <onboarding@resend.dev>';
+
+  if (rawFrom) {
+    if (rawFrom.includes('gmail.com') || rawFrom.includes('yahoo.com') || rawFrom.includes('outlook.com') || rawFrom.includes('hotmail.com')) {
+      // If user passed a Gmail/consumer address as 'from', use it as the Reply-To address
+      // and use Resend's compliant sandbox sender for delivery success.
+      replyAddress = rawFrom.replace(/.*<([^>]+)>.*/, '$1').trim();
+      sender = 'Madura House Maintenance <onboarding@resend.dev>';
+    } else if (rawFrom.includes('@') && rawFrom.includes('onboarding@resend.dev')) {
+      sender = rawFrom;
+    } else if (rawFrom.includes('@')) {
+      // Custom verified domain
+      sender = rawFrom.includes('<') ? rawFrom : `Madura House Maintenance <${rawFrom}>`;
+    }
   }
 
   const recipientList = Array.isArray(to) ? to.filter(Boolean) : [to].filter(Boolean);
@@ -45,18 +59,24 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    const payload: any = {
+      from: sender,
+      to: recipientList,
+      subject: subject || 'Madura House Maintenance Notice',
+      html: html || '<p>Madura House Maintenance Notice</p>',
+    };
+
+    if (replyAddress) {
+      payload.reply_to = replyAddress;
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${activeKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: sender,
-        to: recipientList,
-        subject: subject || 'Madura House Maintenance Notice',
-        html: html || '<p>Madura House Maintenance Notice</p>',
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json().catch(() => ({}));
