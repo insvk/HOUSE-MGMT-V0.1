@@ -37,8 +37,7 @@ import {
   Database,
   Terminal,
   Copy,
-  RefreshCw,
-  MoreVertical
+  RefreshCw
 } from 'lucide-react';
 import { 
   BarChart, 
