@@ -16,8 +16,8 @@ export const authService = {
     if (!isSupabaseConfigured || !supabase) {
       return { success: false, error: 'Auth system offline' };
     }
-
-    const cleanEmail = email.trim().toLowerCase();
+    // Remove any zero-width spaces, invisible characters, and all whitespace
+    const cleanEmail = email.replace(/[\u200B-\u200D\uFEFF\s]/g, '').trim().toLowerCase();
 
     // 1. Attempt standard Supabase Auth Login
     let { data: authData, error: authError } = await supabase.auth.signInWithPassword({
