@@ -12,6 +12,7 @@ import { AuditLogViewer } from './components/AuditLogViewer';
 import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
 import { CommandPalette } from './components/CommandPalette';
+import { AvatarUploadModal } from './components/AvatarUploadModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { SecurityDashboardModal } from './components/SecurityDashboardModal';
 import { GoogleClock } from './components/GoogleClock';
@@ -1735,7 +1736,7 @@ export function App() {
             setShowProfileModal(false);
             
             // Background sync to Cloud DB (users table)
-            if (isSupabaseConfigured) {
+            if (isSupabaseConfigured && supabase) {
               const { error } = await supabase
                 .from('users')
                 .update({

@@ -116,7 +116,7 @@ export const authService = {
     }
 
     if (authData.session) {
-      this.logSecurityEvent('LOGIN_SUCCESS', cleanEmail, authData.session.user.id);
+      this.logSecurityEvent('LOGIN_SUCCESS', cleanIdentifier, authData.session.user.id);
     }
 
     return { 
