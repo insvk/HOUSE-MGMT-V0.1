@@ -1158,7 +1158,7 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance & Expenses</span>}
             </button>
 
-            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
@@ -1171,7 +1171,7 @@ export function App() {
               </button>
             )}
 
-            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
@@ -1195,7 +1195,7 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
-            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
@@ -1208,7 +1208,7 @@ export function App() {
               </button>
             )}
 
-            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
@@ -1581,7 +1581,7 @@ export function App() {
             <Wrench className="w-5 h-5 mb-0.5" />
             <span className="text-[10px]">Expenses</span>
           </button>
-          {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+          {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
             <button
               onClick={() => setActiveTab('tenants')}
               className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
