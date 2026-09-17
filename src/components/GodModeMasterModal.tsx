@@ -750,7 +750,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                 <span className="font-bold">💰 Maintenance Billing & Split Formula:</span> You can customize the active month, total maintenance expenses, total paying occupants, and the individual per-flat contribution.
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Billing Month (1 - 12) *</label>
                   <select
@@ -1550,7 +1550,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">Target Residents</label>
                     <select

@@ -122,7 +122,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Amount (₹) *</label>
               <input

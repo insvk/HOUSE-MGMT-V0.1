@@ -366,7 +366,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                   </div>
 
                   {/* Metadata Row */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-5">
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Voucher / Bill #</span>
                       <span className="font-mono font-bold text-slate-800">
@@ -478,7 +478,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
               </div>
 
               {/* Key Attributes */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono">
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">File Name</span>
                   <span className="font-bold text-slate-800 truncate block">{invoice.fileName}</span>

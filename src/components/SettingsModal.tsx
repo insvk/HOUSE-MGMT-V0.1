@@ -235,7 +235,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold uppercase text-slate-500 mb-1">City</label>
                   <input

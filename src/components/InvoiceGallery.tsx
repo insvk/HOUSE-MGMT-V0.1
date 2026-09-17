@@ -380,7 +380,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                   </div>
 
                   {/* Document Meta Row */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded border border-slate-200 text-xs mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded border border-slate-200 text-xs mb-4">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">Invoice / Ref #</span>
                       <span className="font-bold text-slate-800">
@@ -525,7 +525,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                     {selectedInvoice.ocrText || 'DOCUMENT PARSED SUCCESSFULLY. NO ANOMALIES FOUND.'}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-3 rounded bg-slate-50 border border-slate-200">
                       <span className="text-slate-400 font-semibold block text-[10px] uppercase">Storage URI</span>
                       <span className="font-mono text-slate-700 break-all">{selectedInvoice.storagePath}</span>

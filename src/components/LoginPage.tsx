@@ -625,7 +625,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username *</label>
                     <input
@@ -650,7 +650,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password *</label>
                     <input
@@ -675,7 +675,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unit *</label>
                     <select
