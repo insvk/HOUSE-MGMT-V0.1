@@ -13,9 +13,12 @@ import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
 import { CommandPalette } from './components/CommandPalette';
 import { AvatarUploadModal } from './components/AvatarUploadModal';
+import { SecurityDashboardModal } from './components/SecurityDashboardModal';
 import { GoogleClock } from './components/GoogleClock';
 import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
 import { playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
+import { authService } from './lib/authService';
+import { supabase } from './lib/supabaseClient';
 import { cloudDb, isSupabaseConfigured, generateUUID } from './lib/supabaseClient';
 import { House } from './types';
 import { 
@@ -27,6 +30,7 @@ import {
   FileText, 
   Mail, 
   ShieldCheck, 
+  Shield,
   Settings, 
   UserCheck, 
   CheckCircle2, 
@@ -177,10 +181,11 @@ export function App() {
     };
   }, []);
 
-  // Sync to localStorage
+  // Sync to localStorage (Scrub passwords for security)
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+      const safeUsers = users.map(({ password, ...rest }) => rest);
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(safeUsers));
     } catch (e) {
       console.error('LocalStorage sync error:', e);
     }
@@ -265,6 +270,7 @@ export function App() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
+  const [showSecurityDashboard, setShowSecurityDashboard] = useState<boolean>(false);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -448,8 +454,20 @@ export function App() {
       }
     });
 
+    // Supabase Auth State Change Listener
+    let authListener: any = null;
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+        if (event === 'SIGNED_OUT') {
+          setIsLoggedIn(false);
+        }
+      });
+      authListener = data;
+    }
+
     return () => {
       unsubscribe();
+      authListener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -621,7 +639,13 @@ export function App() {
   };
 
   // Logout Handler
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { authService } = await import('./lib/authService');
+      await authService.logout();
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
     setIsLoggedIn(false);
     setUserDropdownOpen(false);
     showToast('Logged out successfully. Returned to Login Landing Page.');
@@ -1444,6 +1468,13 @@ export function App() {
                     <Settings className="w-3.5 h-3.5 text-slate-400" /> Property Settings
                   </button>
 
+                  <button
+                    onClick={() => { setShowSecurityDashboard(true); setUserDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-slate-400" /> Account Security
+                  </button>
+
                   <div className="border-t border-slate-100 my-1" />
 
                   <button
@@ -1669,6 +1700,7 @@ export function App() {
       )}
 
       {/* Current Logged-in User Avatar Upload Modal */}
+      {/* Current Logged-in User Avatar Upload Modal */}
       {showAvatarModal && (
         <AvatarUploadModal
           isOpen={showAvatarModal}
@@ -1679,6 +1711,13 @@ export function App() {
           onSaveAvatar={handleSaveCurrentUserAvatar}
         />
       )}
+
+      {/* Security Dashboard Modal */}
+      <SecurityDashboardModal
+        isOpen={showSecurityDashboard}
+        onClose={() => setShowSecurityDashboard(false)}
+        userEmail={currentUser.email}
+      />
 
     </div>
   );

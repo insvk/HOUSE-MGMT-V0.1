@@ -46,7 +46,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onLoginSuccess,
   onSignUpSuccess 
 }) => {
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot_password' | 'verify_otp' | 'reset_password' | 'mfa_challenge'>('login');
   
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -58,10 +58,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [flatNumber, setFlatNumber] = useState('');
   const [phone, setPhone] = useState('');
-  const [flatNumber, setFlatNumber] = useState<string>(AVAILABLE_FLATS[0]);
-  const signupRole: UserRole = 'TENANT';
+  const [signupRole, setSignupRole] = useState<UserRole>('TENANT');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  
+  // OTP / Reset Form States
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [mfaFactorId, setMfaFactorId] = useState('');
   const [moveInDate, setMoveInDate] = useState(new Date().toISOString().split('T')[0]);
   const [rentAmount, setRentAmount] = useState('14000');
   const [depositAmount, setDepositAmount] = useState('70000');
@@ -126,7 +131,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   // Handle Login Authentication
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -146,35 +151,45 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const allAccounts = getAllAvailableAccounts();
+    try {
+      const { authService } = await import('../lib/authService');
+      const authRes = await authService.login(cleanEmail, cleanPassword);
 
-      // Check if user exists in the system
-      const matchedUser = allAccounts.find((u) => u.email.toLowerCase() === cleanEmail);
-
-      if (matchedUser) {
-        // Validate password: check stored password first, then default credentials
-        const storedPassword = matchedUser.password;
-        const defaultPassword = DEFAULT_CREDENTIALS[cleanEmail];
-        const validPassword = storedPassword || defaultPassword;
-
-        if (!validPassword || validPassword !== cleanPassword) {
-          setErrorMessage('Invalid password. Please check your credentials and try again.');
-          return;
-        }
-
-        onLoginSuccess(matchedUser, matchedUser.role);
+      if (!authRes.success) {
+        setErrorMessage(authRes.error || 'Invalid credentials. Please try again.');
+        setIsLoading(false);
         return;
       }
 
-      // If user is not found in the directory
-      setErrorMessage(`No account found for "${cleanEmail}". Click "Create Account" below to register.`);
-    }, 350);
+      // If login is successful, map it to the expected onLoginSuccess format
+      // In a real enterprise app, we rely on the JWT context or DB fetch.
+      // Here, we grab the updated profile from the legacy array.
+      const allAccounts = getAllAvailableAccounts();
+      const matchedUser = allAccounts.find((u) => u.email.toLowerCase() === cleanEmail);
+      
+      if (matchedUser) {
+        onLoginSuccess(matchedUser, matchedUser.role);
+      } else {
+        onLoginSuccess({
+          id: authRes.user?.id || 'unknown',
+          email: cleanEmail,
+          fullName: 'Authenticated User',
+          flatNumber: 'Unknown',
+          role: 'TENANT',
+          phone: '',
+          paymentStatus: 'pending',
+          occupancyStatus: 'active'
+        }, 'TENANT');
+      }
+    } catch (err: any) {
+      setErrorMessage('Auth Service Error: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle Sign Up Registration
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -201,22 +216,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       return;
     }
 
-    const allAccounts = getAllAvailableAccounts();
-    const emailExists = allAccounts.some((u) => u.email.toLowerCase() === cleanEmail);
-    if (emailExists) {
-      setErrorMessage('An account with this email is already registered. Please log in.');
-      return;
-    }
-
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { authService } = await import('../lib/authService');
+      const allAccounts = getAllAvailableAccounts();
+      const exists = allAccounts.some((u) => u.email.toLowerCase() === cleanEmail);
+
+      if (exists) {
+        setErrorMessage('An account with this email already exists. Please login instead.');
+        setIsLoading(false);
+        return;
+      }
+
+      const signUpRes = await authService.signUp(cleanEmail, cleanPassword);
+
+      if (!signUpRes.success) {
+        setErrorMessage(signUpRes.error || 'Sign up failed.');
+        setIsLoading(false);
+        return;
+      }
 
       const newRegisteredUser: User = {
-        id: generateUUID(),
+        id: signUpRes.user?.id || generateUUID(),
         email: cleanEmail,
-        password: cleanPassword,
+        password: cleanPassword, // Stored locally only until fully integrated
         fullName: cleanName,
         phone: cleanPhone,
         flatNumber: cleanFlat,
@@ -231,7 +255,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         notes: `Registered via Portal on ${new Date().toLocaleDateString()}`,
       };
 
-      // Synchronously commit to local vault immediately
+      // Synchronously commit to local vault immediately for offline support
       try {
         const saved = localStorage.getItem('madura_house_users_db_v3');
         const list: User[] = saved ? JSON.parse(saved) : [];
@@ -242,9 +266,86 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         console.error('Local storage user commit error:', err);
       }
 
-      // Register into tenant store and redirect to dashboard
       onSignUpSuccess(newRegisteredUser);
-    }, 400);
+    } catch (err: any) {
+      setErrorMessage('Auth Service Error: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Password Reset Request (OTP)
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    if (!loginEmail) {
+      setErrorMessage('Please enter your email address first.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { authService } = await import('../lib/authService');
+      const res = await authService.requestPasswordReset(loginEmail.trim().toLowerCase());
+      if (res.success) {
+        setSuccessMessage('Recovery code sent! Check your inbox.');
+        setAuthMode('verify_otp');
+      } else {
+        setErrorMessage(res.error || 'Failed to send recovery code.');
+      }
+    } catch (err: any) {
+      setErrorMessage('Error: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    if (!otpCode) {
+      setErrorMessage('Please enter the verification code.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { authService } = await import('../lib/authService');
+      const res = await authService.verifyOTP(loginEmail.trim().toLowerCase(), otpCode.trim());
+      if (res.success) {
+        setSuccessMessage('Code verified. Please set a new password.');
+        setAuthMode('reset_password');
+      } else {
+        setErrorMessage(res.error || 'Invalid code.');
+      }
+    } catch (err: any) {
+      setErrorMessage('Error: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    if (newPassword.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { authService } = await import('../lib/authService');
+      const res = await authService.updatePassword(newPassword);
+      if (res.success) {
+        setSuccessMessage('Password updated successfully! Please log in.');
+        setAuthMode('login');
+      } else {
+        setErrorMessage(res.error || 'Failed to update password.');
+      }
+    } catch (err: any) {
+      setErrorMessage('Error: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Google Authentication Handler
@@ -341,7 +442,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                       PASSWORD
                     </label>
-                    <button type="button" className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                    <button type="button" onClick={() => { setAuthMode('forgot_password'); setErrorMessage(''); setSuccessMessage(''); }} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
                       Forgot password?
                     </button>
                   </div>
@@ -412,7 +513,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </button>
               </div>
             </div>
-          ) : (
+          ) : authMode === 'signup' ? (
             /* SIGN UP MODE (using same centered layout for consistency) */
             <div className="animate-in fade-in zoom-in-95 duration-200">
               <div className="flex flex-col items-center text-center mb-6">
@@ -610,7 +711,63 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </button>
               </div>
             </div>
-          )}
+          ) : authMode === 'forgot_password' ? (
+            <div className="animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex flex-col items-center text-center mb-6">
+                <h1 className="text-2xl font-bold text-[#111827] tracking-tight mb-1">Reset Password</h1>
+                <p className="text-[12px] text-slate-500 font-medium">Enter your email to receive a recovery code</p>
+              </div>
+              {errorMessage && <div className="mb-4 p-3 rounded-xl bg-red-50 text-xs text-red-600">{errorMessage}</div>}
+              {successMessage && <div className="mb-4 p-3 rounded-xl bg-emerald-50 text-xs text-emerald-700">{successMessage}</div>}
+              <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">EMAIL</label>
+                  <input type="email" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-black" />
+                </div>
+                <button type="submit" disabled={isLoading} className="w-full py-3.5 px-4 rounded-xl bg-black text-white font-semibold text-sm cursor-pointer hover:bg-gray-900 disabled:opacity-75">
+                  {isLoading ? 'Sending...' : 'Send Recovery Code'}
+                </button>
+              </form>
+              <div className="mt-6 text-center text-[13px]">
+                <button onClick={() => setAuthMode('login')} className="text-blue-600 font-semibold">← Back to login</button>
+              </div>
+            </div>
+          ) : authMode === 'verify_otp' ? (
+            <div className="animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex flex-col items-center text-center mb-6">
+                <h1 className="text-2xl font-bold text-[#111827] tracking-tight mb-1">Enter Code</h1>
+                <p className="text-[12px] text-slate-500 font-medium">We sent a verification code to {loginEmail}</p>
+              </div>
+              {errorMessage && <div className="mb-4 p-3 rounded-xl bg-red-50 text-xs text-red-600">{errorMessage}</div>}
+              {successMessage && <div className="mb-4 p-3 rounded-xl bg-emerald-50 text-xs text-emerald-700">{successMessage}</div>}
+              <form onSubmit={handleVerifyOtpSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">6-DIGIT CODE</label>
+                  <input type="text" required value={otpCode} onChange={(e) => setOtpCode(e.target.value)} placeholder="000000" className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm tracking-widest text-center font-mono focus:ring-2 focus:ring-black" />
+                </div>
+                <button type="submit" disabled={isLoading} className="w-full py-3.5 px-4 rounded-xl bg-black text-white font-semibold text-sm cursor-pointer hover:bg-gray-900 disabled:opacity-75">
+                  {isLoading ? 'Verifying...' : 'Verify Code'}
+                </button>
+              </form>
+            </div>
+          ) : authMode === 'reset_password' ? (
+            <div className="animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex flex-col items-center text-center mb-6">
+                <h1 className="text-2xl font-bold text-[#111827] tracking-tight mb-1">Set New Password</h1>
+                <p className="text-[12px] text-slate-500 font-medium">Create a strong password for your account</p>
+              </div>
+              {errorMessage && <div className="mb-4 p-3 rounded-xl bg-red-50 text-xs text-red-600">{errorMessage}</div>}
+              <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">NEW PASSWORD</label>
+                  <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-black" />
+                </div>
+                <button type="submit" disabled={isLoading} className="w-full py-3.5 px-4 rounded-xl bg-black text-white font-semibold text-sm cursor-pointer hover:bg-gray-900 disabled:opacity-75">
+                  {isLoading ? 'Updating...' : 'Update Password'}
+                </button>
+              </form>
+            </div>
+          ) : null}
         </div>
       </div>
 
