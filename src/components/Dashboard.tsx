@@ -115,6 +115,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [timeFilter, setTimeFilter] = useState<'All' | '1M' | '6M' | '1Y'>('1M');
   const [selectedSort, setSelectedSort] = useState<'Today' | 'Monthly' | 'Yearly'>('Monthly');
   const [dashboardInvoicePreview, setDashboardInvoicePreview] = useState<InvoicePreviewData | null>(null);
+  const [activeDashboardTab, setActiveDashboardTab] = useState<'property' | 'personal' | 'activities'>('property');
 
   // God Mode Master Modal State (Exclusively for Sampath Kumar / Owner)
   const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUserRole === 'OWNER';
@@ -189,13 +190,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </h1>
         
         <div className="flex items-center gap-6 mt-4 border-b border-slate-200">
-          <button className="pb-3 text-sm font-semibold text-slate-900 border-b-2 border-slate-900">
+          <button 
+            onClick={() => setActiveDashboardTab('property')}
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'property' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
             Property dashboard
           </button>
-          <button className="pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">
+          <button 
+            onClick={() => setActiveDashboardTab('personal')}
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'personal' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
             Personal dashboard
           </button>
-          <button className="pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">
+          <button 
+            onClick={() => setActiveDashboardTab('activities')}
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'activities' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
             Recent activities
           </button>
         </div>
@@ -217,8 +224,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
-      {/* 2. TOP KPI CARDS (CosmoLex Style) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* ======================= TABS CONTENT ======================= */}
+      {activeDashboardTab === 'property' && (
+        <>
+          {/* 2. TOP KPI CARDS (CosmoLex Style) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* KPI 1: Total Expenses */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-[104px]">
@@ -483,6 +493,59 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
       </div>
+        </>
+      )}
+
+      {activeDashboardTab === 'personal' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm mb-4">
+            <img src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'} alt="Avatar" className="w-full h-full object-cover" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">{currentUser.fullName}</h2>
+          <span className="px-3 py-1 bg-sky-50 text-sky-700 text-xs font-bold rounded-full uppercase mt-2">
+            {currentUser.flatNumber}
+          </span>
+          <div className="grid grid-cols-2 gap-8 mt-8 w-full max-w-md">
+            <div className="flex flex-col items-center">
+              <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Monthly Rent</span>
+              <span className="text-xl font-bold text-slate-900">₹{currentUser.rentAmount?.toLocaleString('en-IN') || '0'}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Status</span>
+              <span className="text-xl font-bold text-emerald-600 uppercase">{currentUser.paymentStatus || 'PAID'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeDashboardTab === 'activities' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm min-h-[400px]">
+          <h2 className="text-lg font-bold text-slate-900 mb-6">Recent Platform Activities</h2>
+          {notificationLogs.length > 0 ? (
+            <div className="space-y-4">
+              {notificationLogs.slice(0, 10).map((log, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
+                    <Bell className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 text-sm">{log.subject}</h4>
+                    <p className="text-slate-600 text-xs mt-1">{log.content}</p>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mt-2 block">
+                      {new Date(log.sentAt).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+              <AlertCircle className="w-12 h-12 text-slate-300 mb-3" />
+              <p className="text-sm font-medium">No recent activities found.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 6. UNIVERSAL GOD MODE MASTER MODAL                                        */}
