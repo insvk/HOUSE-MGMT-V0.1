@@ -36,10 +36,10 @@ export const authService = {
       password: password,
     });
 
-    // GOD MAXX BYPASS: If rate limited on login but credentials match admin list, let them in natively
-    if (authError && authError.message.toLowerCase().includes('rate limit')) {
+    // GOD MAXX BYPASS: If rate limited or unconfirmed on login but credentials match admin list, let them in natively
+    if (authError && (authError.message.toLowerCase().includes('rate limit') || authError.message.toLowerCase().includes('not confirmed'))) {
        if (DEFAULT_CREDENTIALS[targetEmail] === password) {
-           console.warn("GOD MAXX: Bypassing rate limit for known admin.");
+           console.warn("GOD MAXX: Bypassing rate limit / email confirmation for known admin.");
            return { success: true, user: { email: targetEmail, id: 'admin-bypass' } };
        }
     }
