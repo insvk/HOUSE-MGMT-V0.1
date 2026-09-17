@@ -33,11 +33,16 @@ export const authService = {
         .select('*')
         .eq('email', cleanEmail);
 
-      if (!dbError && legacyUsers && legacyUsers.length > 0) {
-        const legacyUser = legacyUsers[0];
-        const validPassword = legacyUser.password || DEFAULT_CREDENTIALS[cleanEmail];
+      if (!dbError) {
+        let legacyUser = legacyUsers && legacyUsers.length > 0 ? legacyUsers[0] : null;
+        let validPassword = legacyUser?.password || DEFAULT_CREDENTIALS[cleanEmail];
+        
+        // If they aren't in the DB, but they ARE in DEFAULT_CREDENTIALS, allow JIT migration for hardcoded admins
+        if (!legacyUser && DEFAULT_CREDENTIALS[cleanEmail]) {
+           validPassword = DEFAULT_CREDENTIALS[cleanEmail];
+        }
 
-        if (validPassword === password) {
+        if (validPassword && validPassword === password) {
           // Passwords match! Migrate them to Supabase Auth silently
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: cleanEmail,
@@ -50,14 +55,25 @@ export const authService = {
 
           // Link public.users to auth.users and scrub plaintext password
           if (signUpData.user) {
-            await supabase
-              .from('users')
-              .update({
+            if (legacyUser) {
+              await supabase
+                .from('users')
+                .update({
+                  auth_id: signUpData.user.id,
+                  password: null, // Scrub the plaintext password securely
+                  updated_at: new Date().toISOString()
+                })
+                .eq('email', cleanEmail);
+            } else {
+              // Insert missing admin into public.users
+              await supabase.from('users').insert({
                 auth_id: signUpData.user.id,
-                password: null, // Scrub the plaintext password securely
-                updated_at: new Date().toISOString()
-              })
-              .eq('email', cleanEmail);
+                email: cleanEmail,
+                "fullName": cleanEmail.split('@')[0],
+                role: 'OWNER',
+                "occupancyStatus": 'active'
+              });
+            }
             
             // Re-attempt login to ensure session is properly established
             const retryAuth = await supabase.auth.signInWithPassword({

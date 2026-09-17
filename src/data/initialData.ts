@@ -16,6 +16,7 @@ export const initialHouse: House = {
 export const DEFAULT_CREDENTIALS: Record<string, string> = {
   'sampathkumar@chemadur.com': 'Sampath@123',
   'production.chemadura26@gmail.com': 'Sampath@123',
+  'rsivanaresh@gmail.com': 'Sivakalai#83',
 };
 
 /**
@@ -24,7 +25,7 @@ export const DEFAULT_CREDENTIALS: Record<string, string> = {
 export const isDummyLegacyAccount = (email?: string): boolean => {
   if (!email) return true;
   const lower = email.toLowerCase().trim();
-  if (lower === 'sampathkumar@chemadur.com' || lower === 'production.chemadura26@gmail.com') return false; // Primary Admin / Owner Accounts
+  if (lower === 'sampathkumar@chemadur.com' || lower === 'production.chemadura26@gmail.com' || lower === 'rsivanaresh@gmail.com') return false; // Primary Admin / Owner Accounts
   if (
     lower.endsWith('@madurahouse.local') ||
     lower.endsWith('@test.local') ||
