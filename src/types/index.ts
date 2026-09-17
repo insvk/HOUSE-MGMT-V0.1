@@ -27,6 +27,10 @@ export interface User {
   depositAmount?: number;
   emergencyContact?: string;
   notes?: string;
+  preferences?: {
+    audioEnabled?: boolean;
+    clock24h?: boolean;
+  };
 }
 
 export interface House {
@@ -37,6 +41,9 @@ export interface House {
   postalCode: string;
   totalUnits: number;
   ownerId: string;
+  settings?: {
+    resendFromEmail?: string;
+  };
 }
 
 export type ExpenseCategory = 'maintenance' | 'utilities' | 'repairs' | 'cleaning' | 'other';

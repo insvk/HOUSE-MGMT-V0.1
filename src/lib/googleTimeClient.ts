@@ -206,18 +206,18 @@ export async function syncGoogleTime(): Promise<{
   };
 }
 
+// Shared memory cache to retain preference without localstorage
+let cachedClock24h = true;
+
+export function setGlobalClock24hPreference(is24h: boolean) {
+  cachedClock24h = is24h;
+}
+
 /**
  * Custom React Hook for live, real-time ticking clock synced with time.google.com
  */
 export function useGoogleTime() {
-  const [is24Hour, setIs24HourState] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('madura_clock_24h');
-      return saved !== null ? saved === 'true' : true; // Default 24h as per user reference
-    } catch {
-      return true;
-    }
-  });
+  const [is24Hour, setIs24HourState] = useState<boolean>(cachedClock24h);
 
   const [tick, setTick] = useState<number>(0);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>(globalSyncStatus);
@@ -227,11 +227,7 @@ export function useGoogleTime() {
 
   const setIs24Hour = useCallback((val: boolean) => {
     setIs24HourState(val);
-    try {
-      localStorage.setItem('madura_clock_24h', String(val));
-    } catch {
-      // Ignore
-    }
+    cachedClock24h = val;
   }, []);
 
   const triggerSync = useCallback(async () => {

@@ -3,15 +3,14 @@
  * Synthesizes pure harmonic soundwaves without external audio files.
  */
 
-const AUDIO_STORAGE_KEY = 'madura_audio_enabled';
+let cachedAudioEnabled = true;
 
 export const isAudioEnabled = (): boolean => {
-  const saved = localStorage.getItem(AUDIO_STORAGE_KEY);
-  return saved === null ? true : saved === 'true';
+  return cachedAudioEnabled;
 };
 
 export const setAudioEnabled = (enabled: boolean): void => {
-  localStorage.setItem(AUDIO_STORAGE_KEY, enabled ? 'true' : 'false');
+  cachedAudioEnabled = enabled;
 };
 
 let audioCtx: AudioContext | null = null;

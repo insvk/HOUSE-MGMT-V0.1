@@ -69,6 +69,41 @@ export const cloudDb = {
     }
   },
 
+  // System Secrets (Requires OWNER role RLS)
+  async getSecret(keyName: string): Promise<string | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('system_secrets')
+        .select('key_value')
+        .eq('key_name', keyName)
+        .limit(1);
+      if (error || !data || data.length === 0) return null;
+      return data[0].key_value;
+    } catch (err) {
+      console.warn(`Cloud DB fetch secret ${keyName} fallback:`, err);
+      return null;
+    }
+  },
+
+  async setSecret(keyName: string, keyValue: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return false;
+    try {
+      const { error } = await supabase
+        .from('system_secrets')
+        .upsert({
+          key_name: keyName,
+          key_value: keyValue,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'key_name' });
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn(`Cloud DB update secret ${keyName} warning:`, err);
+      return false;
+    }
+  },
+
   // Fetch Property / House Master
   async getHouse(): Promise<House | null> {
     if (!isSupabaseConfigured || !supabase) return null;
@@ -84,6 +119,7 @@ export const cloudDb = {
         postalCode: h.postal_code || '625001',
         totalUnits: Number(h.total_units) || 5,
         ownerId: h.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        settings: h.settings || {},
       };
     } catch (err) {
       console.warn('Cloud DB fetch house fallback:', err);
@@ -106,6 +142,7 @@ export const cloudDb = {
           city: house.city,
           postal_code: house.postalCode,
           total_units: Number(house.totalUnits) || 5,
+          settings: house.settings || {},
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
 
@@ -146,6 +183,7 @@ export const cloudDb = {
           depositAmount: u.deposit_amount ? Number(u.deposit_amount) : 0,
           emergencyContact: u.emergency_contact,
           notes: u.notes,
+          preferences: u.preferences || {},
         }));
     } catch (err) {
       console.warn('Cloud DB fetch users fallback:', err);
@@ -172,6 +210,7 @@ export const cloudDb = {
         deposit_amount: user.depositAmount,
         emergency_contact: user.emergencyContact,
         notes: user.notes,
+        preferences: user.preferences || {},
       });
 
       if (error) throw error;
@@ -201,6 +240,7 @@ export const cloudDb = {
           deposit_amount: user.depositAmount,
           emergency_contact: user.emergencyContact,
           notes: user.notes,
+          preferences: user.preferences || {},
           updated_at: new Date().toISOString(),
         })
         .eq('email', user.email.toLowerCase());

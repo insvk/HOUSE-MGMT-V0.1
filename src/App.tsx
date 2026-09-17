@@ -17,7 +17,9 @@ import { EditProfileModal } from './components/EditProfileModal';
 import { SecurityDashboardModal } from './components/SecurityDashboardModal';
 import { GoogleClock } from './components/GoogleClock';
 import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
-import { playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
+import { setAudioEnabled, playSuccessChime, playNotificationChime, playWarningChime } from './utils/audioUtils';
+import { setGlobalClock24hPreference } from './lib/googleTimeClient';
+import { setGlobalResendConfig } from './lib/resendClient';
 import { authService } from './lib/authService';
 import { supabase } from './lib/supabaseClient';
 import { cloudDb, isSupabaseConfigured, generateUUID } from './lib/supabaseClient';
@@ -45,7 +47,11 @@ import {
   X,
   Wrench,
   Receipt,
-  Camera
+  Camera,
+  Home,
+  Clock,
+  Zap,
+  Plus
 } from 'lucide-react';
 
 const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
@@ -218,6 +224,32 @@ export function App() {
       return initialHouse;
     }
   });
+
+  // Global Config Hydration
+  useEffect(() => {
+    if (currentUser?.preferences) {
+      if (typeof currentUser.preferences.audioEnabled === 'boolean') {
+        setAudioEnabled(currentUser.preferences.audioEnabled);
+      }
+      if (typeof currentUser.preferences.clock24h === 'boolean') {
+        setGlobalClock24hPreference(currentUser.preferences.clock24h);
+      }
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (house?.settings) {
+      setGlobalResendConfig(null, house.settings.resendFromEmail || null);
+    }
+  }, [house]);
+
+  useEffect(() => {
+    if (isLoggedIn && currentUserRole === 'OWNER') {
+      cloudDb.getSecret('RESEND_API_KEY').then(key => {
+        if (key) setGlobalResendConfig(key, null);
+      });
+    }
+  }, [isLoggedIn, currentUserRole]);
 
   useEffect(() => {
     try {
@@ -1115,30 +1147,27 @@ export function App() {
         />
       )}
 
-      {/* 1. Left Dark Navy Sidebar (Velzon Theme) */}
+      {/* 1. Left White Sidebar (CosmoLex Style) */}
       <aside 
-        className={`velzon-sidebar shrink-0 transition-all duration-300 flex flex-col justify-between z-50 fixed inset-y-0 left-0 ${
+        className={`shrink-0 transition-all duration-300 flex flex-col justify-between z-50 fixed inset-y-0 left-0 bg-[#fbfbfe] border-r border-slate-200 ${
           mobileSidebarOpen 
-            ? 'translate-x-0 w-72 shadow-2xl' 
+            ? 'translate-x-0 w-64 shadow-2xl' 
             : '-translate-x-full lg:translate-x-0'
         } ${
-          sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
+          sidebarCollapsed ? 'lg:w-20' : 'lg:w-[260px]'
         }`}
       >
         <div>
           {/* Brand Logo Header */}
-          <div className="h-16 flex items-center justify-between px-5 sm:px-6 border-b border-white/10">
+          <div className="h-16 flex items-center justify-between px-5 sm:px-6 border-b border-transparent mt-2">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0ab39c] via-[#299cdb] to-[#405189] flex items-center justify-center text-white shadow-md shrink-0">
-                <Building2 className="w-4 h-4" />
+              <div className="w-8 h-8 rounded bg-slate-900 flex items-center justify-center text-white shrink-0">
+                <Building2 className="w-5 h-5" />
               </div>
               {(!sidebarCollapsed || mobileSidebarOpen) && (
                 <div>
-                  <span className="font-extrabold text-white text-base tracking-wider block leading-tight">
-                    MADURA
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-                    HOUSE MAINTENANCE
+                  <span className="font-semibold text-slate-900 text-xl tracking-tight block leading-tight">
+                    Madura
                   </span>
                 </div>
               )}
@@ -1147,7 +1176,7 @@ export function App() {
             {/* Close Button on Mobile Drawer */}
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Close Menu"
             >
               <X className="w-5 h-5" />
@@ -1155,110 +1184,119 @@ export function App() {
           </div>
 
           {/* Navigation Menu */}
-          <div className="py-4 px-3 space-y-1">
-            {(!sidebarCollapsed || mobileSidebarOpen) && (
-              <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Menu
-              </div>
-            )}
-
+          <div className="py-6 px-3 space-y-0.5">
             <button
               onClick={() => { setActiveTab('dashboard'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'dashboard' ? 'active font-bold text-white' : ''
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                activeTab === 'dashboard' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
               title="Dashboard"
             >
-              <LayoutDashboard className="w-4 h-4 shrink-0 text-[#0ab39c]" />
+              <Home className={`w-4 h-4 shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-500'}`} />
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Dashboard</span>}
             </button>
 
             <button
               onClick={() => { setActiveTab('maintenance'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'maintenance' ? 'active font-bold text-white' : ''
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                activeTab === 'maintenance' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
               title="Monthly Maintenance"
             >
-              <Calendar className="w-4 h-4 shrink-0 text-[#299cdb]" />
-              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance & Expenses</span>}
+              <Calendar className={`w-4 h-4 shrink-0 ${activeTab === 'maintenance' ? 'text-slate-900' : 'text-slate-500'}`} />
+              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance</span>}
             </button>
 
             {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                  activeTab === 'tenants' ? 'active font-bold text-white' : ''
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                  activeTab === 'tenants' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
                 title="Tenant Directory"
               >
-                <Users className="w-4 h-4 shrink-0 text-[#f7b84b]" />
+                <Users className={`w-4 h-4 shrink-0 ${activeTab === 'tenants' ? 'text-slate-900' : 'text-slate-500'}`} />
                 {(!sidebarCollapsed || mobileSidebarOpen) && <span>Tenants & CRM</span>}
               </button>
             )}
 
             {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
-                onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                  activeTab === 'analytics' ? 'active font-bold text-white' : ''
+                onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                  activeTab === 'notifications' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
-                title="Financial Analytics"
+                title="Email Notifications"
               >
-                <BarChart3 className="w-4 h-4 shrink-0 text-[#f06548]" />
-                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
+                <Mail className={`w-4 h-4 shrink-0 ${activeTab === 'notifications' ? 'text-slate-900' : 'text-slate-500'}`} />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Communications</span>}
               </button>
             )}
 
+            {/* Divider */}
+            <div className="h-px bg-slate-200 my-4 mx-2"></div>
+
             <button
               onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'invoices' ? 'active font-bold text-white' : ''
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                activeTab === 'invoices' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
               }`}
               title="Digital Invoices"
             >
-              <FileText className="w-4 h-4 shrink-0 text-[#0ab39c]" />
+              <Receipt className={`w-4 h-4 shrink-0 ${activeTab === 'invoices' ? 'text-slate-900' : 'text-slate-500'}`} />
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
             {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
-                onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                  activeTab === 'notifications' ? 'active font-bold text-white' : ''
+                onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                  activeTab === 'analytics' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
-                title="Email Notifications"
+                title="Financial Analytics"
               >
-                <Mail className="w-4 h-4 shrink-0 text-[#299cdb]" />
-                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Resend Notifications</span>}
+                <BarChart3 className={`w-4 h-4 shrink-0 ${activeTab === 'analytics' ? 'text-slate-900' : 'text-slate-500'}`} />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
               </button>
             )}
 
             {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                  activeTab === 'audit' ? 'active font-bold text-white' : ''
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
+                  activeTab === 'audit' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
                 title="Security Audit Log"
               >
-                <ShieldCheck className="w-4 h-4 shrink-0 text-[#878a99]" />
-                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Security Audit Trail</span>}
+                <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'audit' ? 'text-slate-900' : 'text-slate-500'}`} />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Audit Trail</span>}
               </button>
             )}
           </div>
         </div>
 
         {/* Sidebar Footer */}
-        {(!sidebarCollapsed || mobileSidebarOpen) && (
-          <div className="p-4 border-t border-white/10 m-3 rounded bg-white/5 text-xs text-slate-400 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#0ab39c] animate-pulse" />
-              <span className="font-semibold text-slate-300">v1.0 Enterprise</span>
-            </div>
-            <span className="text-[10px] text-slate-500 font-mono">Maduravoyal, TN</span>
-          </div>
-        )}
+        <div className="p-3 mb-2 space-y-0.5">
+          {(!sidebarCollapsed || mobileSidebarOpen) && (
+            <>
+              <button
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 hover:bg-slate-50 font-medium transition-all cursor-pointer"
+                title="Integrations"
+              >
+                <Zap className="w-4 h-4 shrink-0 text-slate-500" />
+                <span>Integrations</span>
+              </button>
+              <button
+                onClick={() => { setShowSettings(true); setMobileSidebarOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 hover:bg-slate-50 font-medium transition-all cursor-pointer"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4 shrink-0 text-slate-500" />
+                <span>Settings</span>
+              </button>
+            </>
+          )}
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -1266,8 +1304,8 @@ export function App() {
         sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
       }`}>
         
-        {/* 2. Top Navigation Bar (Velzon Header) */}
-        <header className="h-16 velzon-topbar sticky top-0 z-30 px-3 sm:px-6 flex items-center justify-between shadow-xs">
+        {/* 2. Top Navigation Bar (CosmoLex Header) */}
+        <header className="h-[72px] bg-white sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between border-b border-slate-200 shadow-sm">
           
           {/* Left: Hamburger & Search */}
           <div className="flex items-center gap-2 sm:gap-4">
@@ -1298,14 +1336,14 @@ export function App() {
             {/* Desktop Command Palette Search Input */}
             <button
               onClick={() => setShowCommandPalette(true)}
-              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f3f9] hover:bg-white border border-slate-200 hover:border-[#405189] px-3 py-1.5 rounded-lg text-xs text-slate-500 w-44 md:w-64 transition-all shadow-2xs cursor-pointer group"
+              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f4f6] hover:bg-slate-200 border-none px-4 py-2 rounded-full text-[13px] text-slate-500 w-44 md:w-[320px] transition-all cursor-pointer group"
               title="Open Command Palette (Ctrl+K / Cmd+K)"
             >
               <div className="flex items-center gap-2 truncate">
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#405189] shrink-0" />
                 <span className="font-medium truncate">Search anything...</span>
               </div>
-              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-white group-hover:bg-slate-100 border border-slate-200 text-slate-500 shadow-2xs">
+              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-400">
                 ⌘K
               </kbd>
             </button>
@@ -1390,6 +1428,15 @@ export function App() {
             {/* Google NTP Atomic Clock (IST) Synced with time.google.com */}
             <GoogleClock variant="header" />
 
+            {/* CosmoLex '+ Create new' Button */}
+            <button 
+              onClick={() => setActiveTab('maintenance')}
+              className="hidden md:flex items-center gap-1.5 bg-[#202020] hover:bg-black text-white px-4 py-2 rounded-full text-[13px] font-semibold transition-colors shadow-sm ml-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create new</span>
+            </button>
+
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullScreen}
@@ -1409,10 +1456,10 @@ export function App() {
             </button>
 
             {/* User Profile Info & Dropdown */}
-            <div className="relative border-l border-slate-200 pl-3">
+            <div className="relative border-l border-slate-200 pl-4 ml-2">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2.5 p-1 rounded hover:bg-slate-100 transition-all text-left cursor-pointer"
+                className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-50 transition-all text-left cursor-pointer"
               >
                 <div className="relative group/navavatar shrink-0">
                   <img
@@ -1425,7 +1472,7 @@ export function App() {
                       e.stopPropagation();
                       setShowAvatarModal(true);
                     }}
-                    className="absolute -bottom-1 -right-1 p-0.5 bg-[#405189] text-white rounded-full shadow hover:bg-[#364473] transition-all cursor-pointer"
+                    className="absolute -bottom-1 -right-1 p-0.5 bg-slate-900 text-white rounded-full shadow hover:bg-black transition-all cursor-pointer"
                     title="Change Profile Photo"
                   >
                     <Camera className="w-2.5 h-2.5" />
@@ -1684,6 +1731,7 @@ export function App() {
       {showSettings && (
         <SettingsModal
           house={house}
+          currentUser={currentUser}
           currentUserRole={currentUserRole}
           users={users}
           records={records}
@@ -1695,6 +1743,7 @@ export function App() {
             setHouse(h);
             showToast('Property settings saved successfully!');
           }}
+          onUpdateUser={handleUpdateUser}
           onRestoreSystemBackup={handleRestoreSystemBackup}
         />
       )}

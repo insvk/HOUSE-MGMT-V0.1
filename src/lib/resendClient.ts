@@ -34,37 +34,31 @@ export interface BulkDispatchSummary {
   deliveries: EmailDispatchResult[];
 }
 
+let cachedResendApiKey: string | null = null;
+let cachedResendFromEmail: string | null = null;
+
+export const setGlobalResendConfig = (key: string | null, fromEmail: string | null) => {
+  if (key !== null) cachedResendApiKey = key;
+  if (fromEmail !== null) cachedResendFromEmail = fromEmail;
+};
+
 // Helper to get active Resend API Key
 export const getResendApiKey = (): string => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(RESEND_STORAGE_KEY);
-    if (saved && saved.trim()) return saved.trim();
-  }
+  if (cachedResendApiKey && cachedResendApiKey.trim()) return cachedResendApiKey.trim();
   return (import.meta.env.VITE_RESEND_API_KEY || DEFAULT_RESEND_API_KEY).trim();
 };
 
 export const setResendApiKey = (key: string): void => {
-  if (typeof window !== 'undefined') {
-    if (key.trim()) {
-      localStorage.setItem(RESEND_STORAGE_KEY, key.trim());
-    } else {
-      localStorage.removeItem(RESEND_STORAGE_KEY);
-    }
-  }
+  cachedResendApiKey = key.trim() || null;
 };
 
 export const getResendFromEmail = (): string => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(RESEND_FROM_STORAGE_KEY);
-    if (saved && saved.trim()) return saved.trim();
-  }
+  if (cachedResendFromEmail && cachedResendFromEmail.trim()) return cachedResendFromEmail.trim();
   return (import.meta.env.VITE_RESEND_FROM_EMAIL || DEFAULT_RESEND_FROM_EMAIL).trim();
 };
 
 export const setResendFromEmail = (fromEmail: string): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(RESEND_FROM_STORAGE_KEY, fromEmail.trim());
-  }
+  cachedResendFromEmail = fromEmail.trim();
 };
 
 export const isResendConfigured = (): boolean => {

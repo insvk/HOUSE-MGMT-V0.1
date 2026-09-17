@@ -23,6 +23,7 @@ import { cloudDb, isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface SettingsModalProps {
   house: House;
+  currentUser: User;
   currentUserRole: UserRole;
   users: User[];
   records: MaintenanceRecord[];
@@ -31,6 +32,7 @@ interface SettingsModalProps {
   auditLogs: AuditLog[];
   onClose: () => void;
   onUpdateHouse: (updated: House) => void;
+  onUpdateUser: (updated: User) => void;
   onRestoreSystemBackup?: (data: {
     house?: House;
     users?: User[];
@@ -43,6 +45,7 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   house,
+  currentUser,
   currentUserRole,
   users,
   records,
@@ -51,6 +54,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   auditLogs,
   onClose,
   onUpdateHouse,
+  onUpdateUser,
   onRestoreSystemBackup,
 }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'backup'>('general');
@@ -69,11 +73,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [restoreMessage, setRestoreMessage] = useState('');
 
-  const handleToggleAudio = () => {
+  const handleToggleAudio = async () => {
     const next = !audioEnabled;
     setAudioState(next);
     setAudioEnabled(next);
     if (next) playSuccessChime();
+
+    const updatedUser = {
+      ...currentUser,
+      preferences: {
+        ...currentUser.preferences,
+        audioEnabled: next
+      }
+    };
+    onUpdateUser(updatedUser);
   };
 
   const handleSaveGeneral = () => {

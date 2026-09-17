@@ -46,6 +46,7 @@ import {
 } from '../lib/resendClient';
 import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
 import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
+import { cloudDb } from '../lib/supabaseClient';
 
 interface NotificationCenterProps {
   logs: NotificationLog[];
@@ -142,14 +143,27 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
     setTimeout(() => setCopiedWhatsApp(false), 2500);
   };
 
-  const handleSaveResendSettings = (e: React.FormEvent) => {
+  const handleSaveResendSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setResendApiKey(resendKeyInput);
     setResendFromEmail(resendFromInput);
+    
+    // Persist to Cloud DB
+    if (currentUserRole === 'OWNER') {
+      await cloudDb.setSecret('RESEND_API_KEY', resendKeyInput);
+      if (house) {
+        const updatedHouse = {
+          ...house,
+          settings: { ...house.settings, resendFromEmail: resendFromInput }
+        };
+        await cloudDb.updateHouse(updatedHouse);
+      }
+    }
+
     setIsConfigured(isResendConfigured());
     setShowConfigModal(false);
     playSuccessChime();
-    if (showToast) showToast('Resend API Gateway settings updated successfully!');
+    if (showToast) showToast('Resend API Gateway settings synced to Cloud successfully!');
   };
 
   const handleTestConnectionPing = async () => {
