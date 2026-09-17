@@ -1158,27 +1158,31 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance & Expenses</span>}
             </button>
 
-            <button
-              onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'tenants' ? 'active font-bold text-white' : ''
-              }`}
-              title="Tenant Directory"
-            >
-              <Users className="w-4 h-4 shrink-0 text-[#f7b84b]" />
-              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Tenants & CRM</span>}
-            </button>
+            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+              <button
+                onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
+                  activeTab === 'tenants' ? 'active font-bold text-white' : ''
+                }`}
+                title="Tenant Directory"
+              >
+                <Users className="w-4 h-4 shrink-0 text-[#f7b84b]" />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Tenants & CRM</span>}
+              </button>
+            )}
 
-            <button
-              onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'analytics' ? 'active font-bold text-white' : ''
-              }`}
-              title="Financial Analytics"
-            >
-              <BarChart3 className="w-4 h-4 shrink-0 text-[#f06548]" />
-              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
-            </button>
+            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+              <button
+                onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
+                  activeTab === 'analytics' ? 'active font-bold text-white' : ''
+                }`}
+                title="Financial Analytics"
+              >
+                <BarChart3 className="w-4 h-4 shrink-0 text-[#f06548]" />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
+              </button>
+            )}
 
             <button
               onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
@@ -1191,27 +1195,31 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
-            <button
-              onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'notifications' ? 'active font-bold text-white' : ''
-              }`}
-              title="Email Notifications"
-            >
-              <Mail className="w-4 h-4 shrink-0 text-[#299cdb]" />
-              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Resend Notifications</span>}
-            </button>
+            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+              <button
+                onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
+                  activeTab === 'notifications' ? 'active font-bold text-white' : ''
+                }`}
+                title="Email Notifications"
+              >
+                <Mail className="w-4 h-4 shrink-0 text-[#299cdb]" />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Resend Notifications</span>}
+              </button>
+            )}
 
-            <button
-              onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
-                activeTab === 'audit' ? 'active font-bold text-white' : ''
-              }`}
-              title="Security Audit Log"
-            >
-              <ShieldCheck className="w-4 h-4 shrink-0 text-[#878a99]" />
-              {(!sidebarCollapsed || mobileSidebarOpen) && <span>Security Audit Trail</span>}
-            </button>
+            {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+              <button
+                onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold velzon-sidebar-item ${
+                  activeTab === 'audit' ? 'active font-bold text-white' : ''
+                }`}
+                title="Security Audit Log"
+              >
+                <ShieldCheck className="w-4 h-4 shrink-0 text-[#878a99]" />
+                {(!sidebarCollapsed || mobileSidebarOpen) && <span>Security Audit Trail</span>}
+              </button>
+            )}
           </div>
         </div>
 
@@ -1573,15 +1581,17 @@ export function App() {
             <Wrench className="w-5 h-5 mb-0.5" />
             <span className="text-[10px]">Expenses</span>
           </button>
-          <button
-            onClick={() => setActiveTab('tenants')}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'tenants' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
-            }`}
-          >
-            <Users className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px]">Tenants</span>
-          </button>
+          {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            <button
+              onClick={() => setActiveTab('tenants')}
+              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+                activeTab === 'tenants' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+              }`}
+            >
+              <Users className="w-5 h-5 mb-0.5" />
+              <span className="text-[10px]">Tenants</span>
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('invoices')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
