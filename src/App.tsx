@@ -12,7 +12,7 @@ import { AuditLogViewer } from './components/AuditLogViewer';
 import { SettingsModal } from './components/SettingsModal';
 import { EditExpenseModal } from './components/EditExpenseModal';
 import { CommandPalette } from './components/CommandPalette';
-import { AvatarUploadModal } from './components/AvatarUploadModal';
+import { EditProfileModal } from './components/EditProfileModal';
 import { SecurityDashboardModal } from './components/SecurityDashboardModal';
 import { GoogleClock } from './components/GoogleClock';
 import { exportMaintenanceToExcel, exportMaintenanceToPDF, exportTenantsToExcel } from './utils/exportUtils';
@@ -270,6 +270,7 @@ export function App() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [showSecurityDashboard, setShowSecurityDashboard] = useState<boolean>(false);
 
   // Global Ctrl+K / Cmd+K listener
@@ -1455,6 +1456,13 @@ export function App() {
                   </button>
 
                   <button
+                    onClick={() => { setShowProfileModal(true); setUserDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <UserCheck className="w-3.5 h-3.5 text-[#405189]" /> Edit Profile & Username
+                  </button>
+
+                  <button
                     onClick={() => { setActiveTab('tenants'); setUserDropdownOpen(false); }}
                     className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
                   >
@@ -1709,6 +1717,43 @@ export function App() {
           userName={currentUser.fullName}
           userEmail={currentUser.email}
           onSaveAvatar={handleSaveCurrentUserAvatar}
+        />
+      )}
+
+      {/* Edit Profile Modal */}
+      {showProfileModal && (
+        <EditProfileModal
+          currentUser={currentUser}
+          onSave={async (updatedProfile) => {
+            const newUsers = users.map(u => 
+              u.email === currentUser.email 
+                ? { ...u, ...updatedProfile } 
+                : u
+            );
+            setUsers(newUsers);
+            setCurrentUser(prev => ({ ...prev, ...updatedProfile }));
+            setShowProfileModal(false);
+            
+            // Background sync to Cloud DB (users table)
+            if (isSupabaseConfigured) {
+              const { error } = await supabase
+                .from('users')
+                .update({
+                  username: updatedProfile.username,
+                  "fullName": updatedProfile.fullName,
+                  phone: updatedProfile.phone,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('email', currentUser.email);
+                
+              if (error) {
+                console.error("Failed to sync profile to cloud", error);
+              }
+            }
+            
+            showToast('Profile updated successfully!');
+          }}
+          onClose={() => setShowProfileModal(false)}
         />
       )}
 

@@ -12,23 +12,35 @@ export const authService = {
    * Attempts Supabase Auth login. If user is not found but exists in legacy `users` table,
    * performs a seamless JIT migration into Supabase Auth.
    */
-  async login(email: string, password: string): Promise<{ success: boolean; user?: any; session?: any; error?: string }> {
+  async login(identifier: string, password: string): Promise<{ success: boolean; user?: any; session?: any; error?: string }> {
     if (!isSupabaseConfigured || !supabase) {
       return { success: false, error: 'Auth system offline' };
     }
     // Remove any zero-width spaces, invisible characters, and all whitespace
-    const cleanEmail = email.replace(/[\u200B-\u200D\uFEFF\s]/g, '').trim().toLowerCase();
+    const cleanIdentifier = identifier.replace(/[\u200B-\u200D\uFEFF\s]/g, '').trim().toLowerCase();
+
+    let targetEmail = cleanIdentifier;
+
+    // GOD MAXX Reverse Lookup: If it's a username (no @ symbol), resolve it to an email
+    if (!cleanIdentifier.includes('@')) {
+      const { data, error } = await supabase.from('users').select('email').eq('username', cleanIdentifier).maybeSingle();
+      if (data && data.email) {
+        targetEmail = data.email;
+      } else {
+        // If not found in DB, it will naturally fail the Auth step, but we let it proceed to trigger standard error
+      }
+    }
 
     let { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
+      email: targetEmail,
       password: password,
     });
 
     // GOD MAXX BYPASS: If rate limited on login but credentials match admin list, let them in natively
     if (authError && authError.message.toLowerCase().includes('rate limit')) {
-       if (DEFAULT_CREDENTIALS[cleanEmail] === password) {
+       if (DEFAULT_CREDENTIALS[targetEmail] === password) {
            console.warn("GOD MAXX: Bypassing rate limit for known admin.");
-           return { success: true, user: { email: cleanEmail, id: 'admin-bypass' } };
+           return { success: true, user: { email: targetEmail, id: 'admin-bypass' } };
        }
     }
 
@@ -38,21 +50,21 @@ export const authService = {
       const { data: legacyUsers, error: dbError } = await supabase
         .from('users')
         .select('*')
-        .eq('email', cleanEmail);
+        .eq('email', targetEmail);
 
       if (!dbError) {
         let legacyUser = legacyUsers && legacyUsers.length > 0 ? legacyUsers[0] : null;
-        let validPassword = legacyUser?.password || DEFAULT_CREDENTIALS[cleanEmail];
+        let validPassword = legacyUser?.password || DEFAULT_CREDENTIALS[targetEmail];
         
         // If they aren't in the DB, but they ARE in DEFAULT_CREDENTIALS, allow JIT migration for hardcoded admins
-        if (!legacyUser && DEFAULT_CREDENTIALS[cleanEmail]) {
-           validPassword = DEFAULT_CREDENTIALS[cleanEmail];
+        if (!legacyUser && DEFAULT_CREDENTIALS[targetEmail]) {
+           validPassword = DEFAULT_CREDENTIALS[targetEmail];
         }
 
         if (validPassword && validPassword === password) {
           // Passwords match! Migrate them to Supabase Auth silently
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: cleanEmail,
+            email: targetEmail,
             password: password,
           });
 
@@ -60,7 +72,7 @@ export const authService = {
             // GOD MAXX BYPASS: If migration fails due to rate limit, but credentials are valid, force login
             if (signUpError.message.toLowerCase().includes('rate limit') || signUpError.message.toLowerCase().includes('invalid')) {
                 console.warn(`GOD MAXX: Migration blocked by Supabase (${signUpError.message}), but credentials verified. Forcing login.`);
-                return { success: true, user: { email: cleanEmail, id: 'admin-bypass' } };
+                return { success: true, user: { email: targetEmail, id: 'admin-bypass' } };
             }
             return { success: false, error: `Migration failed: ${signUpError.message}` };
           }
@@ -75,13 +87,13 @@ export const authService = {
                   password: null, // Scrub the plaintext password securely
                   updated_at: new Date().toISOString()
                 })
-                .eq('email', cleanEmail);
+                .eq('email', targetEmail);
             } else {
               // Insert missing admin into public.users
               await supabase.from('users').insert({
                 auth_id: signUpData.user.id,
-                email: cleanEmail,
-                "fullName": cleanEmail.split('@')[0],
+                email: targetEmail,
+                "fullName": targetEmail.split('@')[0],
                 role: 'OWNER',
                 "occupancyStatus": 'active'
               });
@@ -89,7 +101,7 @@ export const authService = {
             
             // Re-attempt login to ensure session is properly established
             const retryAuth = await supabase.auth.signInWithPassword({
-              email: cleanEmail,
+              email: targetEmail,
               password: password,
             });
             authData = retryAuth.data;

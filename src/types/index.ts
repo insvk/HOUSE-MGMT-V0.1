@@ -13,6 +13,7 @@ export type FlatNumber = typeof AVAILABLE_FLATS[number];
 export interface User {
   id: string;
   email: string;
+  username?: string;
   password?: string;
   fullName: string;
   phone: string;

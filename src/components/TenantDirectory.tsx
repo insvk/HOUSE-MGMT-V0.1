@@ -56,6 +56,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   // Form State
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('Tenant@123');
   const [phone, setPhone] = useState('');
   const [flatNumber, setFlatNumber] = useState('');
@@ -89,6 +90,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setEditingUser(null);
     setFullName('');
     setEmail('');
+    setUsername('');
     setPassword('Tenant@123');
     setPhone('');
     setFlatNumber(AVAILABLE_FLATS[0]);
@@ -109,6 +111,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setEditingUser(user);
     setFullName(user.fullName);
     setEmail(user.email);
+    setUsername(user.username || '');
     setPassword(user.password || 'Tenant@123');
     setPhone(user.phone);
     setFlatNumber(user.flatNumber);
@@ -134,6 +137,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         ...editingUser,
         fullName,
         email: email.trim().toLowerCase(),
+        username: username.trim().toLowerCase(),
         password: password || editingUser.password || 'Tenant@123',
         phone,
         flatNumber,
@@ -151,6 +155,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
       onAddUser({
         fullName,
         email: email.trim().toLowerCase(),
+        username: username.trim().toLowerCase(),
         password: password || 'Tenant@123',
         phone,
         flatNumber,
@@ -489,7 +494,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name *</label>
                   <input
@@ -498,6 +503,17 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                     placeholder="e.g. Anand Sundaram"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Username</label>
+                  <input
+                    type="text"
+                    placeholder="@johndoe"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
                   />
                 </div>

@@ -56,6 +56,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   // Sign Up Form States
   const [fullName, setFullName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
+  const [signupUsername, setSignupUsername] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [flatNumber, setFlatNumber] = useState('');
@@ -140,7 +141,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const cleanPassword = loginPassword;
 
     if (!cleanEmail) {
-      setErrorMessage('Please enter your email address');
+      setErrorMessage('Please enter your email or username');
       return;
     }
 
@@ -201,8 +202,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const cleanFlat = flatNumber.trim();
     const cleanPhone = phone.trim() || '+91 98421 00000';
 
-    if (!cleanName || !cleanEmail || !cleanPassword || !cleanFlat) {
-      setErrorMessage('Please fill in all required fields (Name, Email, Password, Flat Number).');
+    const cleanUsername = signupUsername.trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail || !cleanUsername || !cleanPassword || !cleanFlat) {
+      setErrorMessage('Please fill in all required fields (Name, Username, Email, Password, Flat Number).');
       return;
     }
 
@@ -240,6 +243,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const newRegisteredUser: User = {
         id: signUpRes.user?.id || generateUUID(),
         email: cleanEmail,
+        username: cleanUsername,
         password: cleanPassword, // Stored locally only until fully integrated
         fullName: cleanName,
         phone: cleanPhone,
@@ -425,14 +429,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                    EMAIL
+                    EMAIL OR USERNAME
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="name@company.com"
+                    placeholder="name@company.com or @username"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all shadow-sm"
                   />
                 </div>
@@ -621,16 +625,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="resident@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username *</label>
+                    <input
+                      type="text"
+                      required
+                      value={signupUsername}
+                      onChange={(e) => setSignupUsername(e.target.value)}
+                      placeholder="@johndoe"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      placeholder="resident@example.com"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-black transition-all shadow-sm"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
