@@ -530,7 +530,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 text-sm">{log.subject}</h4>
-                    <p className="text-slate-600 text-xs mt-1">{log.content}</p>
+                    <p className="text-slate-600 text-xs mt-1 capitalize">
+                      {log.type.replace(/_/g, ' ')} • To: {log.recipientEmail}
+                    </p>
                     <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mt-2 block">
                       {new Date(log.sentAt).toLocaleString('en-IN')}
                     </span>
