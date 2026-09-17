@@ -89,7 +89,7 @@ export function App() {
           parsed.forEach((u: User) => {
             if (!u.email || isDummyLegacyAccount(u.email)) return;
             const existing = map.get(u.email.toLowerCase());
-            const isOwner = u.email.toLowerCase() === 'sampathkumar@chemadur.com';
+            const isOwner = u.email.toLowerCase() === 'sampathkumar@chemadura.com';
             if (existing) {
               map.set(u.email.toLowerCase(), {
                 ...existing,
@@ -351,13 +351,13 @@ export function App() {
                   ...ru,
                   flatNumber: normalizeFlat(ru.flatNumber || existing.flatNumber),
                   password: ru.password || existing.password,
-                  role: emailKey === 'sampathkumar@chemadur.com' ? 'OWNER' : (ru.role || existing.role || 'TENANT'),
+                  role: emailKey === 'sampathkumar@chemadura.com' ? 'OWNER' : (ru.role || existing.role || 'TENANT'),
                 });
               } else {
                 userMap.set(emailKey, {
                   ...ru,
                   flatNumber: normalizeFlat(ru.flatNumber),
-                  role: emailKey === 'sampathkumar@chemadur.com' ? 'OWNER' : (ru.role || 'TENANT'),
+                  role: emailKey === 'sampathkumar@chemadura.com' ? 'OWNER' : (ru.role || 'TENANT'),
                 });
               }
             });
@@ -818,7 +818,7 @@ export function App() {
       ...userData,
       id: generateUUID(),
     };
-    if (newUser.email.toLowerCase() === 'sampathkumar@chemadur.com') {
+    if (newUser.email.toLowerCase() === 'sampathkumar@chemadura.com') {
       newUser.role = 'OWNER';
     }
 
@@ -854,7 +854,7 @@ export function App() {
       return;
     }
     
-    if (updatedUser.email.toLowerCase() === 'sampathkumar@chemadur.com') {
+    if (updatedUser.email.toLowerCase() === 'sampathkumar@chemadura.com') {
       updatedUser.role = 'OWNER';
     }
 
@@ -1216,7 +1216,7 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance</span>}
             </button>
 
-            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
@@ -1229,7 +1229,7 @@ export function App() {
               </button>
             )}
 
-            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
@@ -1256,7 +1256,7 @@ export function App() {
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
-            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
@@ -1269,7 +1269,7 @@ export function App() {
               </button>
             )}
 
-            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
+            {(currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
               <button
                 onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
@@ -1396,7 +1396,7 @@ export function App() {
             </button>
 
             {/* Sampath Kumar God Access Badge */}
-            {currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' && (
+            {currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' && (
               <div 
                 onClick={() => setActiveTab('dashboard')}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-indigo-500/15 border border-amber-400/40 text-amber-900 font-extrabold text-[10px] sm:text-xs tracking-wide uppercase shadow-xs cursor-pointer hover:bg-amber-100/50 transition-colors"
@@ -1677,7 +1677,7 @@ export function App() {
             <Wrench className="w-5 h-5 mb-0.5" />
             <span className="text-[10px]">Expenses</span>
           </button>
-          {(currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
+          {(currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUser.email.toLowerCase() === 'production.chemadura26@gmail.com' || currentUser.role === 'OWNER') && (
             <button
               onClick={() => setActiveTab('tenants')}
               className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${

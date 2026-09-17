@@ -55,7 +55,7 @@ npm run dev
 
 ```env
 VITE_APP_NAME="Madura House Maintenance"
-VITE_ADMIN_EMAIL="sampathkumar@chemadur.com"
+VITE_ADMIN_EMAIL="sampathkumar@chemadura.com"
 VITE_SUPABASE_URL="https://your-supabase-id.supabase.co"
 VITE_SUPABASE_ANON_KEY="your-anon-key"
 RESEND_API_KEY="re_123456789"

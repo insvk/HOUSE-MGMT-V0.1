@@ -64,7 +64,7 @@ X-House-ID: madura-house-uuid
     "id": "exp-102",
     "particular": "Water Meter & Pump Repairs",
     "total_amount": 2950.00,
-    "added_by": "sampathkumar@chemadur.com"
+    "added_by": "sampathkumar@chemadura.com"
   },
   "updated_maintenance": {
     "grand_total": 8450.00,

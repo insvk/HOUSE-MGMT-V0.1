@@ -60,6 +60,6 @@ house-maintenance-platform/
 ## 📄 Key File Specifications
 
 - **`database/schema.sql`**: Full PostgreSQL DDL defining `users`, `roles`, `houses`, `maintenance_records`, `expenses`, `invoices`, `notifications`, `audit_logs`, and `analytics_cache`. Includes Row-Level Security policies.
-- **`src/App.tsx`**: Main application shell with tab navigation, role switcher (Owner `sampathkumar@chemadur.com`, Admin Tenant, Regular Tenant), and state handlers.
+- **`src/App.tsx`**: Main application shell with tab navigation, role switcher (Owner `sampathkumar@chemadura.com`, Admin Tenant, Regular Tenant), and state handlers.
 - **`src/components/MaintenanceModule.tsx`**: Interactive expense entry modal and auto-calculating monthly maintenance summary.
 - **`src/components/AnalyticsDashboard.tsx`**: Visualized expense trends and category pie charts using Recharts.

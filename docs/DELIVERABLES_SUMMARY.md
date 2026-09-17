@@ -23,7 +23,7 @@ This comprehensive package contains **everything needed** to build, deploy, and 
 #### 🏗️ Architecture & Database
 - [x] Full database schema with 9 tables (`users`, `roles`, `houses`, `maintenance_records`, `expenses`, `invoices`, `notifications`, `audit_logs`, `analytics_cache`)
 - [x] PostgreSQL DDL script (`database/schema.sql`)
-- [x] Seed data script (`database/seed-data.sql`) with preconfigured owner `sampathkumar@chemadur.com`
+- [x] Seed data script (`database/seed-data.sql`) with preconfigured owner `sampathkumar@chemadura.com`
 - [x] RLS (Row-Level Security) policies for multi-tenant isolation
 
 #### 💻 Interactive Web Application
@@ -58,7 +58,7 @@ This comprehensive package contains **everything needed** to build, deploy, and 
 
 ## 👥 User Roles & Capabilities Matrix
 
-| Feature / Action | House Owner (`sampathkumar@chemadur.com`) | Admin Tenant | Regular Tenant |
+| Feature / Action | House Owner (`sampathkumar@chemadura.com`) | Admin Tenant | Regular Tenant |
 |------------------|-------------------------------------------|--------------|----------------|
 | View Monthly Maintenance | ✅ | ✅ | ✅ |
 | View Individual Contribution | ✅ | ✅ | ✅ |

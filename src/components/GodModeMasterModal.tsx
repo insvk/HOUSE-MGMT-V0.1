@@ -322,7 +322,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
     if (isCreatingResident) return;
     const target = users.find((u) => u.id === selectedUserId);
     if (!target) return;
-    if (target.email === 'sampathkumar@chemadur.com') {
+    if (target.email === 'sampathkumar@chemadura.com') {
       alert('Cannot delete the Property Owner account.');
       return;
     }
@@ -443,7 +443,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
         gstApplicable: expGst,
         gstAmount: expGst && expGstAmount ? parseFloat(expGstAmount) : 0,
         notes: expNotes.trim(),
-        addedBy: 'sampathkumar@chemadur.com',
+        addedBy: 'sampathkumar@chemadura.com',
         invoiceUrl: expInvoiceUrl,
         invoiceFileName: expInvoiceFileName,
         invoiceFileType: expInvoiceFileType,
@@ -474,7 +474,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
       fileSize: 245000,
       fileType: 'application/pdf',
       storagePath: `invoices/${Date.now()}_${invoiceFileName.replace(/\s+/g, '_')}.pdf`,
-      uploadedBy: 'sampathkumar@chemadur.com',
+      uploadedBy: 'sampathkumar@chemadura.com',
       ocrText: invoiceOcrText.trim() || `Official invoice verified by Sampath Kumar. Amount: ₹${invoiceAmount || '0'}`,
     });
 
@@ -528,7 +528,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   GOD ACCESS MASTER
                 </span>
                 <span className="text-xs text-indigo-200 font-mono hidden sm:inline">
-                  sampathkumar@chemadur.com
+                  sampathkumar@chemadura.com
                 </span>
               </div>
               <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight">

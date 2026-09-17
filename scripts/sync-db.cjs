@@ -95,7 +95,7 @@ async function runSync() {
   const permanentUsers = [
     {
       id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      email: 'sampathkumar@chemadur.com',
+      email: 'sampathkumar@chemadura.com',
       phone: '+91 98421 00000',
       full_name: 'Sampath Kumar',
       flat_number: 'Owner Suite',

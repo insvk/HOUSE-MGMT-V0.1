@@ -14,7 +14,7 @@ export const initialHouse: House = {
 // Default credential constants — used only for initial login matching.
 // NOT stored in the User objects to prevent leakage via localStorage/state.
 export const DEFAULT_CREDENTIALS: Record<string, string> = {
-  'sampathkumar@chemadur.com': 'Sampath@123',
+  'sampathkumar@chemadura.com': 'Sampath@123',
   'production.chemadura26@gmail.com': 'Sampath@123',
   'rsivanaresh@gmail.com': 'Sivakalai#83',
 };
@@ -25,7 +25,7 @@ export const DEFAULT_CREDENTIALS: Record<string, string> = {
 export const isDummyLegacyAccount = (email?: string): boolean => {
   if (!email) return true;
   const lower = email.toLowerCase().trim();
-  if (lower === 'sampathkumar@chemadur.com' || lower === 'production.chemadura26@gmail.com' || lower === 'rsivanaresh@gmail.com') return false; // Primary Admin / Owner Accounts
+  if (lower === 'sampathkumar@chemadura.com' || lower === 'production.chemadura26@gmail.com' || lower === 'rsivanaresh@gmail.com') return false; // Primary Admin / Owner Accounts
   if (
     lower.endsWith('@madurahouse.local') ||
     lower.endsWith('@test.local') ||
@@ -56,7 +56,7 @@ export const initialUsers: User[] = [
   },
   {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    email: 'sampathkumar@chemadur.com',
+    email: 'sampathkumar@chemadura.com',
     fullName: 'Sampath Kumar',
     phone: '+91 98421 00000',
     flatNumber: 'Owner Suite',
@@ -113,7 +113,7 @@ export const initialMaintenanceRecords: MaintenanceRecord[] = [
     activeTenantsCount: 1,
     individualContribution: 0,
     notes: 'September 2026 Active Maintenance Period',
-    createdBy: 'sampathkumar@chemadur.com',
+    createdBy: 'sampathkumar@chemadura.com',
     createdAt: '2026-09-01T00:00:00.000Z',
     expenses: [],
   },
@@ -130,7 +130,7 @@ export const initialAuditLogs: AuditLog[] = [
   {
     id: 'aaaa0000-0000-4000-8000-000000000000',
     userId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    userEmail: 'sampathkumar@chemadur.com',
+    userEmail: 'sampathkumar@chemadura.com',
     action: 'SYSTEM_INITIALIZED_CLEAN_DEPLOYMENT',
     resourceType: 'platform_core',
     resourceId: 'madura-house-system',

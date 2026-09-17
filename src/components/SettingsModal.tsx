@@ -284,7 +284,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 font-mono text-[11px]">
                 <div className="text-[#405189] font-bold">PROPERTY ADMIN CREDENTIALS:</div>
-                <div>Email: <span className="text-slate-900 font-bold">sampathkumar@chemadur.com</span></div>
+                <div>Email: <span className="text-slate-900 font-bold">sampathkumar@chemadura.com</span></div>
                 <div>Role: <span className="text-[#0ab39c] font-bold">OWNER (Super Admin)</span></div>
               </div>
             </div>

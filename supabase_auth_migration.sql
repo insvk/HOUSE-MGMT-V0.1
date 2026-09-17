@@ -84,7 +84,7 @@ CREATE POLICY "Admins can update any profile" ON public.users
     USING (
         (SELECT role FROM public.users WHERE auth_id = auth.uid() LIMIT 1) IN ('OWNER', 'ADMIN_TENANT')
         OR
-        current_setting('request.jwt.claims', true)::json->>'email' IN ('sampathkumar@chemadur.com', 'production.chemadura26@gmail.com')
+        current_setting('request.jwt.claims', true)::json->>'email' IN ('sampathkumar@chemadura.com', 'production.chemadura26@gmail.com')
     );
 
 -- 5. IMPORTANT MANUAL STEPS IN SUPABASE DASHBOARD:

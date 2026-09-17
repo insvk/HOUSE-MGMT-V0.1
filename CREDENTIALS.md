@@ -26,7 +26,7 @@ The Property Owner has unrestricted authority over all financial ledgers, tenant
 | Field | Credentials / Value |
 |---|---|
 | **Full Name** | Sampath Kumar |
-| **Email Address** | `sampathkumar@chemadur.com` |
+| **Email Address** | `sampathkumar@chemadura.com` |
 | **Password** | `Sampath@123` |
 | **Role** | `OWNER` (Primary Administrative Authority) |
 | **Flat / Unit** | `Owner Suite` |

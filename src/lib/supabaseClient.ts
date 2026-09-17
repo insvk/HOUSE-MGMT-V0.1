@@ -174,7 +174,7 @@ export const cloudDb = {
           phone: u.phone || '',
           fullName: u.full_name || '',
           flatNumber: u.flat_number || 'GF',
-          role: u.email && u.email.toLowerCase() === 'sampathkumar@chemadur.com' ? 'OWNER' : (u.role || 'TENANT'),
+          role: u.email && u.email.toLowerCase() === 'sampathkumar@chemadura.com' ? 'OWNER' : (u.role || 'TENANT'),
           occupancyStatus: u.occupancy_status || 'active',
           paymentStatus: u.payment_status || 'paid',
           avatarUrl: u.avatar_url,

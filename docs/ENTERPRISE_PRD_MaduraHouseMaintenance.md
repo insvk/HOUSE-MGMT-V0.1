@@ -106,7 +106,7 @@ CREATE POLICY "madura_house_expenses_read" ON expenses
 
 ## 👥 USER ROLES & DEFAULT CREDENTIALS
 
-- **House Owner:** `sampathkumar@chemadur.com` (Full Admin Privileges)
+- **House Owner:** `sampathkumar@chemadura.com` (Full Admin Privileges)
 - **Admin Tenant:** `admin.tenant@madurahouse.local` (Expense Entry & Invoices)
 - **Regular Tenant:** `tenant@madurahouse.local` (Read-only View & Downloads)
 

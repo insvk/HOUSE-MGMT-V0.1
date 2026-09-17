@@ -51,7 +51,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
       fileSize: Math.floor(Math.random() * 800000) + 200000,
       fileType: isPdf ? 'application/pdf' : 'image/png',
       storagePath: `invoices/2026/09/${fileName}`,
-      uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin@chemadur.com'),
+      uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadura.com' : 'admin@chemadur.com'),
       ocrText: customText || `OCR EXTRACTED SUMMARY FOR ${fileName}: Amount Rs. ${(Math.random() * 2000 + 1000).toFixed(2)}. Verified Tax Invoice. Madura House Maintenance.`,
     };
 
@@ -69,7 +69,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
           fileSize: file.size,
           fileType: isPdf ? 'application/pdf' : 'image/jpeg',
           storagePath: `invoices/${Date.now()}_${file.name}`,
-          uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadur.com' : 'admin@chemadur.com'),
+          uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadura.com' : 'admin@chemadur.com'),
           ocrText: `OCR EXTRACTED SUMMARY FOR ${file.name}: Official verified maintenance receipt under Madura House administration.`,
         };
         onUploadInvoice(newInv);

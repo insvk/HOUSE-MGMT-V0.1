@@ -123,7 +123,7 @@ http://localhost:5173  (or http://localhost:3000)
 
 ### Default Credentials
 ```
-Admin Email: sampathkumar@chemadur.com
+Admin Email: sampathkumar@chemadura.com
 Admin Password: Sampath@123
 Property: Madura House
 ```
@@ -156,7 +156,7 @@ ALL 100% FREE 🎉
 
 ### ✅ Multi-Role User Management
 - Multi-role authentication (House Owner, Admin Tenant, Regular Tenant)
-- Default property administrator: `sampathkumar@chemadur.com`
+- Default property administrator: `sampathkumar@chemadura.com`
 - Email & Phone OTP support
 - Flat assignment and tenant status tracking (Active, Inactive, Evicted)
 
@@ -197,7 +197,7 @@ ALL 100% FREE 🎉
 
 | Role | Email | Privileges |
 |------|-------|------------|
-| **House Owner** | `sampathkumar@chemadur.com` | Full system control, tenant assignment, expense approval, audit logs |
+| **House Owner** | `sampathkumar@chemadura.com` | Full system control, tenant assignment, expense approval, audit logs |
 | **Admin Tenant** | `admin.tenant@madurahouse.local` | Expense creation, invoice uploads, notification triggers |
 | **Regular Tenant** | `tenant@madurahouse.local` | Expense viewing, contribution tracking, invoice downloads |
 

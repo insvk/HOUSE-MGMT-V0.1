@@ -118,7 +118,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [activeDashboardTab, setActiveDashboardTab] = useState<'property' | 'personal' | 'activities'>('property');
 
   // God Mode Master Modal State (Exclusively for Sampath Kumar / Owner)
-  const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadur.com' || currentUserRole === 'OWNER';
+  const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUserRole === 'OWNER';
   const [showGodModal, setShowGodModal] = useState<boolean>(false);
   const [godTab, setGodTab] = useState<GodModeTab>('property');
   const [showCmdModal, setShowCmdModal] = useState<boolean>(false);

@@ -8,7 +8,7 @@
 INSERT INTO users (id, email, password, phone, full_name, flat_number, occupancy_status)
 VALUES (
   'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  'sampathkumar@chemadur.com',
+  'sampathkumar@chemadura.com',
   'Sampath@123',
   '+91-9842100000',
   'Sampath Kumar',

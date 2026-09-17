@@ -253,7 +253,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.text('• Monthly maintenance share must be remitted by the 10th of the current month.', 18, summaryBoxY + 11);
   doc.text('• Payment modes: Direct Bank Transfer (NEFT/IMPS) or UPI to Property Management Account.', 18, summaryBoxY + 15);
   doc.text(`• Individual tenant share amount: Rs. ${record.individualContribution.toFixed(2)} due per flat.`, 18, summaryBoxY + 19);
-  doc.text('• For billing queries, contact Property Administration at sampathkumar@chemadur.com.', 18, summaryBoxY + 23);
+  doc.text('• For billing queries, contact Property Administration at sampathkumar@chemadura.com.', 18, summaryBoxY + 23);
 
   // Official Signature Block
   const sigY = summaryBoxY + 36;
