@@ -21,7 +21,10 @@
       "output": "release"
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "mac": {
       "target": "dmg"
