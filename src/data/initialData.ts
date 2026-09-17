@@ -39,6 +39,22 @@ export const isDummyLegacyAccount = (email?: string): boolean => {
 
 export const initialUsers: User[] = [
   {
+    id: 'b1ffcd99-8d0c-4ef8-bb6d-6bb9bd380a22',
+    email: 'rsivanaresh@gmail.com',
+    fullName: 'Siva Naresh',
+    phone: '+91 98421 00001',
+    flatNumber: 'Admin Suite',
+    role: 'OWNER',
+    occupancyStatus: 'active',
+    paymentStatus: 'paid',
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+    moveInDate: '2020-01-15',
+    rentAmount: 0,
+    depositAmount: 0,
+    emergencyContact: '+91 98421 99999',
+    notes: 'Platform Administrator',
+  },
+  {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     email: 'sampathkumar@chemadur.com',
     fullName: 'Sampath Kumar',
