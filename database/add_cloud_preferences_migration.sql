@@ -1,7 +1,13 @@
 -- Add JSONB columns for standard configuration
 ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'TENANT';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS rent_amount DECIMAL(12, 2);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deposit_amount DECIMAL(12, 2);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'paid';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS move_in_date DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS notes TEXT;
 ALTER TABLE houses ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb;
-
 -- Create highly-restricted System Secrets Table
 CREATE TABLE IF NOT EXISTS system_secrets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
