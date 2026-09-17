@@ -654,7 +654,7 @@ export function App() {
   };
 
   // Add Expense Handler
-  const handleAddExpense = (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
+  const handleAddExpense = async (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
     if (isOffline) {
       showToast('Cannot add expense while offline.');
       playWarningChime();
@@ -703,7 +703,7 @@ export function App() {
   };
 
   // Edit Expense Handler
-  const handleSaveEditedExpense = (updatedExpense: Expense) => {
+  const handleSaveEditedExpense = async (updatedExpense: Expense) => {
     if (isOffline) {
       showToast('Cannot edit expense while offline.');
       playWarningChime();
@@ -745,7 +745,7 @@ export function App() {
   };
 
   // Delete Expense Handler
-  const handleDeleteExpense = (expenseId: string) => {
+  const handleDeleteExpense = async (expenseId: string) => {
     if (isOffline) {
       showToast('Cannot delete expense while offline.');
       playWarningChime();
@@ -775,7 +775,7 @@ export function App() {
   };
 
   // User Management Handlers
-  const handleAddUser = (userData: Omit<User, 'id'>) => {
+  const handleAddUser = async (userData: Omit<User, 'id'>) => {
     if (isOffline) {
       showToast('Cannot register users while offline.');
       playWarningChime();
@@ -811,7 +811,7 @@ export function App() {
     showToast(`Registered resident ${userData.fullName} (${userData.flatNumber})`);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
+  const handleUpdateUser = async (updatedUser: User) => {
     if (isOffline) {
       showToast('Cannot update users while offline.');
       playWarningChime();
@@ -846,7 +846,7 @@ export function App() {
     showToast(`Updated complete profile for ${updatedUser.fullName}`);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (isOffline) {
       showToast('Cannot delete users while offline.');
       playWarningChime();
