@@ -351,12 +351,13 @@ export function App() {
                   ...ru,
                   flatNumber: normalizeFlat(ru.flatNumber || existing.flatNumber),
                   password: ru.password || existing.password,
-                  role: ru.role || existing.role || 'TENANT',
+                  role: emailKey === 'sampathkumar@chemadur.com' ? 'OWNER' : (ru.role || existing.role || 'TENANT'),
                 });
               } else {
                 userMap.set(emailKey, {
                   ...ru,
                   flatNumber: normalizeFlat(ru.flatNumber),
+                  role: emailKey === 'sampathkumar@chemadur.com' ? 'OWNER' : (ru.role || 'TENANT'),
                 });
               }
             });
@@ -817,6 +818,9 @@ export function App() {
       ...userData,
       id: generateUUID(),
     };
+    if (newUser.email.toLowerCase() === 'sampathkumar@chemadur.com') {
+      newUser.role = 'OWNER';
+    }
 
     setUsers((prev) => {
       const updated = [...prev, newUser];
@@ -849,6 +853,11 @@ export function App() {
       playWarningChime();
       return;
     }
+    
+    if (updatedUser.email.toLowerCase() === 'sampathkumar@chemadur.com') {
+      updatedUser.role = 'OWNER';
+    }
+
     setUsers((prev) => {
       const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
       try {
