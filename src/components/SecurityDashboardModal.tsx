@@ -22,14 +22,19 @@ export const SecurityDashboardModal: React.FC<SecurityDashboardModalProps> = ({ 
   const [secret, setSecret] = useState('');
   const [factorId, setFactorId] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false); // Should really fetch from Supabase factors list
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   // Sessions State
   const [sessions, setSessions] = useState<any[]>([]);
 
   useEffect(() => {
-    if (isOpen && activeTab === 'sessions') {
-      fetchSessions();
+    if (isOpen) {
+      authService.get2FAStatus().then((res) => {
+        if (res && res.enabled) setIs2FAEnabled(true);
+      });
+      if (activeTab === 'sessions') {
+        fetchSessions();
+      }
     }
   }, [isOpen, activeTab]);
 

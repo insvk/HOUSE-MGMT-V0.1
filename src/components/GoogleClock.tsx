@@ -5,9 +5,10 @@ import { RefreshCw, X, Sun, Calendar, MapPin, Clock, ShieldCheck } from 'lucide-
 interface GoogleClockProps {
   variant?: 'card' | 'header' | 'floating';
   className?: string;
+  onPreferenceChange?: (is24h: boolean) => void;
 }
 
-export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', className = '' }) => {
+export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', className = '', onPreferenceChange }) => {
   const {
     timeString,
     hoursStr,
@@ -83,7 +84,7 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
               className="relative w-full max-w-xl animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
-              <GoogleClock variant="card" />
+              <GoogleClock variant="card" onPreferenceChange={onPreferenceChange} />
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
@@ -139,7 +140,10 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
           <div className="flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200/80 shadow-2xs">
             <button
               type="button"
-              onClick={() => setIs24Hour(false)}
+              onClick={() => {
+                setIs24Hour(false);
+                onPreferenceChange?.(false);
+              }}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 !is24Hour
                   ? 'bg-white text-slate-900 shadow-xs'
@@ -150,7 +154,10 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             </button>
             <button
               type="button"
-              onClick={() => setIs24Hour(true)}
+              onClick={() => {
+                setIs24Hour(true);
+                onPreferenceChange?.(true);
+              }}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 is24Hour
                   ? 'bg-white text-slate-900 shadow-xs'

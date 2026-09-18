@@ -144,6 +144,35 @@ CREATE TABLE IF NOT EXISTS public.security_events (
 );
 
 -- ============================================================================
+-- 4B. ENSURE EXTENDED COLUMNS ON EXPENSES, AUDIT_LOGS, INVOICES, RECORDS
+-- ============================================================================
+DO $$ BEGIN
+  -- Expenses extended document attachment fields
+  BEGIN ALTER TABLE public.expenses ADD COLUMN invoice_url TEXT; EXCEPTION WHEN duplicate_column THEN END;
+  BEGIN ALTER TABLE public.expenses ADD COLUMN invoice_file_name VARCHAR(255); EXCEPTION WHEN duplicate_column THEN END;
+  BEGIN ALTER TABLE public.expenses ADD COLUMN invoice_file_type VARCHAR(50); EXCEPTION WHEN duplicate_column THEN END;
+  BEGIN ALTER TABLE public.expenses ADD COLUMN invoice_file_size INTEGER; EXCEPTION WHEN duplicate_column THEN END;
+  BEGIN ALTER TABLE public.expenses ADD COLUMN ocr_text TEXT; EXCEPTION WHEN duplicate_column THEN END;
+  BEGIN ALTER TABLE public.expenses ALTER COLUMN added_by DROP NOT NULL; EXCEPTION WHEN others THEN END;
+  
+  -- Maintenance records created_by relaxation
+  BEGIN ALTER TABLE public.maintenance_records ALTER COLUMN created_by DROP NOT NULL; EXCEPTION WHEN others THEN END;
+  
+  -- Audit logs schema flexibility
+  BEGIN ALTER TABLE public.audit_logs ALTER COLUMN resource_id TYPE TEXT; EXCEPTION WHEN others THEN END;
+  BEGIN ALTER TABLE public.audit_logs ADD COLUMN user_email TEXT; EXCEPTION WHEN duplicate_column THEN END;
+  
+  -- Realtime publications
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.users; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.houses; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.maintenance_records; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.expenses; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.invoices; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications; EXCEPTION WHEN duplicate_object THEN END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.audit_logs; EXCEPTION WHEN duplicate_object THEN END;
+END $$;
+
+-- ============================================================================
 -- 5. ADD PERFORMANCE INDEXES
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_users_auth_id   ON public.users(auth_id);

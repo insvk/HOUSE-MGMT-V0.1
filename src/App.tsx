@@ -431,6 +431,13 @@ export function App() {
         if (remoteLogs && remoteLogs.length > 0) {
           setNotificationLogs(remoteLogs);
         }
+
+        // 6. Fetch Security Audit Logs
+        const remoteAudit = await cloudDb.getAuditLogs();
+        if (remoteAudit && remoteAudit.length > 0) {
+          setAuditLogs(remoteAudit);
+        }
+
         setCloudConnected(true);
         setLastSynced(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
         showToast('Cloud PostgreSQL sync completed!');
@@ -731,6 +738,9 @@ export function App() {
     const updatedUser = { ...currentUser, avatarUrl: newAvatarUrl };
     setCurrentUser(updatedUser);
 
+    const previousAvatar = currentUser.avatarUrl;
+    const previousUsers = users;
+
     // 2. Update users list and write to local storage vault immediately
     setUsers((prev) => {
       const updated = prev.map((u) =>
@@ -747,27 +757,59 @@ export function App() {
     });
 
     // 3. Persist to Supabase Cloud PostgreSQL
-    try {
-      await cloudDb.updateUserAvatar(currentUser.email, newAvatarUrl);
-    } catch (e) {
-      console.warn('Cloud DB avatar update fallback:', e);
+    if (isSupabaseConfigured) {
+      const res = await cloudDb.updateUserAvatar(currentUser.email, newAvatarUrl);
+      if (!res.success) {
+        setCurrentUser((prev) => ({ ...prev, avatarUrl: previousAvatar }));
+        setUsers(previousUsers);
+        try {
+          localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
+        } catch {}
+        playWarningChime();
+        showToast(`❌ Failed to update profile photo in database: ${res.error || 'Unknown error'}`);
+        return;
+      }
     }
 
     // 4. Record Audit Log
-    const avatarAudit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUser.id,
-      userEmail: currentUser.email,
-      action: 'UPDATE_PROFILE_AVATAR',
-      resourceType: 'users',
-      resourceId: currentUser.email,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [avatarAudit, ...prev]);
+    await recordAudit('UPDATE_PROFILE_AVATAR', 'users', currentUser.email);
 
     playSuccessChime();
     showToast('Profile picture updated and synced to cloud!');
+  };
+
+  // Helper to persist audit logs reliably to cloud DB
+  const recordAudit = async (action: string, resourceType: string, resourceId?: string) => {
+    const newAudit: AuditLog = {
+      id: generateUUID(),
+      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
+      userEmail: currentUser.email,
+      action,
+      resourceType,
+      resourceId,
+      timestamp: new Date().toISOString(),
+      ipAddress: '0.0.0.0',
+    };
+    setAuditLogs((prev) => [newAudit, ...prev]);
+    if (isSupabaseConfigured) {
+      await cloudDb.addAuditLog(newAudit);
+    }
+  };
+
+  // Realtime Cloud Clock Preference Synchronizer
+  const handleUpdateClockPreference = async (is24h: boolean) => {
+    setGlobalClock24hPreference(is24h);
+    const updatedPrefs = {
+      ...currentUser.preferences,
+      clock24h: is24h,
+    };
+    setCurrentUser((prev) => ({ ...prev, preferences: updatedPrefs }));
+    setUsers((prev) =>
+      prev.map((u) => (u.id === currentUser.id ? { ...u, preferences: updatedPrefs } : u))
+    );
+    if (isSupabaseConfigured) {
+      await cloudDb.updateUserPreferences(currentUser.email, updatedPrefs);
+    }
   };
 
   // Login Handler
@@ -775,6 +817,14 @@ export function App() {
     setCurrentUser(user);
     setCurrentUserRole(role);
     setIsLoggedIn(true);
+
+    // Authoritative preference hydration
+    if (user.preferences?.audioEnabled !== undefined) {
+      setAudioEnabled(user.preferences.audioEnabled);
+    }
+    if (user.preferences?.clock24h !== undefined) {
+      setGlobalClock24hPreference(user.preferences.clock24h);
+    }
 
     if (role === 'OWNER') {
       setActiveTab('dashboard');
@@ -787,16 +837,7 @@ export function App() {
       showToast(`Welcome, ${user.fullName} (${user.flatNumber})!`);
     }
 
-    const loginAudit: AuditLog = {
-      id: generateUUID(),
-      userId: user.id,
-      userEmail: user.email,
-      action: 'USER_LOGIN_AUTHENTICATED',
-      resourceType: 'auth_session',
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [loginAudit, ...prev]);
+    recordAudit('USER_LOGIN_AUTHENTICATED', 'auth_session', user.id);
   };
 
   // Sign Up Handler
@@ -869,7 +910,7 @@ export function App() {
     showToast('Logged out successfully. Returned to Login Landing Page.');
   };
 
-  // Add Expense Handler
+  // Add Expense Handler - Authenticated & Permanently Persisted to Cloud DB
   const handleAddExpense = async (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
     if (isOffline) {
       showToast('Cannot add expense while offline.');
@@ -883,6 +924,9 @@ export function App() {
       createdAt: new Date().toISOString(),
     };
 
+    const previousRecords = records;
+
+    // 1. Optimistic UI update
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id === activeRecord.id) {
@@ -901,30 +945,31 @@ export function App() {
       })
     );
 
-    const newAudit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
-      userEmail: currentUser.email,
-      action: 'ADD_EXPENSE_ITEM',
-      resourceType: 'expenses',
-      resourceId: expenseId,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [newAudit, ...prev]);
+    // 2. Authoritative Cloud Database Write
+    const res = await cloudDb.addExpense(newExpense, currentUser.id);
+    if (!res.success) {
+      setRecords(previousRecords);
+      playWarningChime();
+      showToast(`❌ Failed to save expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
 
-    cloudDb.addExpense(newExpense).catch(() => {});
+    await recordAudit('ADD_EXPENSE_ITEM', 'expenses', expenseId);
     playSuccessChime();
     showToast(`Added expense "${newExpenseData.particular}" (₹${newExpenseData.amount.toLocaleString('en-IN')})`);
   };
 
-  // Edit Expense Handler
+  // Edit Expense Handler - Authenticated & Permanently Persisted to Cloud DB
   const handleSaveEditedExpense = async (updatedExpense: Expense) => {
     if (isOffline) {
       showToast('Cannot edit expense while offline.');
       playWarningChime();
       return;
     }
+
+    const previousRecords = records;
+
+    // 1. Optimistic UI update
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id === activeRecord.id) {
@@ -943,30 +988,31 @@ export function App() {
       })
     );
 
-    const newAudit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
-      userEmail: currentUser.email,
-      action: 'UPDATE_EXPENSE_ITEM',
-      resourceType: 'expenses',
-      resourceId: updatedExpense.id,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [newAudit, ...prev]);
+    // 2. Authoritative Cloud Database Write
+    const res = await cloudDb.updateExpense(updatedExpense);
+    if (!res.success) {
+      setRecords(previousRecords);
+      playWarningChime();
+      showToast(`❌ Failed to update expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
 
-    cloudDb.updateExpense(updatedExpense).catch(() => {});
+    await recordAudit('UPDATE_EXPENSE_ITEM', 'expenses', updatedExpense.id);
     playSuccessChime();
-    showToast(`Updated expense "${updatedExpense.particular}"`);
+    showToast(`Updated expense "${updatedExpense.particular}" (saved in Cloud DB)`);
   };
 
-  // Delete Expense Handler
+  // Delete Expense Handler - Authenticated & Permanently Persisted to Cloud DB
   const handleDeleteExpense = async (expenseId: string) => {
     if (isOffline) {
       showToast('Cannot delete expense while offline.');
       playWarningChime();
       return;
     }
+
+    const previousRecords = records;
+
+    // 1. Optimistic UI update
     setRecords((prev) =>
       prev.map((r) => {
         if (r.id === activeRecord.id) {
@@ -985,9 +1031,18 @@ export function App() {
       })
     );
 
-    cloudDb.deleteExpense(expenseId).catch(() => {});
+    // 2. Authoritative Cloud Database Write
+    const res = await cloudDb.deleteExpense(expenseId);
+    if (!res.success) {
+      setRecords(previousRecords);
+      playWarningChime();
+      showToast(`❌ Failed to delete expense from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
+
+    await recordAudit('DELETE_EXPENSE_ITEM', 'expenses', expenseId);
     playWarningChime();
-    showToast('Deleted line item expense.');
+    showToast('Deleted line item expense (removed from Cloud DB).');
   };
 
   // User Management Handlers
@@ -1165,9 +1220,10 @@ export function App() {
     showToast(`✅ Deleted resident ${targetUser.fullName} (removed from cloud database).`);
   };
 
-  const handleToggleTenantPaymentStatus = (userId: string) => {
+  const handleToggleTenantPaymentStatus = async (userId: string) => {
     let nextStatus: 'paid' | 'pending' | 'unpaid' = 'paid';
     let targetEmail = '';
+    const previousUsers = users;
 
     setUsers((prev) => {
       const updated = prev.map((u) => {
@@ -1185,40 +1241,50 @@ export function App() {
     });
 
     if (targetEmail) {
-      cloudDb.updateUserPaymentStatus(targetEmail, nextStatus).catch(() => {});
+      const res = await cloudDb.updateUserPaymentStatus(targetEmail, nextStatus);
+      if (!res.success) {
+        setUsers(previousUsers);
+        try {
+          localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
+        } catch {}
+        playWarningChime();
+        showToast(`❌ Failed to update payment status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+        return;
+      }
     }
 
+    await recordAudit('UPDATE_PAYMENT_STATUS', 'users', userId);
     playSuccessChime();
-    showToast('Updated tenant monthly maintenance payment status.');
+    showToast(`Updated resident maintenance payment status to ${nextStatus.toUpperCase()} (saved in Cloud DB).`);
   };
 
   // Property Master Update Handler (God Mode) - Permanently Saves to Cloud DB
-  const handleUpdateHouse = (updatedHouse: House) => {
+  const handleUpdateHouse = async (updatedHouse: House) => {
+    const previousHouse = house;
     setHouse(updatedHouse);
     try {
       localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedHouse));
     } catch {}
-    
-    // Persist to Cloud PostgreSQL DB
-    cloudDb.updateHouse(updatedHouse).catch(() => {});
 
-    const audit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUser.id,
-      userEmail: currentUser.email,
-      action: 'UPDATE_PROPERTY_PROFILE',
-      resourceType: 'house',
-      resourceId: updatedHouse.id,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [audit, ...prev]);
+    const res = await cloudDb.updateHouse(updatedHouse);
+    if (!res.success) {
+      setHouse(previousHouse);
+      try {
+        localStorage.setItem('madura_house_property_v1', JSON.stringify(previousHouse));
+      } catch {}
+      playWarningChime();
+      showToast(`❌ Failed to update property profile in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
+
+    await recordAudit('UPDATE_PROPERTY_PROFILE', 'house', updatedHouse.id);
     playSuccessChime();
-    showToast(`Updated property profile for ${updatedHouse.name} (saved in DB & local)`);
+    showToast(`Updated property profile for ${updatedHouse.name} (saved in Cloud DB)`);
   };
 
   // Record Master Rules Update Handler (God Mode) - Permanently Saves to Cloud DB
-  const handleUpdateRecord = (updatedRecord: MaintenanceRecord) => {
+  const handleUpdateRecord = async (updatedRecord: MaintenanceRecord) => {
+    const previousRecords = records;
     setRecords((prev) =>
       prev.map((r) => (r.id === updatedRecord.id ? updatedRecord : r))
     );
@@ -1229,31 +1295,27 @@ export function App() {
       localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(updated));
     } catch {}
 
-    // Persist to Cloud PostgreSQL DB
-    cloudDb.updateMaintenanceRecord(updatedRecord).catch(() => {});
+    const res = await cloudDb.updateMaintenanceRecord(updatedRecord);
+    if (!res.success) {
+      setRecords(previousRecords);
+      playWarningChime();
+      showToast(`❌ Failed to update billing period in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
 
-    const audit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUser.id,
-      userEmail: currentUser.email,
-      action: 'UPDATE_MAINTENANCE_RECORD_RULES',
-      resourceType: 'maintenance_records',
-      resourceId: updatedRecord.id,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [audit, ...prev]);
+    await recordAudit('UPDATE_MAINTENANCE_RECORD_RULES', 'maintenance_records', updatedRecord.id);
     playSuccessChime();
-    showToast('Updated billing period and financial split rules (saved in DB & local)');
+    showToast('Updated billing period and financial split rules (saved in Cloud DB)');
   };
 
   // Invoice Upload Handler - Permanently Saves to Cloud DB
-  const handleUploadInvoice = (invData: Omit<Invoice, 'id' | 'uploadedAt'>) => {
+  const handleUploadInvoice = async (invData: Omit<Invoice, 'id' | 'uploadedAt'>) => {
     const newInv: Invoice = {
       ...invData,
       id: generateUUID(),
       uploadedAt: new Date().toISOString(),
     };
+    const previousInvoices = invoices;
     setInvoices((prev) => {
       const updated = [newInv, ...prev];
       try {
@@ -1262,13 +1324,25 @@ export function App() {
       return updated;
     });
 
-    cloudDb.addInvoice(newInv).catch(() => {});
+    const res = await cloudDb.addInvoice(newInv, currentUser.id);
+    if (!res.success) {
+      setInvoices(previousInvoices);
+      try {
+        localStorage.setItem('madura_house_invoices_v1', JSON.stringify(previousInvoices));
+      } catch {}
+      playWarningChime();
+      showToast(`❌ Failed to save invoice in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
+
+    await recordAudit('UPLOAD_INVOICE_DOCUMENT', 'invoices', newInv.id);
     playSuccessChime();
-    showToast(`Uploaded bill "${invData.fileName}" (saved in DB & local)`);
+    showToast(`Uploaded bill "${invData.fileName}" (saved permanently in Cloud DB)`);
   };
 
   // Delete Invoice Handler (God Mode)
-  const handleDeleteInvoice = (invId: string) => {
+  const handleDeleteInvoice = async (invId: string) => {
+    const previousInvoices = invoices;
     setInvoices((prev) => {
       const updated = prev.filter((i) => i.id !== invId);
       try {
@@ -1277,22 +1351,39 @@ export function App() {
       return updated;
     });
 
-    cloudDb.deleteInvoice(invId).catch(() => {});
+    const res = await cloudDb.deleteInvoice(invId);
+    if (!res.success) {
+      setInvoices(previousInvoices);
+      try {
+        localStorage.setItem('madura_house_invoices_v1', JSON.stringify(previousInvoices));
+      } catch {}
+      playWarningChime();
+      showToast(`❌ Failed to delete invoice from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      return;
+    }
+
+    await recordAudit('DELETE_INVOICE_DOCUMENT', 'invoices', invId);
     playWarningChime();
-    showToast('Deleted digital invoice record.');
+    showToast('Deleted digital invoice record (removed from Cloud DB).');
   };
 
   // Add Notification Log Handler (God Mode) - Permanently Saves to Cloud DB
-  const handleAddNotificationLog = (newLogData: Omit<NotificationLog, 'id' | 'sentAt'>) => {
+  const handleAddNotificationLog = async (newLogData: Omit<NotificationLog, 'id' | 'sentAt'>) => {
     const newLog: NotificationLog = {
       ...newLogData,
       id: generateUUID(),
       sentAt: new Date().toISOString(),
     };
     setNotificationLogs((prev) => [newLog, ...prev]);
-    cloudDb.addNotificationLog(newLog).catch(() => {});
+
+    const res = await cloudDb.addNotificationLog(newLog, currentUser.id);
+    if (!res.success) {
+      console.warn('Failed to persist notification log to Cloud DB:', res.error);
+    }
+
+    await recordAudit('DISPATCH_NOTIFICATION', 'notifications', newLog.id);
     playSuccessChime();
-    showToast(`Dispatched broadcast notice: "${newLog.subject}"`);
+    showToast(`Dispatched broadcast notice: "${newLog.subject}" (saved in Cloud DB)`);
   };
 
   // MASTER GOD MODE ACTION: Lock ALL Platform Data Permanently in Cloud PostgreSQL
@@ -1319,11 +1410,11 @@ export function App() {
     }
   };
 
-  // Trigger Notifications Handler
-  const handleTriggerNotifications = () => {
+  // Trigger Notifications Handler - Broadcasts & Permanently Saves to Cloud DB
+  const handleTriggerNotifications = async () => {
     const activeTenants = users.filter((u) => u.occupancyStatus === 'active');
     const newLogs: NotificationLog[] = activeTenants.map((u) => ({
-      id: `n-${Date.now().toString().slice(-4)}-${u.id.slice(-2)}`,
+      id: generateUUID(),
       maintenanceRecordId: activeRecord.id,
       recipientEmail: u.email,
       type: 'maintenance_added',
@@ -1333,27 +1424,32 @@ export function App() {
     }));
 
     setNotificationLogs((prev) => [...newLogs, ...prev]);
-    showToast(`Dispatched Resend emails to ${activeTenants.length} residents!`);
+
+    // Persist all dispatched notifications to Cloud DB
+    for (const log of newLogs) {
+      await cloudDb.addNotificationLog(log, currentUser.id);
+    }
+
+    await recordAudit('TRIGGER_NOTIFICATIONS_BROADCAST', 'notifications', `batch-${Date.now()}`);
+    playSuccessChime();
+    showToast(`Dispatched Resend emails to ${activeTenants.length} residents & saved in Cloud DB!`);
   };
 
-  // Dedicated Bulk Email Dispatched Handler from NotificationCenter Modal
-  const handleBulkEmailDispatched = (
+  // Dedicated Bulk Email Dispatched Handler from NotificationCenter Modal - Permanently Saves to Cloud DB
+  const handleBulkEmailDispatched = async (
     results: any[],
     newLogs: NotificationLog[]
   ) => {
     setNotificationLogs((prev) => [...newLogs, ...prev]);
-    const audit: AuditLog = {
-      id: generateUUID(),
-      userId: currentUser.id,
-      userEmail: currentUser.email,
-      action: 'DISPATCH_RESEND_BATCH_EMAILS',
-      resourceType: 'notifications',
-      resourceId: `batch-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      ipAddress: '0.0.0.0',
-    };
-    setAuditLogs((prev) => [audit, ...prev]);
-    showToast(`Dispatched Resend statements to ${results.length} tenants!`);
+
+    // Persist all dispatched statement logs to Cloud DB
+    for (const log of newLogs) {
+      await cloudDb.addNotificationLog(log, currentUser.id);
+    }
+
+    await recordAudit('DISPATCH_RESEND_BATCH_EMAILS', 'notifications', `batch-${Date.now()}`);
+    playSuccessChime();
+    showToast(`Dispatched Resend statements to ${results.length} tenants & saved in Cloud DB!`);
   };
 
   // Export handlers
@@ -1681,7 +1777,7 @@ export function App() {
             )}
 
             {/* Google NTP Atomic Clock (IST) Synced with time.google.com */}
-            <GoogleClock variant="header" />
+            <GoogleClock variant="header" onPreferenceChange={handleUpdateClockPreference} />
 
             {/* CosmoLex '+ Create new' Button */}
             <button 
@@ -2030,33 +2126,38 @@ export function App() {
         <EditProfileModal
           currentUser={currentUser}
           onSave={async (updatedProfile) => {
-            const newUsers = users.map(u => 
-              u.email === currentUser.email 
-                ? { ...u, ...updatedProfile } 
-                : u
+            const previousUsers = users;
+            const previousCurrentUser = currentUser;
+
+            const mergedUser: User = {
+              ...currentUser,
+              ...updatedProfile,
+              username: updatedProfile.username || currentUser.username,
+              fullName: updatedProfile.fullName || currentUser.fullName,
+              phone: updatedProfile.phone ?? currentUser.phone,
+            };
+
+            // 1. Optimistic UI update
+            setUsers((prev) =>
+              prev.map((u) => (u.email.toLowerCase() === currentUser.email.toLowerCase() ? mergedUser : u))
             );
-            setUsers(newUsers);
-            setCurrentUser(prev => ({ ...prev, ...updatedProfile }));
+            setCurrentUser(mergedUser);
             setShowProfileModal(false);
-            
-            // Background sync to Cloud DB (users table)
-            if (isSupabaseConfigured && supabase) {
-              const { error } = await supabase
-                .from('users')
-                .update({
-                  username: updatedProfile.username,
-                  "fullName": updatedProfile.fullName,
-                  phone: updatedProfile.phone,
-                  updated_at: new Date().toISOString()
-                })
-                .eq('email', currentUser.email);
-                
-              if (error) {
-                console.error("Failed to sync profile to cloud", error);
-              }
+
+            // 2. Authoritative Cloud DB Write
+            const res = await cloudDb.updateUser(mergedUser);
+            if (!res.success) {
+              // Rollback on failure
+              setUsers(previousUsers);
+              setCurrentUser(previousCurrentUser);
+              playWarningChime();
+              showToast(`❌ Failed to update profile in Cloud DB: ${res.error || 'Unknown error'}. Changes reverted.`);
+              return;
             }
-            
-            showToast('Profile updated successfully!');
+
+            await recordAudit('UPDATE_USER_PROFILE', 'users', currentUser.id);
+            playSuccessChime();
+            showToast('Profile updated and permanently saved in Cloud DB!');
           }}
           onClose={() => setShowProfileModal(false)}
         />

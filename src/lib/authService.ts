@@ -422,6 +422,24 @@ export const authService = {
   },
 
   /**
+   * Get MFA 2FA Status from Supabase GoTrue Auth
+   */
+  async get2FAStatus(): Promise<{ enabled: boolean; factorId?: string }> {
+    if (!supabase) return { enabled: false };
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error || !data) return { enabled: false };
+      const verified = data.totp?.find((f) => f.status === 'verified');
+      if (verified) {
+        return { enabled: true, factorId: verified.id };
+      }
+      return { enabled: false };
+    } catch {
+      return { enabled: false };
+    }
+  },
+
+  /**
    * Log Security Events to DB (fire-and-forget — audit logs are non-critical path)
    */
   logSecurityEvent(eventType: string, email: string, authId?: string) {

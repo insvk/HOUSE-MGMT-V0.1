@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { User, MaintenanceRecord, Expense, Invoice, NotificationLog, House } from '../types';
+import { User, MaintenanceRecord, Expense, Invoice, NotificationLog, House, AuditLog } from '../types';
 import { isDummyLegacyAccount } from '../data/initialData';
 
 // Environment variables with fallback
@@ -159,8 +159,8 @@ export const cloudDb = {
   },
 
   // Update / Upsert House Master Permanently in DB
-  async updateHouse(house: House): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async updateHouse(house: House): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const houseId = isValidUUID(house.id) ? house.id : generateUUID();
 
@@ -177,11 +177,11 @@ export const cloudDb = {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB update house warning:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to update property settings' };
     }
   },
 
@@ -321,8 +321,8 @@ export const cloudDb = {
   },
 
   // Direct Update for User Avatar URL
-  async updateUserAvatar(email: string, avatarUrl: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async updateUserAvatar(email: string, avatarUrl: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const { error } = await supabase
         .from('users')
@@ -330,13 +330,33 @@ export const cloudDb = {
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         })
-        .eq('email', email.toLowerCase());
+        .eq('email', email.toLowerCase().trim());
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.error('Cloud DB update avatar error:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to update profile picture' };
+    }
+  },
+
+  // Update User Preferences (Clock format, audio chimes, notifications)
+  async updateUserPreferences(email: string, preferences: any): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          preferences,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email.toLowerCase().trim());
+
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      console.error('Cloud DB update preferences error:', err);
+      return { success: false, error: err?.message || 'Failed to update preferences' };
     }
   },
 
@@ -417,8 +437,8 @@ export const cloudDb = {
   },
 
   // Update / Upsert Maintenance Record Header in Cloud DB
-  async updateMaintenanceRecord(record: MaintenanceRecord): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async updateMaintenanceRecord(record: MaintenanceRecord): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const recordId = isValidUUID(record.id) ? record.id : generateUUID();
       const houseId = isValidUUID(record.houseId) ? record.houseId : '11111111-2222-3333-4444-555555555555';
@@ -440,17 +460,17 @@ export const cloudDb = {
         .from('maintenance_records')
         .upsert(payload, { onConflict: 'house_id,month,year' });
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB update maintenance record notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to update billing period' };
     }
   },
 
   // Delete User from Cloud DB (soft-delete)
-  async deleteUser(userIdOrEmail: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async deleteUser(userIdOrEmail: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       // Use safe filter methods instead of string interpolation to prevent injection
       let query = supabase
@@ -464,21 +484,21 @@ export const cloudDb = {
       if (isValidUUID(userIdOrEmail)) {
         query = query.eq('id', userIdOrEmail);
       } else {
-        query = query.eq('email', userIdOrEmail.toLowerCase());
+        query = query.eq('email', userIdOrEmail.toLowerCase().trim());
       }
 
       const { error } = await query;
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB delete user notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to remove tenant' };
     }
   },
 
   // Update User Payment Status in Cloud DB
-  async updateUserPaymentStatus(email: string, paymentStatus: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async updateUserPaymentStatus(email: string, paymentStatus: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const { error } = await supabase
         .from('users')
@@ -486,19 +506,19 @@ export const cloudDb = {
           payment_status: paymentStatus,
           updated_at: new Date().toISOString(),
         })
-        .eq('email', email.toLowerCase());
+        .eq('email', email.toLowerCase().trim());
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB update payment status notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to update payment status' };
     }
   },
 
   // Add Expense to Cloud DB (UUID Compliant)
-  async addExpense(expense: Expense, currentUserId?: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async addExpense(expense: Expense, currentUserId?: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const validId = isValidUUID(expense.id) ? expense.id : generateUUID();
       const validRecordId = isValidUUID(expense.maintenanceRecordId)
@@ -507,7 +527,7 @@ export const cloudDb = {
 
       if (!validRecordId) {
         console.warn('Cloud DB addExpense: invalid maintenanceRecordId, skipping');
-        return false;
+        return { success: false, error: 'Invalid maintenance record ID' };
       }
 
       const addedBy = currentUserId && isValidUUID(currentUserId)
@@ -553,17 +573,17 @@ export const cloudDb = {
         error = res.error;
       }
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB add expense notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to add expense' };
     }
   },
 
   // Update Expense in Cloud DB
-  async updateExpense(expense: Expense): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async updateExpense(expense: Expense): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const updateData: any = {
         particular: expense.particular,
@@ -600,28 +620,28 @@ export const cloudDb = {
         error = res.error;
       }
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB update expense notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to update expense' };
     }
   },
 
   // Delete Expense from Cloud DB
-  async deleteExpense(expenseId: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async deleteExpense(expenseId: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', expenseId);
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB delete expense notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to delete expense' };
     }
   },
 
@@ -877,8 +897,8 @@ export const cloudDb = {
   },
 
   // Add Invoice to Cloud DB
-  async addInvoice(invoice: Invoice, currentUserId?: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async addInvoice(invoice: Invoice, currentUserId?: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const validId = isValidUUID(invoice.id) ? invoice.id : generateUUID();
       const recordId = isValidUUID(invoice.maintenanceRecordId)
@@ -895,29 +915,33 @@ export const cloudDb = {
         file_type: invoice.fileType,
         storage_path: invoice.storagePath,
         uploaded_by: uploadedBy,
+        ocr_data: { text: invoice.ocrText || '' },
       };
       if (recordId) insertData.maintenance_record_id = recordId;
+      if (invoice.expenseId && isValidUUID(invoice.expenseId)) {
+        insertData.expense_id = invoice.expenseId;
+      }
 
       const { error } = await supabase.from('invoices').insert(insertData);
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB insert invoice notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to save invoice' };
     }
   },
 
   // Delete Invoice from Cloud DB
-  async deleteInvoice(invoiceId: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async deleteInvoice(invoiceId: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const { error } = await supabase.from('invoices').delete().eq('id', invoiceId);
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB delete invoice notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to delete invoice' };
     }
   },
 
@@ -948,8 +972,8 @@ export const cloudDb = {
   },
 
   // Add Notification Log to Cloud DB
-  async addNotificationLog(log: NotificationLog, currentUserId?: string): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  async addNotificationLog(log: NotificationLog, currentUserId?: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
       const validId = isValidUUID(log.id) ? log.id : generateUUID();
       const recipientId = currentUserId && isValidUUID(currentUserId)
@@ -966,17 +990,82 @@ export const cloudDb = {
         subject: log.subject,
         content: log.subject,
         metadata: { recipient_email: log.recipientEmail },
-        sent_at: log.sentAt,
+        sent_at: log.sentAt || new Date().toISOString(),
       };
       if (recordId) insertData.maintenance_record_id = recordId;
 
       const { error } = await supabase.from('notifications').insert(insertData);
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.warn('Cloud DB add notification notice:', err);
-      return false;
+      return { success: false, error: err?.message || 'Failed to record notification log' };
+    }
+  },
+
+  // Fetch Security Audit Logs from Cloud DB
+  async getAuditLogs(): Promise<AuditLog[] | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (error) throw error;
+
+      return (data || []).map((a: any) => ({
+        id: a.id,
+        userId: a.user_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        userEmail: a.user_email || 'system@chemadura.com',
+        action: a.action,
+        resourceType: a.resource_type || 'system',
+        resourceId: a.resource_id ? String(a.resource_id) : undefined,
+        timestamp: a.created_at || new Date().toISOString(),
+        ipAddress: a.ip_address ? String(a.ip_address) : '0.0.0.0',
+      }));
+    } catch (err) {
+      console.warn('Cloud DB fetch audit logs fallback:', err);
+      return null;
+    }
+  },
+
+  // Add Security Audit Log to Cloud DB
+  async addAuditLog(log: AuditLog): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
+    try {
+      const validId = isValidUUID(log.id) ? log.id : generateUUID();
+      const validUserId = isValidUUID(log.userId) ? log.userId : null;
+      const validResourceId = log.resourceId && isValidUUID(log.resourceId) ? log.resourceId : null;
+
+      const payload: any = {
+        id: validId,
+        user_id: validUserId,
+        action: log.action,
+        resource_type: log.resourceType,
+        resource_id: validResourceId,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'desktop-app',
+      };
+      payload.user_email = log.userEmail;
+
+      let { error } = await supabase.from('audit_logs').insert(payload);
+      if (error) {
+        // Fallback without user_email / resource_id if column mismatch
+        const fallback = {
+          id: validId,
+          user_id: validUserId,
+          action: log.action,
+          resource_type: log.resourceType,
+        };
+        const res = await supabase.from('audit_logs').insert(fallback);
+        if (res.error) return { success: false, error: res.error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.warn('Cloud DB add audit log warning:', err);
+      return { success: false, error: err?.message || 'Failed to record audit log' };
     }
   },
 
@@ -995,7 +1084,8 @@ export const cloudDb = {
     try {
       // 1. Sync House
       if (data.house) {
-        details.house = await cloudDb.updateHouse(data.house);
+        const hRes = await cloudDb.updateHouse(data.house);
+        details.house = hRes.success;
       }
 
       // 2. Sync Users
@@ -1006,17 +1096,17 @@ export const cloudDb = {
         }
       }
 
-
       // 3. Sync Maintenance Record
       if (data.record) {
-        details.record = await cloudDb.updateMaintenanceRecord(data.record);
+        const rRes = await cloudDb.updateMaintenanceRecord(data.record);
+        details.record = rRes.success;
       }
 
       // 4. Sync Expenses
       if (data.expenses && data.expenses.length > 0) {
         for (const exp of data.expenses) {
           const ok = await cloudDb.addExpense(exp);
-          if (ok) details.expenses++;
+          if (ok.success) details.expenses++;
         }
       }
 
