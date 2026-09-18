@@ -132,11 +132,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   // Handle Login Authentication
+  // ROOT CAUSE #7 FIX: fetch authoritative profile from cloud DB after auth succeeds
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
-    
+
     const cleanEmail = loginEmail.trim().toLowerCase();
     const cleanPassword = loginPassword;
 
@@ -162,25 +163,51 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
-      // If login is successful, map it to the expected onLoginSuccess format
-      // In a real enterprise app, we rely on the JWT context or DB fetch.
-      // Here, we grab the updated profile from the legacy array.
+      // ROOT CAUSE #7 FIX: Resolve the final email (may differ from cleanEmail if username was used)
+      const resolvedEmail: string = authRes.user?.email || cleanEmail;
+
+      // Step 1: Try authoritative cloud DB fetch (the real source of truth)
+      const { cloudDb } = await import('../lib/supabaseClient');
+      const cloudProfile = await cloudDb.getUserByEmail(resolvedEmail);
+
+      if (cloudProfile) {
+        onLoginSuccess(cloudProfile, cloudProfile.role);
+        return;
+      }
+
+      // Step 2: Cloud unavailable or user not yet in DB — try localStorage + prop fallback
       const allAccounts = getAllAvailableAccounts();
-      const matchedUser = allAccounts.find((u) => u.email.toLowerCase() === cleanEmail);
-      
+      const matchedUser = allAccounts.find(
+        (u) => u.email.toLowerCase() === resolvedEmail.toLowerCase()
+      );
+
       if (matchedUser) {
         onLoginSuccess(matchedUser, matchedUser.role);
+        return;
+      }
+
+      // Step 3: Auth succeeded but no profile anywhere — create a minimal safe profile
+      // This can happen for brand-new sign-ups where the DB trigger hasn't fired yet.
+      // We do NOT use id:'unknown' or role:'TENANT' blindly.
+      if (authRes.user?.id) {
+        onLoginSuccess(
+          {
+            id: authRes.user.id,
+            email: resolvedEmail,
+            fullName: resolvedEmail.split('@')[0],
+            flatNumber: 'GF',
+            role: 'TENANT',
+            phone: '',
+            paymentStatus: 'pending',
+            occupancyStatus: 'active',
+          },
+          'TENANT'
+        );
+        setErrorMessage(
+          'Profile not found in database. Please contact the administrator to complete your account setup.'
+        );
       } else {
-        onLoginSuccess({
-          id: authRes.user?.id || 'unknown',
-          email: cleanEmail,
-          fullName: 'Authenticated User',
-          flatNumber: 'Unknown',
-          role: 'TENANT',
-          phone: '',
-          paymentStatus: 'pending',
-          occupancyStatus: 'active'
-        }, 'TENANT');
+        setErrorMessage('Login succeeded but no user profile was found. Please contact the administrator.');
       }
     } catch (err: any) {
       setErrorMessage('Auth Service Error: ' + err.message);

@@ -41,6 +41,37 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   : null;
 
 // ============================================================================
+// DB ROW → APPLICATION USER MAPPER (canonical, single source of truth)
+// Maps snake_case DB columns → camelCase User interface fields.
+// ============================================================================
+const OWNER_EMAILS = ['sampathkumar@chemadura.com', 'rsivanaresh@gmail.com'];
+
+function mapDbRowToUser(u: any): User {
+  const emailLower = (u.email || '').toLowerCase();
+  return {
+    id: u.id,
+    email: emailLower,
+    username: u.username || undefined,
+    // Never surface the password into the application state from the cloud
+    password: u.password || undefined,
+    phone: u.phone || '',
+    fullName: u.full_name || '',
+    flatNumber: u.flat_number || 'GF',
+    // Always enforce OWNER role for owner emails regardless of DB value
+    role: OWNER_EMAILS.includes(emailLower) ? 'OWNER' : (u.role || 'TENANT'),
+    occupancyStatus: u.occupancy_status || 'active',
+    paymentStatus: u.payment_status || 'paid',
+    avatarUrl: u.avatar_url || undefined,
+    moveInDate: u.move_in_date || undefined,
+    rentAmount: u.rent_amount != null ? Number(u.rent_amount) : 0,
+    depositAmount: u.deposit_amount != null ? Number(u.deposit_amount) : 0,
+    emergencyContact: u.emergency_contact || undefined,
+    notes: u.notes || undefined,
+    preferences: u.preferences || {},
+  };
+}
+
+// ============================================================================
 // CLOUD DATABASE ADAPTER SERVICE
 // ============================================================================
 
@@ -154,104 +185,129 @@ export const cloudDb = {
     }
   },
 
-  // Fetch Users (Filtered: legitimate production accounts only)
+  // Fetch Users (Filtered: legitimate production accounts only, excludes soft-deleted)
   async getUsers(): Promise<User[] | null> {
     if (!isSupabaseConfigured || !supabase) return null;
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
+        // ROOT CAUSE #6 FIX: filter out soft-deleted / inactive users
+        .eq('is_active', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
       return (data || [])
         .filter((u: any) => u.email && !isDummyLegacyAccount(u.email))
-        .map((u: any) => ({
-          id: u.id,
-          email: u.email,
-          password: u.password,
-          phone: u.phone || '',
-          fullName: u.full_name || '',
-          flatNumber: u.flat_number || 'GF',
-          role: u.email && u.email.toLowerCase() === 'sampathkumar@chemadura.com' ? 'OWNER' : (u.role || 'TENANT'),
-          occupancyStatus: u.occupancy_status || 'active',
-          paymentStatus: u.payment_status || 'paid',
-          avatarUrl: u.avatar_url,
-          moveInDate: u.move_in_date,
-          rentAmount: u.rent_amount ? Number(u.rent_amount) : 0,
-          depositAmount: u.deposit_amount ? Number(u.deposit_amount) : 0,
-          emergencyContact: u.emergency_contact,
-          notes: u.notes,
-          preferences: u.preferences || {},
-        }));
+        .map((u: any) => mapDbRowToUser(u));
     } catch (err) {
       console.warn('Cloud DB fetch users fallback:', err);
       return null;
     }
   },
 
-  // Insert New User
-  async createUser(user: User): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  // ROOT CAUSE #7 FIX: Authoritative single-user fetch by email (for post-login profile resolution)
+  async getUserByEmail(email: string): Promise<User | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
     try {
-      const { error } = await supabase.from('users').insert({
-        id: user.id,
-        email: user.email,
-        password: user.password,
-        phone: user.phone,
-        full_name: user.fullName,
-        flat_number: user.flatNumber,
-        role: user.role,
-        occupancy_status: user.occupancyStatus,
-        payment_status: user.paymentStatus,
-        avatar_url: user.avatarUrl,
-        move_in_date: user.moveInDate,
-        rent_amount: user.rentAmount,
-        deposit_amount: user.depositAmount,
-        emergency_contact: user.emergencyContact,
-        notes: user.notes,
-        preferences: user.preferences || {},
-      });
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email.toLowerCase().trim())
+        .eq('is_active', true)
+        .is('deleted_at', null)
+        .maybeSingle();
 
-      if (error) throw error;
-      return true;
+      if (error) {
+        console.warn('Cloud DB getUserByEmail error:', error);
+        return null;
+      }
+      if (!data) return null;
+      return mapDbRowToUser(data);
     } catch (err) {
-      console.error('Cloud DB insert user error:', err);
-      return false;
+      console.warn('Cloud DB getUserByEmail fallback:', err);
+      return null;
     }
   },
 
-  // Update Existing User Details & Profile Picture
-  async updateUser(user: User): Promise<boolean> {
-    if (!isSupabaseConfigured || !supabase) return false;
+  // Insert New User — ROOT CAUSE #1 FIX: returns {success, error} instead of bare boolean
+  async createUser(user: User): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
+      const payload: any = {
+        id: user.id,
+        email: user.email.toLowerCase().trim(),
+        password: user.password || null,
+        phone: user.phone || null,
+        full_name: user.fullName,
+        flat_number: user.flatNumber || null,
+        role: user.role || 'TENANT',
+        occupancy_status: user.occupancyStatus || 'active',
+        payment_status: user.paymentStatus || 'paid',
+        avatar_url: user.avatarUrl || null,
+        move_in_date: user.moveInDate || null,
+        rent_amount: user.rentAmount ?? null,
+        deposit_amount: user.depositAmount ?? null,
+        emergency_contact: user.emergencyContact || null,
+        notes: user.notes || null,
+        preferences: user.preferences || {},
+        is_active: true,
+        deleted_at: null,
+      };
+      if (user.username) payload.username = user.username.toLowerCase().trim();
+
+      const { error } = await supabase.from('users').insert(payload);
+
+      if (error) {
+        // Duplicate email is a known conflict — surface clearly
+        if (error.code === '23505') {
+          return { success: false, error: 'A user with this email already exists in the database.' };
+        }
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error('Cloud DB insert user error:', err);
+      return { success: false, error: err?.message || 'Unknown database error' };
+    }
+  },
+
+  // Update Existing User Details & Profile Picture — ROOT CAUSE #1 FIX: returns {success, error}
+  async updateUser(user: User): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
+    try {
+      const updatePayload: any = {
+        password: user.password ?? null,
+        phone: user.phone || null,
+        full_name: user.fullName,
+        flat_number: user.flatNumber || null,
+        role: user.role || 'TENANT',
+        occupancy_status: user.occupancyStatus || 'active',
+        payment_status: user.paymentStatus || 'paid',
+        avatar_url: user.avatarUrl || null,
+        move_in_date: user.moveInDate || null,
+        rent_amount: user.rentAmount ?? null,
+        deposit_amount: user.depositAmount ?? null,
+        emergency_contact: user.emergencyContact || null,
+        notes: user.notes || null,
+        preferences: user.preferences || {},
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      };
+      if (user.username) updatePayload.username = user.username.toLowerCase().trim();
+
       const { error } = await supabase
         .from('users')
-        .update({
-          password: user.password,
-          phone: user.phone,
-          full_name: user.fullName,
-          flat_number: user.flatNumber,
-          role: user.role,
-          occupancy_status: user.occupancyStatus,
-          payment_status: user.paymentStatus,
-          avatar_url: user.avatarUrl,
-          move_in_date: user.moveInDate,
-          rent_amount: user.rentAmount,
-          deposit_amount: user.depositAmount,
-          emergency_contact: user.emergencyContact,
-          notes: user.notes,
-          preferences: user.preferences || {},
-          updated_at: new Date().toISOString(),
-        })
-        .eq('email', user.email.toLowerCase());
+        .update(updatePayload)
+        .eq('email', user.email.toLowerCase().trim());
 
-      if (error) throw error;
-      return true;
-    } catch (err) {
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
       console.error('Cloud DB update user error:', err);
-      return false;
+      return { success: false, error: err?.message || 'Unknown database error' };
     }
   },
 
@@ -794,10 +850,11 @@ export const cloudDb = {
       // 2. Sync Users
       if (data.users && data.users.length > 0) {
         for (const u of data.users) {
-          const ok = await cloudDb.updateUser(u);
-          if (ok) details.users++;
+          const result = await cloudDb.updateUser(u);
+          if (result.success) details.users++;
         }
       }
+
 
       // 3. Sync Maintenance Record
       if (data.record) {

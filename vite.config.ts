@@ -1,7 +1,9 @@
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import electron from 'vite-plugin-electron/simple';
 import path from 'path';
+
+// Detect Vercel / CI environment — skip Electron in cloud builds
+const IS_VERCEL = !!process.env.VERCEL || !!process.env.CI || process.env.BUILD_TARGET === 'web';
 
 function googleTimePlugin(): Plugin {
   return {
@@ -131,20 +133,18 @@ function googleTimePlugin(): Plugin {
                 });
               };
 
-              // Primary attempt
               let attempt = await sendResend(
                 targetRecipient,
                 parsed.subject || 'Madura House Maintenance Notice',
                 parsed.html || '<p>Madura House Maintenance Notice</p>'
               );
 
-              // Smart Owner Relay if 403 sandbox restriction
               if (!attempt.ok && attempt.status === 403) {
                 const relaySubject = `[Tenant Statement • ${targetRecipient}] ${parsed.subject || 'Madura House Maintenance Notice'}`;
                 const relayHtml = `
-                  <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-family: sans-serif; font-size: 13px; color: #1e40af;">
+                  <div style="background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:sans-serif;font-size:13px;color:#1e40af;">
                     <strong>🚀 Official Tenant Maintenance Statement</strong><br>
-                    <span style="color: #3b82f6;">Target Resident: <strong>${targetRecipient}</strong> • Dispatched via Resend Smart Cloud Gateway</span>
+                    <span style="color:#3b82f6;">Target Resident: <strong>${targetRecipient}</strong> • Dispatched via Resend Smart Cloud Gateway</span>
                   </div>
                   ${parsed.html || '<p>Madura House Maintenance Notice</p>'}
                 `;
@@ -155,10 +155,7 @@ function googleTimePlugin(): Plugin {
                 ? { id: attempt.data.id, status: 'delivered', recipient: targetRecipient }
                 : { id: `re_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`, status: 'delivered', recipient: targetRecipient };
 
-              res.writeHead(200, {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              });
+              res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
               res.end(JSON.stringify(responseData));
             } catch (err: any) {
               res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -175,36 +172,55 @@ function googleTimePlugin(): Plugin {
   };
 }
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    react(), 
-    googleTimePlugin(),
-    electron({
-      main: {
-        entry: 'electron/main.ts',
-      },
-      preload: {
-        input: path.join(__dirname, 'electron/preload.ts'),
-      },
-      renderer: {},
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 5173,
-    host: true,
-    proxy: {
-      '/api/resend': {
-        target: 'https://api.resend.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/resend/, ''),
-      },
-    },
-  },
-});
+// Conditionally load Electron plugin only for local desktop builds (skipped on Vercel/CI)
+async function getElectronPlugins() {
+  if (IS_VERCEL) return [];
+  try {
+    const { default: electron } = await import('vite-plugin-electron/simple');
+    return [
+      electron({
+        main: { entry: 'electron/main.ts' },
+        preload: { input: path.join(__dirname, 'electron/preload.ts') },
+        renderer: {},
+      }),
+    ];
+  } catch {
+    // Electron plugin not available — skip silently
+    return [];
+  }
+}
 
+// https://vitejs.dev/config/
+export default defineConfig(async () => {
+  const electronPlugins = await getElectronPlugins();
+
+  return {
+    plugins: [
+      react(),
+      googleTimePlugin(),
+      ...electronPlugins,
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    server: {
+      port: 5173,
+      host: true,
+      proxy: {
+        '/api/resend': {
+          target: 'https://api.resend.com',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/api\/resend/, ''),
+        },
+      },
+    },
+    build: {
+      // Prevent Electron native modules from appearing in the web bundle
+      rollupOptions: {
+        external: IS_VERCEL ? ['electron'] : [],
+      },
+    },
+  };
+});

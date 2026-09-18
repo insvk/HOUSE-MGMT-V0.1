@@ -628,8 +628,20 @@ export function App() {
   };
 
   // Sign Up Handler
-  const handleSignUpSuccess = (newUser: User) => {
-    // 1. Save new user into persistent state & localStorage immediately
+  const handleSignUpSuccess = async (newUser: User) => {
+    // 1. Attempt cloud DB persistence FIRST — this is the source of truth
+    const dbResult = await cloudDb.createUser(newUser);
+    if (!dbResult.success) {
+      // On DB failure, still allow the locally-registered user to proceed
+      // (they already have a Supabase Auth identity from authService.signUp)
+      // but warn clearly in the console
+      console.error('Sign-up cloud DB persist failed:', dbResult.error);
+      showToast(
+        `Account created in Auth, but profile save failed: ${dbResult.error || 'Unknown error'}. Please contact admin.`
+      );
+    }
+
+    // 2. Save new user into persistent state & localStorage
     setUsers((prev) => {
       const idx = prev.findIndex((u) => u.email.toLowerCase() === newUser.email.toLowerCase());
       const updated = idx >= 0 ? prev.map((u, i) => (i === idx ? newUser : u)) : [...prev, newUser];
@@ -640,14 +652,11 @@ export function App() {
       }
       return updated;
     });
-    
-    // 2. Auto-login with the newly created account
+
+    // 3. Auto-login with the newly created account
     setCurrentUser(newUser);
     setCurrentUserRole(newUser.role);
     setIsLoggedIn(true);
-
-    // 3. Attempt cloud persistence
-    cloudDb.createUser(newUser).catch(() => {});
 
     // 4. Audit Log
     const signupAudit: AuditLog = {
@@ -670,7 +679,9 @@ export function App() {
       setActiveTab('dashboard');
     }
 
-    showToast(`Account successfully created for ${newUser.fullName}! Logged in as ${newUser.role}.`);
+    if (dbResult.success) {
+      showToast(`Account created and persisted to cloud for ${newUser.fullName}!`);
+    }
   };
 
   // Logout Handler
@@ -808,6 +819,7 @@ export function App() {
   };
 
   // User Management Handlers
+  // ROOT CAUSE #1 FIX: await DB, rollback on failure, surface errors
   const handleAddUser = async (userData: Omit<User, 'id'>) => {
     if (isOffline) {
       showToast('Cannot register users while offline.');
@@ -822,6 +834,7 @@ export function App() {
       newUser.role = 'OWNER';
     }
 
+    // 1. Optimistic local state update
     setUsers((prev) => {
       const updated = [...prev, newUser];
       try {
@@ -830,6 +843,26 @@ export function App() {
       return updated;
     });
 
+    // 2. Persist to cloud DB — AWAIT and check result
+    const dbResult = await cloudDb.createUser(newUser);
+
+    if (!dbResult.success) {
+      // ROLLBACK: remove from local state since cloud write failed
+      setUsers((prev) => {
+        const rolled = prev.filter((u) => u.id !== newUser.id);
+        try {
+          localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(rolled));
+        } catch {}
+        return rolled;
+      });
+      playWarningChime();
+      showToast(
+        `❌ Failed to create resident in database: ${dbResult.error || 'Unknown error'}. No changes saved.`
+      );
+      return;
+    }
+
+    // 3. Audit log on confirmed success
     const newAudit: AuditLog = {
       id: generateUUID(),
       userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
@@ -842,22 +875,28 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
-    cloudDb.createUser(newUser).catch(() => {});
     playSuccessChime();
-    showToast(`Registered resident ${userData.fullName} (${userData.flatNumber})`);
+    showToast(
+      `✅ Resident ${userData.fullName} (${userData.flatNumber}) created and saved to cloud database.`
+    );
   };
 
+  // ROOT CAUSE #1 FIX: await DB, rollback on failure
   const handleUpdateUser = async (updatedUser: User) => {
     if (isOffline) {
       showToast('Cannot update users while offline.');
       playWarningChime();
       return;
     }
-    
+
     if (updatedUser.email.toLowerCase() === 'sampathkumar@chemadura.com') {
       updatedUser.role = 'OWNER';
     }
 
+    // 1. Keep snapshot for rollback
+    const previousUsers = users;
+
+    // 2. Optimistic local update
     setUsers((prev) => {
       const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
       try {
@@ -870,7 +909,24 @@ export function App() {
       setCurrentUser(updatedUser);
     }
 
-    cloudDb.updateUser(updatedUser).catch(() => {});
+    // 3. Persist to cloud and check result
+    const dbResult = await cloudDb.updateUser(updatedUser);
+
+    if (!dbResult.success) {
+      // ROLLBACK
+      setUsers(previousUsers);
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
+      } catch {}
+      if (currentUser.id === updatedUser.id) {
+        setCurrentUser(previousUsers.find((u) => u.id === updatedUser.id) || currentUser);
+      }
+      playWarningChime();
+      showToast(
+        `❌ Failed to update profile in database: ${dbResult.error || 'Unknown error'}. Changes reverted.`
+      );
+      return;
+    }
 
     const newAudit: AuditLog = {
       id: generateUUID(),
@@ -884,9 +940,10 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
-    showToast(`Updated complete profile for ${updatedUser.fullName}`);
+    showToast(`✅ Updated complete profile for ${updatedUser.fullName} (saved to cloud database).`);
   };
 
+  // ROOT CAUSE #1 FIX: await DB, rollback on failure
   const handleDeleteUser = async (userId: string) => {
     if (isOffline) {
       showToast('Cannot delete users while offline.');
@@ -894,6 +951,10 @@ export function App() {
       return;
     }
     const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    // 1. Optimistic local removal
+    const previousUsers = users;
     setUsers((prev) => {
       const updated = prev.filter((u) => u.id !== userId);
       try {
@@ -901,6 +962,20 @@ export function App() {
       } catch {}
       return updated;
     });
+
+    // 2. Persist soft-delete to cloud and check
+    const dbResult = await cloudDb.deleteUser(userId);
+
+    if (!dbResult) {
+      // ROLLBACK
+      setUsers(previousUsers);
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
+      } catch {}
+      playWarningChime();
+      showToast(`❌ Failed to delete resident from database. Changes reverted.`);
+      return;
+    }
 
     const newAudit: AuditLog = {
       id: generateUUID(),
@@ -914,9 +989,8 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
-    cloudDb.deleteUser(userId).catch(() => {});
     playWarningChime();
-    showToast(`Deleted resident ${targetUser?.fullName || userId}`);
+    showToast(`✅ Deleted resident ${targetUser.fullName} (removed from cloud database).`);
   };
 
   const handleToggleTenantPaymentStatus = (userId: string) => {
