@@ -174,7 +174,20 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setShowAddModal(false);
   };
 
-  const filteredUsers = users.filter((u) => {
+  // Strict deduplication by normalized email
+  const uniqueUsers = React.useMemo(() => {
+    const map = new Map<string, User>();
+    users.forEach((u) => {
+      const emailKey = (u.email || '').toLowerCase().trim();
+      if (!emailKey) return;
+      if (!map.has(emailKey) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+        map.set(emailKey, u);
+      }
+    });
+    return Array.from(map.values());
+  }, [users]);
+
+  const filteredUsers = uniqueUsers.filter((u) => {
     const matchesSearch = 
       u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -373,20 +386,20 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                   <button
                     onClick={() => openEditModal(user)}
-                    className="flex-1 px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1 px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-[#405189]" /> Edit Profile
                   </button>
 
-                  {currentUserRole === 'OWNER' && user.role !== 'OWNER' && (
+                  {currentUserRole === 'OWNER' && user.id !== 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' && (
                     <button
                       onClick={() => {
-                        if (window.confirm(`Are you sure you want to remove tenant ${user.fullName}?`)) {
+                        if (window.confirm(`Are you sure you want to permanently remove resident ${user.fullName} (${user.email})?`)) {
                           onDeleteUser(user.id);
                         }
                       }}
-                      className="p-1.5 rounded bg-red-50 hover:bg-red-100 text-red-500 text-xs"
-                      title="Delete Tenant"
+                      className="p-1.5 rounded bg-red-50 hover:bg-red-100 text-red-500 text-xs cursor-pointer"
+                      title="Delete Tenant Profile"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

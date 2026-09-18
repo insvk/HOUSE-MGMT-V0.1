@@ -27,6 +27,8 @@ export const isDummyLegacyAccount = (email?: string): boolean => {
   const lower = email.toLowerCase().trim();
   if (lower === 'sampathkumar@chemadura.com' || lower === 'production.chemadura26@gmail.com' || lower === 'rsivanaresh@gmail.com') return false; // Primary Admin / Owner Accounts
   if (
+    lower.includes('chemadur.com') ||
+    lower.endsWith('@chemadur.com') ||
     lower.endsWith('@madurahouse.local') ||
     lower.endsWith('@test.local') ||
     lower.includes('admin.tenant@') ||
@@ -42,7 +44,7 @@ export const initialUsers: User[] = [
     id: 'b1ffcd99-8d0c-4ef8-bb6d-6bb9bd380a22',
     email: 'rsivanaresh@gmail.com',
     fullName: 'Siva Naresh',
-    phone: '+91 98421 00001',
+    phone: '+91 9444408895',
     flatNumber: 'Admin Suite',
     role: 'OWNER',
     occupancyStatus: 'active',
@@ -51,14 +53,14 @@ export const initialUsers: User[] = [
     moveInDate: '2020-01-15',
     rentAmount: 0,
     depositAmount: 0,
-    emergencyContact: '+91 98421 99999',
+    emergencyContact: '+91 9444408895',
     notes: 'Platform Administrator',
   },
   {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     email: 'sampathkumar@chemadura.com',
     fullName: 'Sampath Kumar',
-    phone: '+91 98421 00000',
+    phone: '+91 7338716690',
     flatNumber: 'Owner Suite',
     role: 'OWNER',
     occupancyStatus: 'active',
@@ -67,7 +69,7 @@ export const initialUsers: User[] = [
     moveInDate: '2020-01-15',
     rentAmount: 0,
     depositAmount: 0,
-    emergencyContact: '+91 98421 99999',
+    emergencyContact: '+91 7338716690',
     notes: 'Property Developer & Primary Owner of Madura House',
   },
 ];

@@ -21,8 +21,7 @@ import { setAudioEnabled, playSuccessChime, playNotificationChime, playWarningCh
 import { setGlobalClock24hPreference } from './lib/googleTimeClient';
 import { setGlobalResendConfig } from './lib/resendClient';
 import { authService } from './lib/authService';
-import { supabase } from './lib/supabaseClient';
-import { cloudDb, isSupabaseConfigured, generateUUID } from './lib/supabaseClient';
+import { supabase, cloudDb, isSupabaseConfigured, generateUUID, mapDbRowToUser } from './lib/supabaseClient';
 import { House } from './types';
 import { 
   Building2, 
@@ -34,28 +33,46 @@ import {
   Mail, 
   ShieldCheck, 
   Shield,
-  Settings, 
-  UserCheck, 
-  CheckCircle2, 
   LogOut, 
-  Menu, 
+  Plus, 
+  Download, 
+  KeyRound, 
+  Settings, 
+  TrendingUp, 
+  AlertCircle, 
+  IndianRupee, 
+  CheckCircle, 
+  CheckCircle2,
+  FileCheck, 
+  Clock, 
+  Sliders, 
+  Lock, 
+  RefreshCw, 
   Search, 
-  Maximize, 
-  ChevronDown,
-  Sparkles,
-  RefreshCw,
-  X,
-  Wrench,
+  Check, 
   Receipt,
-  Camera,
-  Home,
-  Clock,
+  UserCheck,
   Zap,
-  Plus
+  Sparkles,
+  Database,
+  Wifi,
+  WifiOff,
+  Bell,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ShieldAlert,
+  Flame,
+  Home,
+  Maximize,
+  Camera,
+  Wrench
 } from 'lucide-react';
 
-const STORAGE_KEY_USERS = 'madura_house_users_db_v3';
-const STORAGE_KEY_RECORDS = 'madura_house_records_db_v3';
+const STORAGE_KEY_USERS = 'madura_house_users_v2';
+const STORAGE_KEY_RECORDS = 'madura_house_records_v1';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -84,23 +101,26 @@ export function App() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           const map = new Map<string, User>();
           // Base defaults (Admin/Owner)
-          initialUsers.forEach((iu) => map.set(iu.email.toLowerCase(), iu));
-          // Overlay saved data, automatically purging any legacy dummy accounts
+          initialUsers.forEach((iu) => map.set(iu.email.toLowerCase().trim(), iu));
+          // Overlay saved data, automatically purging any legacy dummy/typo accounts
           parsed.forEach((u: User) => {
             if (!u.email || isDummyLegacyAccount(u.email)) return;
-            const existing = map.get(u.email.toLowerCase());
-            const isOwner = u.email.toLowerCase() === 'sampathkumar@chemadura.com';
+            const emailKey = u.email.toLowerCase().trim();
+            const existing = map.get(emailKey);
+            const isOwner = emailKey === 'sampathkumar@chemadura.com' || emailKey === 'rsivanaresh@gmail.com';
             if (existing) {
-              map.set(u.email.toLowerCase(), {
+              map.set(emailKey, {
                 ...existing,
                 ...u,
+                email: emailKey,
                 flatNumber: normalizeFlat(u.flatNumber || existing.flatNumber),
                 password: u.password || existing.password,
                 role: isOwner ? 'OWNER' : (u.role || existing.role),
               });
             } else {
-              map.set(u.email.toLowerCase(), {
+              map.set(emailKey, {
                 ...u,
+                email: emailKey,
                 flatNumber: normalizeFlat(u.flatNumber),
                 role: isOwner ? 'OWNER' : (u.role || 'TENANT'),
               });
@@ -339,25 +359,32 @@ export function App() {
           setUsers((prevLocalUsers) => {
             const userMap = new Map<string, User>();
             // 1. Load local users first (with passwords, custom notes, created accounts)
-            prevLocalUsers.forEach((u) => userMap.set(u.email.toLowerCase(), u));
+            prevLocalUsers.forEach((u) => {
+              if (u.email && !isDummyLegacyAccount(u.email)) {
+                userMap.set(u.email.toLowerCase().trim(), u);
+              }
+            });
             // 2. Overlay remote data without wiping passwords or un-synced users
             remoteUsers.forEach((ru) => {
               if (!ru.email || isDummyLegacyAccount(ru.email)) return;
-              const emailKey = ru.email.toLowerCase();
+              const emailKey = ru.email.toLowerCase().trim();
               const existing = userMap.get(emailKey);
+              const isOwner = emailKey === 'sampathkumar@chemadura.com' || emailKey === 'rsivanaresh@gmail.com';
               if (existing) {
                 userMap.set(emailKey, {
                   ...existing,
                   ...ru,
+                  email: emailKey,
                   flatNumber: normalizeFlat(ru.flatNumber || existing.flatNumber),
                   password: ru.password || existing.password,
-                  role: emailKey === 'sampathkumar@chemadura.com' ? 'OWNER' : (ru.role || existing.role || 'TENANT'),
+                  role: isOwner ? 'OWNER' : (ru.role || existing.role || 'TENANT'),
                 });
               } else {
                 userMap.set(emailKey, {
                   ...ru,
+                  email: emailKey,
                   flatNumber: normalizeFlat(ru.flatNumber),
-                  role: emailKey === 'sampathkumar@chemadura.com' ? 'OWNER' : (ru.role || 'TENANT'),
+                  role: isOwner ? 'OWNER' : (ru.role || 'TENANT'),
                 });
               }
             });
@@ -425,68 +452,213 @@ export function App() {
     }
   }, []);
 
-  // Supabase Real-time Subscription for live Expenses across clients
+  // Supabase Real-time Subscriptions across all platform tables for multi-device sync
   useEffect(() => {
     if (!isSupabaseConfigured) return;
-    const unsubscribe = cloudDb.subscribeToExpenses((payload: any) => {
-      if (payload.eventType === 'INSERT' && payload.new) {
-        const item = payload.new;
-        const newExp: Expense = {
-          id: item.id,
-          maintenanceRecordId: item.maintenance_record_id,
-          slNo: item.sl_no,
-          particular: item.particular,
-          amount: Number(item.amount) || 0,
-          category: item.category,
-          gstApplicable: Boolean(item.gst_applicable),
-          gstAmount: Number(item.gst_amount) || 0,
-          notes: item.notes || '',
-          addedBy: item.added_by || '',
-          createdAt: item.created_at || new Date().toISOString(),
-        };
-        setRecords((prev) =>
-          prev.map((r) => {
-            if (r.id === newExp.maintenanceRecordId || (r.month === 9 && r.year === 2026)) {
-              if (r.expenses.some((e) => e.id === newExp.id)) return r;
-              const updatedExpenses = [newExp, ...r.expenses];
+
+    const unsubscribe = cloudDb.subscribeToAllPlatformChanges({
+      // 1. Live Users & Tenants Updates
+      onUsersChange: (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (payload.new && payload.new.email) {
+            const rawEmail = (payload.new.email || '').toLowerCase().trim();
+            if (isDummyLegacyAccount(rawEmail)) return;
+
+            // Check if soft-deleted or deactivated
+            if (payload.new.is_active === false || payload.new.deleted_at) {
+              setUsers((prev) => {
+                const filtered = prev.filter((u) => u.email.toLowerCase().trim() !== rawEmail && u.id !== payload.new.id);
+                try {
+                  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(filtered));
+                } catch {}
+                return filtered;
+              });
+              return;
+            }
+
+            const mapped = mapDbRowToUser(payload.new);
+            setUsers((prev) => {
+              const userMap = new Map<string, User>();
+              prev.forEach((u) => userMap.set(u.email.toLowerCase().trim(), u));
+              const existing = userMap.get(rawEmail);
+              userMap.set(rawEmail, {
+                ...(existing || {}),
+                ...mapped,
+                password: existing?.password || mapped.password,
+              });
+              const updatedList = Array.from(userMap.values());
+              try {
+                localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updatedList));
+              } catch {}
+              return updatedList;
+            });
+
+            // Update current user if active profile changed
+            setCurrentUser((prev) => {
+              if (prev.email.toLowerCase().trim() === rawEmail) {
+                return { ...prev, ...mapped, password: prev.password || mapped.password };
+              }
+              return prev;
+            });
+          }
+        } else if (payload.eventType === 'DELETE' && payload.old) {
+          const deletedId = payload.old.id;
+          const deletedEmail = (payload.old.email || '').toLowerCase().trim();
+          setUsers((prev) => {
+            const filtered = prev.filter(
+              (u) => (deletedId ? u.id !== deletedId : true) && (deletedEmail ? u.email.toLowerCase().trim() !== deletedEmail : true)
+            );
+            try {
+              localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(filtered));
+            } catch {}
+            return filtered;
+          });
+        }
+      },
+
+      // 2. Live Property Master Updates
+      onHouseChange: (payload) => {
+        if ((payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') && payload.new) {
+          const h = payload.new;
+          setHouse((prev) => {
+            const updated = {
+              ...prev,
+              name: h.name || prev.name,
+              address: h.address || prev.address,
+              city: h.city || prev.city,
+              postalCode: h.postal_code || prev.postalCode,
+              totalUnits: Number(h.total_units) || prev.totalUnits,
+              settings: h.settings || prev.settings,
+            };
+            try {
+              localStorage.setItem('madura_house_property_v1', JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
+        }
+      },
+
+      // 3. Live Maintenance Records Header Updates
+      onRecordsChange: (payload) => {
+        if ((payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') && payload.new) {
+          const nr = payload.new;
+          setRecords((prev) =>
+            prev.map((r) => {
+              if (r.id === nr.id || (r.month === nr.month && r.year === nr.year)) {
+                return {
+                  ...r,
+                  grandTotal: Number(nr.grand_total) || r.grandTotal,
+                  activeTenantsCount: nr.number_of_active_tenants || r.activeTenantsCount,
+                  individualContribution: Number(nr.individual_contribution) || r.individualContribution,
+                  notes: nr.notes !== undefined ? nr.notes : r.notes,
+                };
+              }
+              return r;
+            })
+          );
+        }
+      },
+
+      // 4. Live Expense Line Item Updates
+      onExpensesChange: (payload) => {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          const item = payload.new;
+          const newExp: Expense = {
+            id: item.id,
+            maintenanceRecordId: item.maintenance_record_id,
+            slNo: item.sl_no,
+            particular: item.particular,
+            amount: Number(item.amount) || 0,
+            category: item.category,
+            gstApplicable: Boolean(item.gst_applicable),
+            gstAmount: Number(item.gst_amount) || 0,
+            notes: item.notes || '',
+            addedBy: item.added_by || '',
+            createdAt: item.created_at || new Date().toISOString(),
+          };
+          setRecords((prev) =>
+            prev.map((r) => {
+              if (r.id === newExp.maintenanceRecordId || (r.month === 9 && r.year === 2026)) {
+                if (r.expenses.some((e) => e.id === newExp.id)) return r;
+                const updatedExpenses = [newExp, ...r.expenses];
+                const grandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
+                const individualContribution = grandTotal / (r.activeTenantsCount || 5);
+                return { ...r, expenses: updatedExpenses, grandTotal, individualContribution };
+              }
+              return r;
+            })
+          );
+        } else if (payload.eventType === 'UPDATE' && payload.new) {
+          const item = payload.new;
+          setRecords((prev) =>
+            prev.map((r) => {
+              const updatedExpenses = r.expenses.map((e) =>
+                e.id === item.id
+                  ? {
+                      ...e,
+                      particular: item.particular,
+                      amount: Number(item.amount) || 0,
+                      category: item.category,
+                      notes: item.notes,
+                    }
+                  : e
+              );
               const grandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
               const individualContribution = grandTotal / (r.activeTenantsCount || 5);
               return { ...r, expenses: updatedExpenses, grandTotal, individualContribution };
-            }
-            return r;
-          })
-        );
-      } else if (payload.eventType === 'UPDATE' && payload.new) {
-        const item = payload.new;
-        setRecords((prev) =>
-          prev.map((r) => {
-            const updatedExpenses = r.expenses.map((e) =>
-              e.id === item.id
-                ? {
-                    ...e,
-                    particular: item.particular,
-                    amount: Number(item.amount) || 0,
-                    category: item.category,
-                    notes: item.notes,
-                  }
-                : e
-            );
-            const grandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const individualContribution = grandTotal / (r.activeTenantsCount || 5);
-            return { ...r, expenses: updatedExpenses, grandTotal, individualContribution };
-          })
-        );
-      } else if (payload.eventType === 'DELETE' && payload.old) {
-        const item = payload.old;
-        setRecords((prev) =>
-          prev.map((r) => {
-            const updatedExpenses = r.expenses.filter((e) => e.id !== item.id);
-            const grandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const individualContribution = grandTotal / (r.activeTenantsCount || 5);
-            return { ...r, expenses: updatedExpenses, grandTotal, individualContribution };
-          })
-        );
-      }
+            })
+          );
+        } else if (payload.eventType === 'DELETE' && payload.old) {
+          const item = payload.old;
+          setRecords((prev) =>
+            prev.map((r) => {
+              const updatedExpenses = r.expenses.filter((e) => e.id !== item.id);
+              const grandTotal = updatedExpenses.reduce((sum, e) => sum + e.amount, 0);
+              const individualContribution = grandTotal / (r.activeTenantsCount || 5);
+              return { ...r, expenses: updatedExpenses, grandTotal, individualContribution };
+            })
+          );
+        }
+      },
+
+      // 5. Live Invoices Updates
+      onInvoicesChange: (payload) => {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          const i = payload.new;
+          const newInv: Invoice = {
+            id: i.id,
+            expenseId: i.expense_id,
+            maintenanceRecordId: i.maintenance_record_id || '22222222-3333-4444-5555-666666666666',
+            fileName: i.file_name,
+            fileSize: Number(i.file_size) || 0,
+            fileType: i.file_type || 'application/pdf',
+            storagePath: i.storage_path || '',
+            uploadedBy: i.uploaded_by || 'Admin',
+            uploadedAt: i.created_at || new Date().toISOString(),
+            ocrText: i.ocr_data?.text || '',
+          };
+          setInvoices((prev) => (prev.some((item) => item.id === newInv.id) ? prev : [newInv, ...prev]));
+        } else if (payload.eventType === 'DELETE' && payload.old) {
+          setInvoices((prev) => prev.filter((item) => item.id !== payload.old.id));
+        }
+      },
+
+      // 6. Live Notification Logs
+      onNotificationsChange: (payload) => {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          const n = payload.new;
+          const newLog: NotificationLog = {
+            id: n.id,
+            maintenanceRecordId: n.maintenance_record_id,
+            recipientEmail: n.metadata?.recipient_email || '',
+            type: n.type || 'maintenance_added',
+            subject: n.subject || '',
+            status: 'sent',
+            sentAt: n.sent_at || n.created_at,
+          };
+          setNotificationLogs((prev) => (prev.some((item) => item.id === newLog.id) ? prev : [newLog, ...prev]));
+        }
+      },
     });
 
     // Supabase Auth State Change Listener

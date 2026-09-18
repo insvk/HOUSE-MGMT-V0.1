@@ -46,8 +46,8 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 // ============================================================================
 const OWNER_EMAILS = ['sampathkumar@chemadura.com', 'rsivanaresh@gmail.com'];
 
-function mapDbRowToUser(u: any): User {
-  const emailLower = (u.email || '').toLowerCase();
+export function mapDbRowToUser(u: any): User {
+  const emailLower = (u.email || '').toLowerCase().trim();
   return {
     id: u.id,
     email: emailLower,
@@ -185,23 +185,32 @@ export const cloudDb = {
     }
   },
 
-  // Fetch Users (Filtered: legitimate production accounts only, excludes soft-deleted)
+  // Fetch Users (Filtered: legitimate production accounts only, excludes soft-deleted, deduplicated by email)
   async getUsers(): Promise<User[] | null> {
     if (!isSupabaseConfigured || !supabase) return null;
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        // ROOT CAUSE #6 FIX: filter out soft-deleted / inactive users
-        .eq('is_active', true)
+        .or('is_active.is.null,is_active.eq.true')
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      return (data || [])
-        .filter((u: any) => u.email && !isDummyLegacyAccount(u.email))
-        .map((u: any) => mapDbRowToUser(u));
+      // Filter and strictly deduplicate by email
+      const userMap = new Map<string, User>();
+      (data || []).forEach((row: any) => {
+        if (!row.email || isDummyLegacyAccount(row.email)) return;
+        const mapped = mapDbRowToUser(row);
+        const emailKey = mapped.email.toLowerCase().trim();
+        // Set unique canonical profile
+        if (!userMap.has(emailKey) || row.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+          userMap.set(emailKey, mapped);
+        }
+      });
+
+      return Array.from(userMap.values());
     } catch (err) {
       console.warn('Cloud DB fetch users fallback:', err);
       return null;
@@ -667,7 +676,149 @@ export const cloudDb = {
         supabase.removeChannel(channel);
       };
     } catch (err) {
-      console.warn('Realtime subscription fallback:', err);
+      console.warn('Realtime expenses subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Real-time PostgreSQL subscription for Users & Tenants
+  subscribeToUsers(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:users')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime users subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Real-time PostgreSQL subscription for Property / House Master
+  subscribeToHouse(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:houses')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'houses' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime house subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Real-time PostgreSQL subscription for Maintenance Records
+  subscribeToMaintenanceRecords(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:maintenance_records')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_records' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime records subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Real-time PostgreSQL subscription for Invoices
+  subscribeToInvoices(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:invoices')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime invoices subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Real-time PostgreSQL subscription for Notifications
+  subscribeToNotifications(onEvent: (payload: any) => void) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:notifications')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => {
+          onEvent(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime notifications subscription fallback:', err);
+      return () => {};
+    }
+  },
+
+  // Unified Real-time Listener for ALL platform changes
+  subscribeToAllPlatformChanges(handlers: {
+    onUsersChange?: (payload: any) => void;
+    onHouseChange?: (payload: any) => void;
+    onRecordsChange?: (payload: any) => void;
+    onExpensesChange?: (payload: any) => void;
+    onInvoicesChange?: (payload: any) => void;
+    onNotificationsChange?: (payload: any) => void;
+  }) {
+    if (!isSupabaseConfigured || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('realtime:madura_house_platform_sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
+          handlers.onUsersChange?.(payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'houses' }, (payload) => {
+          handlers.onHouseChange?.(payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_records' }, (payload) => {
+          handlers.onRecordsChange?.(payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, (payload) => {
+          handlers.onExpensesChange?.(payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, (payload) => {
+          handlers.onInvoicesChange?.(payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => {
+          handlers.onNotificationsChange?.(payload);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime unified subscription fallback:', err);
       return () => {};
     }
   },
