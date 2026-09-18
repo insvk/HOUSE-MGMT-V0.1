@@ -209,22 +209,40 @@ ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.security_events ENABLE ROW LEVEL SECURITY;
 
--- Drop all old conflicting policies
+-- Drop all old conflicting policies AND previous versions of full_access policies (makes script 100% idempotent)
+DROP POLICY IF EXISTS "users_full_access"                 ON public.users;
 DROP POLICY IF EXISTS "users_all_policy"                  ON public.users;
 DROP POLICY IF EXISTS "madura_house_users_read"           ON public.users;
 DROP POLICY IF EXISTS "Authenticated users can read users" ON public.users;
 DROP POLICY IF EXISTS "Users can update own profile"       ON public.users;
 DROP POLICY IF EXISTS "Admins can update any profile"      ON public.users;
+
+DROP POLICY IF EXISTS "houses_full_access"                ON public.houses;
 DROP POLICY IF EXISTS "houses_all_policy"                  ON public.houses;
+
+DROP POLICY IF EXISTS "records_full_access"               ON public.maintenance_records;
 DROP POLICY IF EXISTS "records_all_policy"                 ON public.maintenance_records;
+
+DROP POLICY IF EXISTS "expenses_full_access"              ON public.expenses;
 DROP POLICY IF EXISTS "expenses_all_policy"                ON public.expenses;
 DROP POLICY IF EXISTS "madura_house_expenses_read"         ON public.expenses;
 DROP POLICY IF EXISTS "madura_house_expenses_write"        ON public.expenses;
+
 DROP POLICY IF EXISTS "roles_all_policy"                   ON public.roles;
+
+DROP POLICY IF EXISTS "invoices_full_access"              ON public.invoices;
 DROP POLICY IF EXISTS "invoices_all_policy"                ON public.invoices;
+
+DROP POLICY IF EXISTS "notifications_full_access"         ON public.notifications;
 DROP POLICY IF EXISTS "notifications_all_policy"           ON public.notifications;
+
+DROP POLICY IF EXISTS "audit_logs_full_access"            ON public.audit_logs;
 DROP POLICY IF EXISTS "audit_logs_all_policy"              ON public.audit_logs;
+
+DROP POLICY IF EXISTS "secrets_owner_only"                ON public.system_secrets;
 DROP POLICY IF EXISTS "secrets_owner_policy"               ON public.system_secrets;
+
+DROP POLICY IF EXISTS "security_events_full_access"       ON public.security_events;
 DROP POLICY IF EXISTS "Users can view own security events" ON public.security_events;
 DROP POLICY IF EXISTS "Users can insert own security events" ON public.security_events;
 
