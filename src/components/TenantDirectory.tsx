@@ -24,9 +24,14 @@ import {
   FileSpreadsheet,
   FileText,
   Download,
-  Camera,
-  UploadCloud,
-  RotateCcw
+  Camera, 
+  UploadCloud, 
+  RotateCcw,
+  Copy,
+  Key,
+  Eye,
+  EyeOff,
+  Check
 } from 'lucide-react';
 import { exportTenantsToExcel, exportTenantsToPDF } from '../utils/exportUtils';
 import { playSuccessChime } from '../utils/audioUtils';
@@ -68,7 +73,22 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   const [depositAmount, setDepositAmount] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [notes, setNotes] = useState('');
-  
+
+  // Password visibility and clipboard state
+  const [showPasswordMap, setShowPasswordMap] = useState<Record<string, boolean>>({});
+  const [copiedKeyMap, setCopiedKeyMap] = useState<Record<string, boolean>>({});
+
+  const toggleShowPassword = (userId: string) => {
+    setShowPasswordMap((prev) => ({ ...prev, [userId]: !prev[userId] }));
+  };
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKeyMap((prev) => ({ ...prev, [key]: true }));
+    setTimeout(() => {
+      setCopiedKeyMap((prev) => ({ ...prev, [key]: false }));
+    }, 2000);
+  };
   // Avatar & Quick Photo Management
   const [avatarUrl, setAvatarUrl] = useState<string>(DEFAULT_AVATARS[0].url);
   const [showModalAvatarPresets, setShowModalAvatarPresets] = useState(false);
@@ -272,6 +292,17 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         </div>
       </div>
 
+      {/* Quick Credentials Info Banner */}
+      <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-200/80 rounded-lg p-3 text-xs text-blue-900 flex items-start gap-2.5 shadow-xs">
+        <Shield className="w-4 h-4 text-[#405189] shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <span className="font-bold text-[#405189]">Occupant Portal Login Enabled:</span>
+          <span className="text-slate-700 ml-1">
+            All occupants below can log in to the portal using their <strong>Tenant ID</strong>, <strong>Email</strong>, <strong>Username</strong>, or <strong>Flat Number</strong> alongside their assigned password. Click 👁️ to reveal passwords or 📋 to copy complete login credentials for any resident.
+          </span>
+        </div>
+      </div>
+
       {/* Velzon Tenant Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredUsers.map((user) => {
@@ -342,6 +373,31 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
                 {/* Details list */}
                 <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
+                  {/* Tenant ID row */}
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span className="text-slate-400 flex items-center gap-1.5"><Key className="w-3.5 h-3.5" /> Tenant ID:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" title={user.id}>
+                        {user.id.length > 14 ? `${user.id.substring(0, 8)}...` : user.id}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(user.id, `id_${user.id}`)}
+                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                        title="Copy full Tenant ID"
+                      >
+                        {copiedKeyMap[`id_${user.id}`] ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {user.username ? (
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="text-slate-400 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Username:</span>
+                      <span className="font-mono text-[11px] font-semibold text-[#405189]">@{user.username.replace(/^@/, '')}</span>
+                    </div>
+                  ) : null}
+
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="text-slate-400 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> Email:</span>
                     <span className="font-medium text-slate-800 truncate max-w-[160px]" title={user.email}>{user.email}</span>
@@ -350,6 +406,35 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="text-slate-400 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Phone:</span>
                     <span className="font-medium text-slate-800">{user.phone || 'N/A'}</span>
+                  </div>
+
+                  {/* Password & Credentials row */}
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span className="text-slate-400 flex items-center gap-1.5"><Key className="w-3.5 h-3.5" /> Password:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {showPasswordMap[user.id] ? (user.password || 'Tenant@123') : '••••••••'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleShowPassword(user.id)}
+                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                        title={showPasswordMap[user.id] ? 'Hide Password' : 'Show Password'}
+                      >
+                        {showPasswordMap[user.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const creds = `Madura House Tenant Login:\nPortal: ${window.location.origin}\nID / Email: ${user.email} (or ID: ${user.id}${user.username ? `, @${user.username}` : ''})\nPassword: ${user.password || 'Tenant@123'}\nFlat: ${user.flatNumber}`;
+                          copyToClipboard(creds, `cred_${user.id}`);
+                        }}
+                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-[#405189] rounded transition-colors cursor-pointer"
+                        title="Copy complete login credentials for resident"
+                      >
+                        {copiedKeyMap[`cred_${user.id}`] ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
                   </div>
 
                   {user.rentAmount ? (
@@ -365,13 +450,6 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       <span className="text-slate-700">{user.emergencyContact}</span>
                     </div>
                   )}
-
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span className="text-slate-400 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Portal Login:</span>
-                    <span className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      {user.password ? 'Password Protected' : 'Active'}
-                    </span>
-                  </div>
 
                   {user.notes && (
                     <div className="p-2 rounded bg-slate-50 text-[11px] text-slate-600 mt-2">

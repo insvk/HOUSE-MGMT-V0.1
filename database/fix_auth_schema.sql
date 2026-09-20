@@ -29,6 +29,14 @@ DO $$ BEGIN
   END;
 END $$;
 
+-- password: for tenant portal credential storage
+DO $$ BEGIN
+  BEGIN
+    ALTER TABLE public.users ADD COLUMN password TEXT;
+  EXCEPTION WHEN duplicate_column THEN
+  END;
+END $$;
+
 -- role: OWNER | ADMIN_TENANT | TENANT
 DO $$ BEGIN
   BEGIN

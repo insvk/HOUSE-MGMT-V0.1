@@ -163,6 +163,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
+      // Step 0: Authoritative profile provided directly by authService (Tenant Directory match)
+      if (authRes.profile) {
+        onLoginSuccess(authRes.profile, authRes.profile.role);
+        return;
+      }
+
       // ROOT CAUSE #7 FIX: Resolve the final email (may differ from cleanEmail if username was used)
       const resolvedEmail: string = authRes.user?.email || cleanEmail;
 
@@ -456,14 +462,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                    EMAIL OR USERNAME
+                    EMAIL, USERNAME, OR TENANT ID
                   </label>
                   <input
                     type="text"
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="name@company.com or @username"
+                    placeholder="Email, @username, Tenant ID, or Flat #"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#111827] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all shadow-sm"
                   />
                 </div>
