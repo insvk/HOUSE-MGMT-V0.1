@@ -2204,8 +2204,8 @@ export function App() {
           auditLogs={auditLogs}
           onClose={() => setShowSettings(false)}
           onUpdateHouse={(h) => {
-            setHouse(h);
-            showToast('Property settings saved successfully!');
+            handleUpdateHouse(h);
+            showToast('Property settings saved successfully in Cloud DB!');
           }}
           onUpdateUser={handleUpdateUser}
           onRestoreSystemBackup={handleRestoreSystemBackup}

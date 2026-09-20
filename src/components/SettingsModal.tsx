@@ -230,7 +230,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label className="block font-semibold uppercase text-slate-500 mb-1">Property Name</label>
                 <input
                   type="text"
-                  disabled={currentUserRole !== 'OWNER'}
+                  disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full velzon-input px-3 py-2 text-xs"
@@ -241,7 +241,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label className="block font-semibold uppercase text-slate-500 mb-1">Street Address</label>
                 <input
                   type="text"
-                  disabled={currentUserRole !== 'OWNER'}
+                  disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full velzon-input px-3 py-2 text-xs"
@@ -253,7 +253,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="block font-semibold uppercase text-slate-500 mb-1">City</label>
                   <input
                     type="text"
-                    disabled={currentUserRole !== 'OWNER'}
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
@@ -263,7 +263,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <label className="block font-semibold uppercase text-slate-500 mb-1">Postal Code</label>
                   <input
                     type="text"
-                    disabled={currentUserRole !== 'OWNER'}
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     className="w-full velzon-input px-3 py-2 text-xs"
@@ -275,7 +275,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label className="block font-semibold uppercase text-slate-500 mb-1">Total Residential Units</label>
                 <input
                   type="number"
-                  disabled={currentUserRole !== 'OWNER'}
+                  disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                   value={totalUnits}
                   onChange={(e) => setTotalUnits(e.target.value)}
                   className="w-full velzon-input px-3 py-2 text-xs font-mono"
