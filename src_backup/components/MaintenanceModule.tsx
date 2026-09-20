@@ -1,0 +1,844 @@
+import React, { useState, useRef } from 'react';
+import { MaintenanceRecord, Expense, ExpenseCategory, UserRole, User, House, NotificationLog } from '../types';
+import { 
+  Plus, 
+  Trash2, 
+  IndianRupee, 
+  Calculator, 
+  Calendar, 
+  FileSpreadsheet, 
+  FileText, 
+  AlertCircle,
+  Tag,
+  Edit3,
+  CheckCircle2,
+  Filter,
+  Download,
+  UploadCloud,
+  Paperclip,
+  Eye,
+  X,
+  Mail,
+  Zap,
+  Radio,
+  Send
+} from 'lucide-react';
+import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
+import { InvoiceAttachmentPill } from './InvoiceAttachmentPill';
+import { processInvoiceFile } from '../utils/imageUtils';
+import { sendExpenseAlertEmails, sendBulkMaintenanceEmails, isResendConfigured } from '../lib/resendClient';
+
+interface MaintenanceModuleProps {
+  records: MaintenanceRecord[];
+  activeRecord: MaintenanceRecord;
+  currentUserRole: UserRole;
+  currentUser?: User;
+  house?: House;
+  users?: User[];
+  onSelectRecord: (recordId: string) => void;
+  onAddExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
+  onOpenEditExpense?: (expense: Expense) => void;
+  onDeleteExpense: (expenseId: string) => void;
+  onExportExcel: () => void;
+  onExportPDF: () => void;
+  onToggleTenantMaintenanceStatus?: (userId: string) => void;
+  onAddNotificationLog?: (log: Omit<NotificationLog, 'id' | 'sentAt'>) => void;
+  showToast?: (msg: string) => void;
+}
+
+export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
+  records,
+  activeRecord,
+  currentUserRole,
+  currentUser,
+  house,
+  users = [],
+  onSelectRecord,
+  onAddExpense,
+  onOpenEditExpense,
+  onDeleteExpense,
+  onExportExcel,
+  onExportPDF,
+  onToggleTenantMaintenanceStatus,
+  onAddNotificationLog,
+  showToast,
+}) => {
+  const [previewInvoice, setPreviewInvoice] = useState<InvoicePreviewData | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [particular, setParticular] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState<ExpenseCategory>('maintenance');
+  const [gstApplicable, setGstApplicable] = useState(false);
+  const [gstAmount, setGstAmount] = useState('');
+  const [notes, setNotes] = useState('');
+  const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined);
+  const [invoiceFileName, setInvoiceFileName] = useState<string | undefined>(undefined);
+  const [invoiceFileType, setInvoiceFileType] = useState<string | undefined>(undefined);
+  const [invoiceFileSize, setInvoiceFileSize] = useState<number | undefined>(undefined);
+  const [notifyResidentsViaResend, setNotifyResidentsViaResend] = useState(true);
+  const [isBulkResendSyncing, setIsBulkResendSyncing] = useState(false);
+  const invoiceFileInputRef = useRef<HTMLInputElement>(null);
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const handleInvoiceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const processed = await processInvoiceFile(file);
+      setInvoiceUrl(processed.dataUrl);
+      setInvoiceFileName(processed.fileName);
+      setInvoiceFileType(processed.fileType);
+      setInvoiceFileSize(processed.fileSize);
+    } catch (err: any) {
+      alert(err.message || 'Failed to process file');
+    }
+  };
+
+  const handleCreateExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!particular || !amount) return;
+
+    const parsedAmount = parseFloat(amount);
+    const parsedGst = gstApplicable && gstAmount ? parseFloat(gstAmount) : 0;
+
+    const newExpense: Omit<Expense, 'id' | 'createdAt'> = {
+      maintenanceRecordId: activeRecord.id,
+      slNo: activeRecord.expenses.length + 1,
+      particular,
+      amount: parsedAmount,
+      category,
+      gstApplicable,
+      gstAmount: parsedGst,
+      notes,
+      addedBy: currentUser?.fullName || (currentUserRole === 'OWNER' ? 'Sampath Kumar' : 'Property Administrator'),
+      invoiceUrl,
+      invoiceFileName,
+      invoiceFileType,
+      invoiceFileSize,
+      ocrText: invoiceFileName ? `Verified invoice document: ${invoiceFileName}` : undefined,
+    };
+
+    onAddExpense(newExpense);
+
+    // Real-Time Sync with Resend
+    if (notifyResidentsViaResend && users.length > 0) {
+      const activeResidents = users.filter((u) => u.occupancyStatus === 'active' && u.email);
+      if (activeResidents.length > 0) {
+        const updatedTotal = activeRecord.grandTotal + parsedAmount;
+        const tenantCount = activeRecord.activeTenantsCount || (users.length > 0 ? users.length : 1);
+        const updatedShare = tenantCount > 0 ? updatedTotal / tenantCount : updatedTotal;
+
+        const updatedRecord: MaintenanceRecord = {
+          ...activeRecord,
+          grandTotal: updatedTotal,
+          individualContribution: updatedShare,
+          expenses: [
+            {
+              ...newExpense,
+              id: 'temp-' + Date.now(),
+              createdAt: new Date().toISOString(),
+            },
+            ...activeRecord.expenses,
+          ],
+        };
+
+        const targetHouse = house || {
+          id: '11111111-2222-3333-4444-555555555555',
+          name: 'Madura House Maintenance',
+          address: 'No. 42, Bypass Road, Ellis Nagar',
+          city: 'Maduravoyal',
+          postalCode: '625001',
+          totalUnits: 5,
+          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        };
+
+        sendExpenseAlertEmails({
+          expense: {
+            ...newExpense,
+            id: 'exp-' + Date.now(),
+            createdAt: new Date().toISOString(),
+          },
+          record: updatedRecord,
+          house: targetHouse,
+          recipients: activeResidents.map((r) => ({
+            email: r.email,
+            fullName: r.fullName,
+            flatNumber: r.flatNumber,
+            phone: r.phone,
+          })),
+          senderName: currentUser?.fullName || 'Sampath Kumar',
+        }).then((res) => {
+          if (onAddNotificationLog) {
+            onAddNotificationLog({
+              maintenanceRecordId: activeRecord.id,
+              recipientEmail: `broadcast (${res.sentCount} residents)`,
+              type: 'maintenance_added',
+              subject: `[Resend Alert] New Expense: ${particular} (₹${parsedAmount.toLocaleString('en-IN')})`,
+              status: res.success ? 'sent' : 'failed',
+            });
+          }
+        }).catch(() => {});
+      }
+    }
+
+    setShowAddModal(false);
+    setParticular('');
+    setAmount('');
+    setNotes('');
+    setGstApplicable(false);
+    setGstAmount('');
+    setInvoiceUrl(undefined);
+    setInvoiceFileName(undefined);
+    setInvoiceFileType(undefined);
+    setInvoiceFileSize(undefined);
+
+    if (showToast) {
+      showToast(`Expense "${particular}" recorded${notifyResidentsViaResend ? ' & dispatched via Resend' : ''}!`);
+    }
+  };
+
+  const handleTriggerResendBulkSync = async () => {
+    if (!users || users.length === 0) {
+      if (showToast) showToast('No active resident accounts available to notify.');
+      return;
+    }
+    setIsBulkResendSyncing(true);
+    try {
+      const activeResidents = users.filter((u) => u.occupancyStatus === 'active' && u.email);
+      const targetHouse = house || {
+        id: '11111111-2222-3333-4444-555555555555',
+        name: 'Madura House Maintenance',
+        address: 'No. 42, Bypass Road, Ellis Nagar',
+        city: 'Maduravoyal',
+        postalCode: '625001',
+        totalUnits: 5,
+        ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      };
+
+      const result = await sendBulkMaintenanceEmails({
+        recipients: activeResidents.map((r) => ({
+          email: r.email,
+          fullName: r.fullName,
+          flatNumber: r.flatNumber,
+          phone: r.phone,
+        })),
+        record: activeRecord,
+        house: targetHouse,
+        senderName: currentUser?.fullName || 'Sampath Kumar',
+      });
+
+      if (onAddNotificationLog) {
+        onAddNotificationLog({
+          maintenanceRecordId: activeRecord.id,
+          recipientEmail: `all-residents (${result.sentCount} units)`,
+          type: 'contribution_due',
+          subject: `[Statement Sync] ${monthNames[activeRecord.month - 1]} ${activeRecord.year} Total: ₹${activeRecord.grandTotal.toLocaleString('en-IN')}`,
+          status: result.success ? 'sent' : 'failed',
+        });
+      }
+
+      if (showToast) {
+        showToast(`⚡ Resend Real-Time Sync: Dispatched latest statement to ${result.sentCount} residents!`);
+      }
+    } catch (err: any) {
+      if (showToast) showToast(`Resend sync notice: ${err?.message || 'Done'}`);
+    } finally {
+      setIsBulkResendSyncing(false);
+    }
+  };
+
+  // Unique residents deduplicated by email
+  const residentUsers = React.useMemo(() => {
+    const map = new Map<string, User>();
+    users.forEach((u) => {
+      const emailKey = (u.email || '').toLowerCase().trim();
+      if (!emailKey) return;
+      if (!map.has(emailKey) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+        map.set(emailKey, u);
+      }
+    });
+    return Array.from(map.values()).filter((u) => u.occupancyStatus !== 'inactive' && u.occupancyStatus !== 'evicted');
+  }, [users]);
+
+  const paidResidentsCount = residentUsers.filter((u) => u.maintenanceStatus === 'paid').length;
+  const totalResidentsCount = residentUsers.length || activeRecord.activeTenantsCount || 5;
+  const totalMaintCollected = paidResidentsCount * activeRecord.individualContribution;
+  const totalMaintDue = totalResidentsCount * activeRecord.individualContribution;
+  const collectionPercentage = totalResidentsCount > 0 ? Math.round((paidResidentsCount / totalResidentsCount) * 100) : 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Header & Controls */}
+      <div className="velzon-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#405189]" /> Monthly Maintenance & Expense Manager
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <Zap className="w-3 h-3 text-amber-500 fill-amber-500" /> Resend Real-Time Sync
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Madura House • Live audited line items with automated per-unit split calculation
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Month Record Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5">
+            <span className="text-xs text-slate-500 font-semibold">Period:</span>
+            <select
+              value={activeRecord.id}
+              onChange={(e) => onSelectRecord(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-800 cursor-pointer focus:outline-none"
+            >
+              {records.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {monthNames[r.month - 1]} {r.year} (₹{r.grandTotal.toLocaleString('en-IN')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="px-3.5 py-1.5 bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-bold rounded-md flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Line Item
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTriggerResendBulkSync}
+                disabled={isBulkResendSyncing}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-[#405189] to-[#364473] hover:from-[#364473] hover:to-[#2b375c] text-white text-xs font-bold rounded-md flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
+                title="Dispatch current maintenance statement instantly to all active tenants via Resend"
+              >
+                <Send className={`w-3.5 h-3.5 ${isBulkResendSyncing ? 'animate-spin text-amber-300' : 'text-sky-300'}`} />
+                {isBulkResendSyncing ? 'Syncing...' : 'Resend Live Sync'}
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={onExportExcel}
+            className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Download complete monthly maintenance statement as Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#0ab39c]" /> Excel
+          </button>
+
+          <button
+            type="button"
+            onClick={onExportPDF}
+            className="px-3 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Generate and download official audited maintenance PDF (.pdf)"
+          >
+            <FileText className="w-4 h-4 text-[#f06548]" /> PDF
+          </button>
+        </div>
+      </div>
+
+      {/* 3 Summary Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="velzon-card p-4 border-l-4 border-l-[#405189]">
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Total Month Expense</div>
+          <div className="text-2xl font-bold text-slate-800 mt-1">₹{activeRecord.grandTotal.toLocaleString('en-IN')}</div>
+          <div className="text-xs text-slate-500 mt-1">{activeRecord.expenses.length} Itemized Line Entries</div>
+        </div>
+
+        <div className="velzon-card p-4 border-l-4 border-l-[#0ab39c]">
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Active Tenant Units</div>
+          <div className="text-2xl font-bold text-[#0ab39c] mt-1">{activeRecord.activeTenantsCount} Flats</div>
+          <div className="text-xs text-slate-500 mt-1">Occupancy rate: 100% ({activeRecord.activeTenantsCount || 5}/{activeRecord.activeTenantsCount || 5} Flats)</div>
+        </div>
+
+        <div className="velzon-card p-4 border-l-4 border-l-[#299cdb]">
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Individual Tenant Share</div>
+          <div className="text-2xl font-bold text-[#405189] mt-1">₹{activeRecord.individualContribution.toFixed(2)}</div>
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <Calculator className="w-3.5 h-3.5 text-[#299cdb]" /> Split equally across active flats
+          </div>
+        </div>
+      </div>
+
+      {/* Resident Maintenance Fee Collection Status */}
+      <div className="velzon-card overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-emerald-50/40">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Resident Maintenance Fee Collection Status
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                {collectionPercentage}% Collected
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Admin controls to toggle and audit each resident's ₹{activeRecord.individualContribution.toFixed(2)} maintenance contribution
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="text-right">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Collected</div>
+              <div className="font-bold text-emerald-700 font-mono text-sm">₹{totalMaintCollected.toLocaleString('en-IN')}</div>
+            </div>
+            <div className="h-6 w-px bg-slate-200" />
+            <div className="text-right">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase">Pending Dues</div>
+              <div className="font-bold text-rose-600 font-mono text-sm">₹{(totalMaintDue - totalMaintCollected).toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {residentUsers.map((u) => {
+              const isPaid = u.maintenanceStatus === 'paid';
+              const isPending = u.maintenanceStatus === 'pending';
+              const isCurrentUser = currentUser?.id === u.id;
+
+              return (
+                <div
+                  key={u.id}
+                  className={`p-3 rounded-lg border flex items-center justify-between transition-all ${
+                    isCurrentUser ? 'border-[#405189]/40 bg-indigo-50/20 shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <img
+                      src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                      alt={u.fullName}
+                      className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-800 truncate flex items-center gap-1.5" title={u.fullName}>
+                        {u.fullName}
+                        {isCurrentUser && <span className="text-[9px] text-[#405189] font-normal">(You)</span>}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                        <span className="font-bold text-slate-700">{u.flatNumber}</span>
+                        <span>• Share: ₹{activeRecord.individualContribution.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(u.id)}
+                    disabled={currentUserRole === 'TENANT'}
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all shrink-0 ${
+                      currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                    } ${
+                      isPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                      isPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}
+                    title={currentUserRole !== 'TENANT' ? "Click to cycle status (Paid → Pending → Unpaid)" : "Maintenance Fee Status"}
+                  >
+                    {u.maintenanceStatus || 'unpaid'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="velzon-card overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-800">
+            Expenses Breakdown for {monthNames[activeRecord.month - 1]} {activeRecord.year}
+          </h2>
+          <span className="text-xs text-slate-400 font-mono">Record: {activeRecord.id}</span>
+        </div>
+
+        {/* Mobile View: Stacked Expense Cards (< md) */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {activeRecord.expenses.length === 0 ? (
+            <div className="text-center py-10 px-4 space-y-2">
+              <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+              <div className="text-xs font-bold text-slate-700">No Expenses Recorded Yet</div>
+              <p className="text-[11px] text-slate-400">
+                Click "+ Add Line Item" above to log a new expenditure.
+              </p>
+            </div>
+          ) : (
+            activeRecord.expenses.map((exp, idx) => (
+              <div key={exp.id} className="p-3.5 space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono text-slate-400 font-bold">#{idx + 1}</span>
+                      <h3 className="text-xs font-bold text-slate-800">{exp.particular}</h3>
+                    </div>
+                    {exp.notes && (
+                      <p className="text-[11px] text-slate-500 mt-0.5">{exp.notes}</p>
+                    )}
+                    <InvoiceAttachmentPill
+                      expense={exp}
+                      onOpenPreview={(inv) => setPreviewInvoice(inv)}
+                      onQuickAttach={onOpenEditExpense}
+                      size="sm"
+                    />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-slate-900">
+                      ₹{exp.amount.toLocaleString('en-IN')}
+                    </div>
+                    {exp.gstApplicable && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#0ab39c]/10 text-[#0ab39c] font-bold">
+                        GST +₹{exp.gstAmount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                      exp.category === 'utilities' ? 'bg-[#299cdb]/10 text-[#299cdb]' :
+                      exp.category === 'repairs' ? 'bg-[#f7b84b]/10 text-[#f7b84b]' :
+                      exp.category === 'cleaning' ? 'bg-[#0ab39c]/10 text-[#0ab39c]' :
+                      'bg-[#405189]/10 text-[#405189]'
+                    }`}>
+                      <Tag className="w-2.5 h-2.5" /> {exp.category}
+                    </span>
+                    <span className="text-[10px]">By {exp.addedBy.split(' ')[0]}</span>
+                  </div>
+
+                  {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+                    <div className="flex items-center gap-1.5">
+                      {onOpenEditExpense && (
+                        <button
+                          onClick={() => onOpenEditExpense(exp)}
+                          className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3" /> Edit
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onDeleteExpense(exp.id)}
+                        className="px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" /> Del
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Mobile Summary Footer */}
+          <div className="p-3.5 bg-slate-50 border-t border-slate-200 space-y-1 text-xs">
+            <div className="flex justify-between items-center font-bold text-slate-800">
+              <span>Total Month Maintenance:</span>
+              <span className="text-xs">₹{activeRecord.grandTotal.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-600">
+              <span>Individual Tenant Share:</span>
+              <span className="text-[#405189] font-mono font-bold">₹{activeRecord.individualContribution.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-600">
+            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+              <tr>
+                <th className="py-3 px-4">#</th>
+                <th className="py-3 px-4">Particulars & Invoice Attachment</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4 text-right">Amount (₹)</th>
+                <th className="py-3 px-4 text-center">GST Detail</th>
+                <th className="py-3 px-4">Added By</th>
+                {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+                  <th className="py-3 px-4 text-center">Actions</th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {activeRecord.expenses.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 px-4">
+                    <div className="max-w-md mx-auto space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto shadow-2xs">
+                        <FileText className="w-5 h-5 text-slate-500" />
+                      </div>
+                      <div className="text-xs font-bold text-slate-700">No Expenses Recorded Yet</div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        The maintenance ledger is clean. Click "+ Add Line Item" above to record your first itemized expenditure with live calculations and Resend sync.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                activeRecord.expenses.map((exp, idx) => (
+                  <tr key={exp.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-slate-400 align-top">{idx + 1}</td>
+                    <td className="py-3.5 px-4 align-top">
+                      <div className="font-bold text-slate-800">{exp.particular}</div>
+                      {exp.notes && <div className="text-[11px] text-slate-500 mt-0.5">{exp.notes}</div>}
+                      <InvoiceAttachmentPill
+                        expense={exp}
+                        onOpenPreview={(inv) => setPreviewInvoice(inv)}
+                        onQuickAttach={onOpenEditExpense}
+                      />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        exp.category === 'utilities' ? 'bg-[#299cdb]/10 text-[#299cdb]' :
+                        exp.category === 'repairs' ? 'bg-[#f7b84b]/10 text-[#f7b84b]' :
+                        exp.category === 'cleaning' ? 'bg-[#0ab39c]/10 text-[#0ab39c]' :
+                        'bg-[#405189]/10 text-[#405189]'
+                      }`}>
+                        <Tag className="w-3 h-3" /> {exp.category}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-bold text-slate-800">
+                      ₹{exp.amount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {exp.gstApplicable ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#0ab39c]/10 text-[#0ab39c] font-bold">
+                          GST +₹{exp.gstAmount}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">N/A</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600">{exp.addedBy}</td>
+                    {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {onOpenEditExpense && (
+                            <button
+                              onClick={() => onOpenEditExpense(exp)}
+                              className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-[#405189] cursor-pointer"
+                              title="Edit Expense"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => onDeleteExpense(exp.id)}
+                            className="p-1 rounded bg-red-50 hover:bg-red-100 text-red-500 cursor-pointer"
+                            title="Delete Expense"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+            <tfoot className="border-t border-slate-200 bg-slate-50 font-bold">
+              <tr>
+                <td colSpan={3} className="py-3.5 px-4 text-slate-700">Grand Total Monthly Maintenance</td>
+                <td className="py-3.5 px-4 text-right text-slate-900 text-sm">
+                  ₹{activeRecord.grandTotal.toLocaleString('en-IN')}
+                </td>
+                <td colSpan={currentUserRole === 'TENANT' ? 2 : 3} className="py-3.5 px-4 text-right text-xs text-slate-500 font-normal">
+                  Individual Tenant Share: <strong className="text-[#405189] font-mono text-sm">₹{activeRecord.individualContribution.toFixed(2)}</strong> / unit
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Add Line Item Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-[#0ab39c]" /> Add Maintenance Line Item
+              </h3>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateExpense} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Particulars / Description *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Tank cleaning / Motor pump repair"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                  className="w-full velzon-input px-3 py-2 text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Amount (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    placeholder="1500"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs font-mono font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
+                    className="w-full velzon-input px-3 py-2 text-xs"
+                  >
+                    <option value="maintenance">Maintenance</option>
+                    <option value="utilities">Utilities (EB/Water)</option>
+                    <option value="repairs">Repairs</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="gstToggleAdd"
+                  checked={gstApplicable}
+                  onChange={(e) => setGstApplicable(e.target.checked)}
+                  className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="gstToggleAdd" className="text-xs text-slate-700 font-medium cursor-pointer">GST Applicable?</label>
+              </div>
+
+              {gstApplicable && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">GST Amount (₹)</label>
+                  <input
+                    type="number"
+                    placeholder="270"
+                    value={gstAmount}
+                    onChange={(e) => setGstAmount(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs font-mono"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Notes / Bill Reference</label>
+                <textarea
+                  rows={2}
+                  placeholder="Optional details or voucher number"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full velzon-input px-3 py-2 text-xs"
+                />
+              </div>
+
+              {/* Invoice Attachment Upload */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Attach Invoice File (PDF / JPG / PNG)
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => invoiceFileInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-[#405189]" />
+                    {invoiceFileName ? 'Replace Invoice File' : 'Upload Invoice PDF / JPG'}
+                  </button>
+                  <input
+                    ref={invoiceFileInputRef}
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={handleInvoiceUpload}
+                    className="hidden"
+                  />
+
+                  {invoiceFileName && (
+                    <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded text-indigo-900 text-xs">
+                      <Paperclip className="w-3.5 h-3.5 text-indigo-600" />
+                      <span className="font-semibold truncate max-w-[150px]">{invoiceFileName}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInvoiceUrl(undefined);
+                          setInvoiceFileName(undefined);
+                          setInvoiceFileType(undefined);
+                          setInvoiceFileSize(undefined);
+                        }}
+                        className="text-rose-500 hover:text-rose-700 font-bold ml-1 cursor-pointer"
+                        title="Remove file"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Real-time Resend Notification Toggle Box */}
+              <div className="p-3 bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-slate-50 border border-blue-200/80 rounded-lg flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="resendExpenseAlertToggle"
+                    checked={notifyResidentsViaResend}
+                    onChange={(e) => setNotifyResidentsViaResend(e.target.checked)}
+                    className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
+                  />
+                  <label htmlFor="resendExpenseAlertToggle" className="text-xs font-bold text-slate-800 cursor-pointer flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-indigo-600" />
+                    Real-Time Resend Alert to Residents
+                  </label>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-indigo-700 border border-indigo-200 shadow-2xs">
+                  {isResendConfigured() ? 'Live API' : 'Resend Sync'}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded bg-[#0ab39c] hover:bg-[#089380] text-white text-xs font-bold shadow-sm cursor-pointer"
+                >
+                  Add Item & Sync
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Universal Invoice Preview Modal */}
+      <InvoicePreviewModal
+        invoice={previewInvoice}
+        onClose={() => setPreviewInvoice(null)}
+      />
+    </div>
+  );
+};

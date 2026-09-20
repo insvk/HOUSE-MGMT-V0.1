@@ -11,7 +11,7 @@ export const initialHouse: House = {
 };
 
 // Clean Production Accounts: Property Owner (Admin)
-// Default credential constants â€” used only for initial login matching.
+// Default credential constants — used only for initial login matching.
 // NOT stored in the User objects to prevent leakage via localStorage/state.
 export const DEFAULT_CREDENTIALS: Record<string, string> = {
   'sampathkumar@chemadura.com': 'Sampath@123',

@@ -41,8 +41,8 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   : null;
 
 // ============================================================================
-// DB ROW â†’ APPLICATION USER MAPPER (canonical, single source of truth)
-// Maps snake_case DB columns â†’ camelCase User interface fields.
+// DB ROW ? APPLICATION USER MAPPER (canonical, single source of truth)
+// Maps snake_case DB columns ? camelCase User interface fields.
 // ============================================================================
 const OWNER_EMAILS = ['sampathkumar@chemadura.com', 'rsivanaresh@gmail.com'];
 
@@ -174,6 +174,7 @@ export const cloudDb = {
           city: house.city,
           postal_code: house.postalCode,
           total_units: Number(house.totalUnits) || 5,
+          owner_id: house.ownerId,
           settings: house.settings || {},
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
@@ -242,7 +243,7 @@ export const cloudDb = {
     }
   },
 
-  // Insert New User â€” ROOT CAUSE #1 FIX: returns {success, error} instead of bare boolean
+  // Insert New User — ROOT CAUSE #1 FIX: returns {success, error} instead of bare boolean
   async createUser(user: User): Promise<{ success: boolean; error?: string }> {
     if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
@@ -272,7 +273,7 @@ export const cloudDb = {
       const { error } = await supabase.from('users').insert(payload);
 
       if (error) {
-        // Duplicate email is a known conflict â€” surface clearly
+        // Duplicate email is a known conflict — surface clearly
         if (error.code === '23505') {
           return { success: false, error: 'A user with this email already exists in the database.' };
         }
@@ -285,7 +286,7 @@ export const cloudDb = {
     }
   },
 
-  // Update Existing User Details & Profile Picture â€” ROOT CAUSE #1 FIX: returns {success, error}
+  // Update Existing User Details & Profile Picture — ROOT CAUSE #1 FIX: returns {success, error}
   async updateUser(user: User): Promise<{ success: boolean; error?: string }> {
     if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {

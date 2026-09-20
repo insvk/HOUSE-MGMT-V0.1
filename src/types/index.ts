@@ -31,7 +31,6 @@ export interface User {
   preferences?: {
     audioEnabled?: boolean;
     clock24h?: boolean;
-    theme?: 'light' | 'dark';
   };
 }
 
@@ -45,6 +44,14 @@ export interface House {
   ownerId: string;
   settings?: {
     resendFromEmail?: string;
+    upiId?: string;
+    upiName?: string;
+    currency?: string;
+    lateFeeEnabled?: boolean;
+    lateFeeAmount?: number;
+    lateFeeDays?: number;
+    defaultRentDueDay?: number;
+    maintenanceDueDay?: number;
   };
 }
 
