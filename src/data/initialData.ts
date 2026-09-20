@@ -2,12 +2,15 @@ import { House, User, MaintenanceRecord, Expense, Invoice, NotificationLog, Audi
 
 export const initialHouse: House = {
   id: '11111111-2222-3333-4444-555555555555',
-  name: 'Madura House Maintenance',
-  address: 'No. 42, Bypass Road, Ellis Nagar',
-  city: 'Maduravoyal',
+  name: 'Madura House',
+  address: 'No. 42, Bypass Road',
+  city: 'Madurai',
   postalCode: '625001',
-  totalUnits: 5,
+  totalUnits: 6,
   ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  settings: {
+    currency: 'INR',
+  },
 };
 
 // Clean Production Accounts: Property Owner (Admin)

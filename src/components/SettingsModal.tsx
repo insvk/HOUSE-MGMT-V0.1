@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { House, UserRole, User, MaintenanceRecord, Invoice, NotificationLog, AuditLog } from '../types';
 import { 
   Settings, 
@@ -16,7 +16,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   RefreshCw,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { isAudioEnabled, setAudioEnabled, playSuccessChime, playWarningChime } from '../utils/audioUtils';
 import { cloudDb, isSupabaseConfigured } from '../lib/supabaseClient';
@@ -63,7 +64,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [city, setCity] = useState(house.city);
   const [postalCode, setPostalCode] = useState(house.postalCode || '625001');
   const [totalUnits, setTotalUnits] = useState(house.totalUnits.toString());
+  const [currency, setCurrency] = useState(house.settings?.currency || 'INR');
+  const [upiId, setUpiId] = useState(house.settings?.upiId || '');
+  const [upiName, setUpiName] = useState(house.settings?.upiName || '');
   const [audioEnabled, setAudioState] = useState(isAudioEnabled());
+
+  useEffect(() => {
+    setName(house.name || '');
+    setAddress(house.address || '');
+    setCity(house.city || '');
+    setPostalCode(house.postalCode || '625001');
+    setTotalUnits((house.totalUnits || 5).toString());
+    setCurrency(house.settings?.currency || 'INR');
+    setUpiId(house.settings?.upiId || '');
+    setUpiName(house.settings?.upiName || '');
+  }, [house]);
 
   // Cloud DB testing state
   const [testingCloud, setTestingCloud] = useState(false);
@@ -92,11 +107,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleSaveGeneral = () => {
     onUpdateHouse({
       ...house,
-      name,
-      address,
-      city,
-      postalCode,
+      name: name.trim(),
+      address: address.trim(),
+      city: city.trim(),
+      postalCode: postalCode.trim(),
       totalUnits: parseInt(totalUnits) || 5,
+      settings: {
+        ...house.settings,
+        currency,
+        upiId: upiId.trim(),
+        upiName: upiName.trim(),
+      },
     });
     playSuccessChime();
     onClose();
@@ -271,15 +292,66 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold uppercase text-slate-500 mb-1">Total Residential Units</label>
-                <input
-                  type="number"
-                  disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
-                  value={totalUnits}
-                  onChange={(e) => setTotalUnits(e.target.value)}
-                  className="w-full velzon-input px-3 py-2 text-xs font-mono"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold uppercase text-slate-500 mb-1">Total Residential Units</label>
+                  <input
+                    type="number"
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
+                    value={totalUnits}
+                    onChange={(e) => setTotalUnits(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase text-slate-500 mb-1">Billing Currency</label>
+                  <select
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full velzon-input px-3 py-2 text-xs font-medium"
+                  >
+                    <option value="INR">Indian Rupee (INR ₹)</option>
+                    <option value="USD">US Dollar (USD $)</option>
+                    <option value="EUR">Euro (EUR €)</option>
+                    <option value="GBP">British Pound (GBP £)</option>
+                    <option value="AED">UAE Dirham (AED)</option>
+                    <option value="SGD">Singapore Dollar (SGD $)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold uppercase text-slate-500 mb-1">UPI Payee ID (for QR & PDF Receipts)</label>
+                  <input
+                    type="text"
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    placeholder="e.g. 9840012345@upi or name@okaxis"
+                    className="w-full velzon-input px-3 py-2 text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase text-slate-500 mb-1">UPI Payee Display Name</label>
+                  <input
+                    type="text"
+                    disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
+                    value={upiName}
+                    onChange={(e) => setUpiName(e.target.value)}
+                    placeholder="e.g. Sampath Kumar / Madura House"
+                    className="w-full velzon-input px-3 py-2 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Dynamic Realtime Engine Notification */}
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-2 text-[11px]">
+                <Sparkles className="w-4 h-4 text-[#0ab39c] shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <span className="font-bold">Real-Time Export Engine Sync Active:</span> Any changes saved here immediately update the property name, address, currency, and headers across all <strong>PDF statements</strong>, <strong>Excel registers</strong>, and <strong>Cloud PostgreSQL database</strong> in real time.
+                </div>
               </div>
 
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 font-mono text-[11px]">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NotificationLog, UserRole, MaintenanceRecord, House, User, Expense } from '../types';
+import { initialHouse } from '../data/initialData';
 import { 
   Mail, 
   Send, 
@@ -277,15 +278,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       const summary = await sendBulkMaintenanceEmails({
         recipients,
         record: recordForDispatch,
-        house: house || {
-          id: '11111111-2222-3333-4444-555555555555',
-          name: 'Madura House Maintenance',
-          address: 'No. 42, Bypass Road, Ellis Nagar',
-          city: 'Maduravoyal',
-          postalCode: '625001',
-          totalUnits: 5,
-          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        },
+        house: house || initialHouse,
         senderName: currentUser?.fullName || 'Sampath Kumar',
       });
 
@@ -348,15 +341,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           phone: tenant.phone,
         }],
         record: recordForDispatch,
-        house: house || {
-          id: '11111111-2222-3333-4444-555555555555',
-          name: 'Madura House Maintenance',
-          address: 'No. 42, Bypass Road, Ellis Nagar',
-          city: 'Maduravoyal',
-          postalCode: '625001',
-          totalUnits: 5,
-          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        },
+        house: house || initialHouse,
         senderName: currentUser?.fullName || 'Sampath Kumar',
       });
 
@@ -635,7 +620,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
-                <span>Property: <strong>{house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, {house?.city || 'Maduravoyal'}</strong></span>
+                <span>Property: <strong>{house?.name || 'Madura House'} • {house?.address || 'No. 42, Bypass Road'}, {house?.city || 'Madurai'}</strong></span>
                 <span>Due Date: <strong>10th {monthName} {activeRecord.year}</strong></span>
               </div>
             </div>

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { AuditLog } from '../types';
+import { AuditLog, House } from '../types';
 import { ShieldCheck, Lock, Activity, Clock, Search, Download, Filter, CheckCircle2, AlertTriangle, UserCheck } from 'lucide-react';
 import { exportAuditLogsToCSV } from '../utils/exportUtils';
 import { playSuccessChime } from '../utils/audioUtils';
 
 interface AuditLogViewerProps {
   logs: AuditLog[];
+  house?: House;
 }
 
-export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
+export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs, house }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'AUTH' | 'CREATE' | 'UPDATE' | 'DELETE'>('ALL');
 
@@ -47,13 +48,13 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
             <ShieldCheck className="w-5 h-5 text-[#405189]" /> Security Audit Trail & Immutable Log
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Row-Level Security telemetry, user mutation actions & access timestamps
+            {house?.name || 'Madura House'} • Row-Level Security telemetry, user mutation actions & access timestamps
           </p>
         </div>
 
         <button
           onClick={() => {
-            exportAuditLogsToCSV(filteredLogs);
+            exportAuditLogsToCSV(filteredLogs, house);
             playSuccessChime();
           }}
           className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"

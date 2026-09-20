@@ -2066,6 +2066,7 @@ export function App() {
             <TenantDirectory
               users={users}
               currentUserRole={currentUserRole}
+              house={house}
               onAddUser={handleAddUser}
               onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
@@ -2075,7 +2076,7 @@ export function App() {
           )}
 
           {activeTab === 'analytics' && (
-            <AnalyticsDashboard records={records} />
+            <AnalyticsDashboard records={records} house={house} />
           )}
 
           {activeTab === 'invoices' && (
@@ -2102,7 +2103,7 @@ export function App() {
           )}
 
           {activeTab === 'audit' && (
-            <AuditLogViewer logs={auditLogs} />
+            <AuditLogViewer logs={auditLogs} house={house} />
           )}
         </main>
 

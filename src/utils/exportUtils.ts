@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { MaintenanceRecord, House, Expense, User, AuditLog } from '../types';
+import { initialHouse } from '../data/initialData';
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -9,22 +10,88 @@ const monthNames = [
 ];
 
 /**
+ * Dynamically resolves the active House profile.
+ * Prioritizes passed House instance, then active localStorage cache, then initialHouse.
+ */
+export const getActiveHouse = (providedHouse?: House): House => {
+  let active: Partial<House> = {};
+  if (providedHouse && (providedHouse.name || providedHouse.address)) {
+    active = providedHouse;
+  } else {
+    try {
+      const saved = localStorage.getItem('madura_house_property_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          active = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read property from localStorage:', e);
+    }
+  }
+
+  return {
+    ...initialHouse,
+    ...active,
+    settings: {
+      ...initialHouse.settings,
+      ...active.settings,
+    },
+  };
+};
+
+/**
+ * Formats a clean, professional address line without duplicate cities or trailing dashes.
+ */
+export const formatHouseAddress = (house: House): string => {
+  const parts: string[] = [];
+  const addr = (house.address || '').trim();
+  const city = (house.city || '').trim();
+  const postal = (house.postalCode || '').trim();
+
+  if (addr) parts.push(addr);
+  if (city && !addr.toLowerCase().includes(city.toLowerCase())) {
+    parts.push(city);
+  }
+  let result = parts.join(', ');
+  if (postal) {
+    if (!result.includes(postal)) {
+      result = result ? `${result} - ${postal}` : postal;
+    }
+  }
+  return result || 'Address Not Configured';
+};
+
+/**
+ * Cleans a property name for safe, cross-platform file naming
+ */
+export const sanitizeFileName = (name: string): string => {
+  return (name || 'Property').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+};
+
+/**
  * Legitimate Excel (.xlsx) Export using SheetJS
+ * Fully synced with Property & Platform Settings
  */
 export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: House) => {
-  const currency = house?.settings?.currency || 'INR';
+  const activeHouse = getActiveHouse(house);
+  const propName = activeHouse.name || 'Madura House';
+  const propAddress = formatHouseAddress(activeHouse);
+  const currency = activeHouse.settings?.currency || 'INR';
   const monthName = monthNames[record.month - 1] || `Month-${record.month}`;
-  const fileName = `MaduraHouse_Maintenance_${monthName}_${record.year}.xlsx`;
+  const propertySlug = sanitizeFileName(propName);
+  const fileName = `${propertySlug}_Maintenance_${monthName}_${record.year}.xlsx`;
 
   // 1. Build Header Section
   const worksheetData: (string | number)[][] = [
-    ['MADURA HOUSE MAINTENANCE MANAGEMENT PLATFORM'],
+    [`${propName.toUpperCase()} MAINTENANCE MANAGEMENT PLATFORM`],
     [`OFFICIAL MONTHLY MAINTENANCE STATEMENT - ${monthName.toUpperCase()} ${record.year}`],
-    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`],
+    [`Property Address: ${propAddress}`],
     [`Statement Reference ID: ${record.id.toUpperCase()}`],
     [], // Blank line
     // Table Header
-    ['S.No', 'Particulars / Description', 'Category', 'Attached Invoice / Voucher', 'Base Amount (${currency})', 'GST Applicable', 'GST Amount (${currency})', 'Total Amount (${currency})', 'Added By', 'Date Recorded']
+    ['S.No', 'Particulars / Description', 'Category', 'Attached Invoice / Voucher', `Base Amount (${currency})`, 'GST Applicable', `GST Amount (${currency})`, `Total Amount (${currency})`, 'Added By', 'Date Recorded']
   ];
 
   // 2. Line Items
@@ -50,10 +117,10 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
   // 3. Totals & Financial Summary
   worksheetData.push([]);
   worksheetData.push(['', 'GRAND TOTAL EXPENDITURE', '', '', '', '', '', record.grandTotal, '', '']);
-  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', '', record.activeTenantsCount || 5, '', '']);
+  worksheetData.push(['', 'TOTAL ACTIVE FLATS / UNITS', '', '', '', '', '', record.activeTenantsCount || activeHouse.totalUnits || 5, '', '']);
   worksheetData.push(['', 'EQUAL PER-FLAT SHARE DUE', '', '', '', '', '', Number(record.individualContribution.toFixed(2)), '', '']);
   worksheetData.push([]);
-  worksheetData.push(['Notes / Remarks:', record.notes || 'Official audited maintenance record for Madura House.']);
+  worksheetData.push(['Notes / Remarks:', record.notes || `Official audited maintenance record for ${propName}.`]);
   worksheetData.push(['Generated On:', new Date().toLocaleString('en-IN')]);
   worksheetData.push(['Status:', 'Audited & Verified - Official Copy']);
 
@@ -94,12 +161,17 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
 
 /**
  * Legitimate PDF (.pdf) Export using jsPDF & autoTable
+ * Fully synced with Property & Platform Settings
  */
 export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House) => {
-  const currency = house?.settings?.currency || 'INR';
-  const pdfCurrency = currency === '?' ? 'Rs.' : currency;
+  const activeHouse = getActiveHouse(house);
+  const propName = activeHouse.name || 'Madura House';
+  const propAddress = formatHouseAddress(activeHouse);
+  const currency = activeHouse.settings?.currency || 'INR';
+  const pdfCurrency = currency === '₹' || currency === '?' ? 'Rs.' : currency;
   const monthName = monthNames[record.month - 1] || `Month-${record.month}`;
-  const fileName = `MaduraHouse_Maintenance_${monthName}_${record.year}.pdf`;
+  const propertySlug = sanitizeFileName(propName);
+  const fileName = `${propertySlug}_Maintenance_${monthName}_${record.year}.pdf`;
 
   // Create A4 Portrait document
   const doc = new jsPDF({
@@ -120,11 +192,11 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   // Top Header Text
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('MADURA HOUSE MAINTENANCE MANAGEMENT PLATFORM', 14, 12);
+  doc.setFontSize(13);
+  doc.text(`${propName.toUpperCase()} MAINTENANCE PLATFORM`, 14, 12);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(203, 213, 225);
   doc.text('Official Monthly Maintenance Statement & Tenant Share Distribution', 14, 18);
 
@@ -137,7 +209,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Property: ${house?.name || 'Madura House'}, ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`, 14, 40);
+  doc.text(`Property: ${propName}  •  Address: ${propAddress}`, 14, 40);
   doc.text(`Statement Ref: #${record.id.toUpperCase()}  •  Audited By: Property Administration  •  Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 45);
 
   // 3. Three Metric Highlight Cards
@@ -165,7 +237,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.text('ACTIVE OCCUPANCY', 14 + cardWidth + 9, cardY + 6);
   doc.setFontSize(12);
   doc.setTextColor(10, 179, 156);
-  doc.text(`${record.activeTenantsCount || 5} Residential Flats`, 14 + cardWidth + 9, cardY + 14);
+  doc.text(`${record.activeTenantsCount || activeHouse.totalUnits || 5} Residential Flats`, 14 + cardWidth + 9, cardY + 14);
 
   // Card 3: Per-Tenant Contribution Due
   doc.setFillColor(240, 253, 250);
@@ -254,9 +326,14 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
   doc.text('• Monthly maintenance share must be remitted by the 10th of the current month.', 18, summaryBoxY + 11);
-  doc.text('• Payment modes: Direct Bank Transfer (NEFT/IMPS) or UPI to Property Management Account.', 18, summaryBoxY + 15);
+  
+  const upiInfo = activeHouse.settings?.upiId
+    ? `UPI to ${activeHouse.settings.upiId}${activeHouse.settings.upiName ? ` (${activeHouse.settings.upiName})` : ''} or Direct Bank Transfer (NEFT/IMPS).`
+    : 'Direct Bank Transfer (NEFT/IMPS) or UPI to Property Management Account.';
+  doc.text(`• Payment modes: ${upiInfo}`, 18, summaryBoxY + 15);
   doc.text(`• Individual tenant share amount: ${pdfCurrency} ${record.individualContribution.toFixed(2)} due per flat.`, 18, summaryBoxY + 19);
-  doc.text('• For billing queries, contact Property Administration at sampathkumar@chemadura.com.', 18, summaryBoxY + 23);
+  const supportEmail = activeHouse.settings?.resendFromEmail || 'sampathkumar@chemadura.com';
+  doc.text(`• For billing queries, contact Property Administration at ${supportEmail}.`, 18, summaryBoxY + 23);
 
   // Official Signature Block
   const sigY = summaryBoxY + 36;
@@ -271,13 +348,14 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
     doc.text('AUDITED & CLEARED', 18, sigY + 6);
     doc.setFontSize(6.5);
     doc.setFont('helvetica', 'normal');
-    doc.text('Madura House Property Mgmt', 18, sigY + 10);
+    doc.text(`${propName} Property Mgmt`, 18, sigY + 10);
 
     // Signatory
+    const signatoryName = activeHouse.settings?.upiName || 'Sampath Kumar';
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(30, 41, 59);
-    doc.text('Sampath Kumar', pageWidth - 55, sigY + 5);
+    doc.text(signatoryName, pageWidth - 55, sigY + 5);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
@@ -287,7 +365,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
   // Footer
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
-  doc.text('Generated electronically via Madura House Maintenance Management Platform V0.1', 14, 288);
+  doc.text(`Generated electronically via ${propName} Maintenance Management Platform V0.1`, 14, 288);
   doc.text('Page 1 of 1', pageWidth - 25, 288);
 
   // Download PDF directly
@@ -308,17 +386,22 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
 
 /**
  * Legitimate Tenant Roster Excel (.xlsx) Export
+ * Fully synced with Property & Platform Settings
  */
 export const exportTenantsToExcel = (users: User[], house?: House) => {
-  const currency = house?.settings?.currency || 'INR';
-  const fileName = `MaduraHouse_Tenants_Directory_${new Date().toISOString().split('T')[0]}.xlsx`;
+  const activeHouse = getActiveHouse(house);
+  const propName = activeHouse.name || 'Madura House';
+  const propAddress = formatHouseAddress(activeHouse);
+  const currency = activeHouse.settings?.currency || 'INR';
+  const propertySlug = sanitizeFileName(propName);
+  const fileName = `${propertySlug}_Tenants_Directory_${new Date().toISOString().split('T')[0]}.xlsx`;
 
   const worksheetData: (string | number)[][] = [
-    ['MADURA HOUSE RESIDENTIAL DIRECTORY & LEASE LEDGER'],
-    [`Property Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} - ${house?.postalCode || '625001'}`],
+    [`${propName.toUpperCase()} RESIDENTIAL DIRECTORY & LEASE LEDGER`],
+    [`Property Address: ${propAddress}`],
     [`Generated On: ${new Date().toLocaleString('en-IN')}`],
     [],
-    ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Payment Status', 'Monthly Rent (${currency})', 'Security Deposit (${currency})', 'Move-In Date', 'Emergency Contact']
+    ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Payment Status', `Monthly Rent (${currency})`, `Security Deposit (${currency})`, 'Move-In Date', 'Emergency Contact']
   ];
 
   users.forEach((user, idx) => {
@@ -379,11 +462,16 @@ export const exportTenantsToExcel = (users: User[], house?: House) => {
 
 /**
  * Legitimate Tenant Directory PDF (.pdf) Export
+ * Fully synced with Property & Platform Settings
  */
 export const exportTenantsToPDF = (users: User[], house?: House) => {
-  const currency = house?.settings?.currency || 'INR';
-  const pdfCurrency = currency === '?' ? 'Rs.' : currency;
-  const fileName = `MaduraHouse_Tenants_Directory_${new Date().toISOString().split('T')[0]}.pdf`;
+  const activeHouse = getActiveHouse(house);
+  const propName = activeHouse.name || 'Madura House';
+  const propAddress = formatHouseAddress(activeHouse);
+  const currency = activeHouse.settings?.currency || 'INR';
+  const pdfCurrency = currency === '₹' || currency === '?' ? 'Rs.' : currency;
+  const propertySlug = sanitizeFileName(propName);
+  const fileName = `${propertySlug}_Tenants_Directory_${new Date().toISOString().split('T')[0]}.pdf`;
 
   const doc = new jsPDF({
     orientation: 'landscape',
@@ -402,12 +490,12 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
-  doc.text('MADURA HOUSE - RESIDENTIAL OCCUPANCY & LEASE DIRECTORY', 14, 12);
+  doc.text(`${propName.toUpperCase()} - RESIDENTIAL OCCUPANCY & LEASE DIRECTORY`, 14, 12);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(203, 213, 225);
-  doc.text(`Official Register • Address: ${house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, ${house?.city || 'Maduravoyal'} • Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 17);
+  doc.text(`Official Register • Address: ${propAddress} • Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 17);
 
   const tableData = users.map((u, idx) => [
     (idx + 1).toString(),
@@ -457,10 +545,10 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
   const finalY = (doc as any).lastAutoTable?.finalY || 160;
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
-  if (house?.settings?.upiId) {
-    doc.text(`  Please remit your maintenance contribution to UPI ID: ${house.settings.upiId} ${house.settings.upiName ? `(${house.settings.upiName})` : ''}`, 18, (doc as any).lastAutoTable?.finalY ? Math.min((doc as any).lastAutoTable.finalY + 8, 230) + 15 : 245);
+  if (activeHouse.settings?.upiId) {
+    doc.text(`  Please remit your maintenance contribution to UPI ID: ${activeHouse.settings.upiId} ${activeHouse.settings.upiName ? `(${activeHouse.settings.upiName})` : ''}`, 18, (doc as any).lastAutoTable?.finalY ? Math.min((doc as any).lastAutoTable.finalY + 8, 230) + 15 : 245);
   }
-  doc.text('Certified Confidential Property Record • Madura House Management Platform V0.1', 14, Math.min(finalY + 12, 195));
+  doc.text(`Certified Confidential Property Record • ${propName} Management Platform V0.1`, 14, Math.min(finalY + 12, 195));
 
   if (window.electronAPI) {
     const buffer = doc.output('arraybuffer');
@@ -479,9 +567,13 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
 
 /**
  * Compliance Audit Log Export to CSV (.csv)
+ * Fully synced with Property & Platform Settings
  */
-export const exportAuditLogsToCSV = (logs: AuditLog[]) => {
-  const fileName = `MaduraHouse_Security_Audit_${new Date().toISOString().split('T')[0]}.csv`;
+export const exportAuditLogsToCSV = (logs: AuditLog[], house?: House) => {
+  const activeHouse = getActiveHouse(house);
+  const propName = activeHouse.name || 'Madura House';
+  const propertySlug = sanitizeFileName(propName);
+  const fileName = `${propertySlug}_Security_Audit_${new Date().toISOString().split('T')[0]}.csv`;
 
   const headers = ['Log ID', 'User Email', 'Action Performed', 'Resource Type', 'Resource ID', 'Client IP', 'Timestamp'];
   const rows = logs.map((l) => [
@@ -518,4 +610,3 @@ export const exportAuditLogsToCSV = (logs: AuditLog[]) => {
     document.body.removeChild(link);
   }
 };
-

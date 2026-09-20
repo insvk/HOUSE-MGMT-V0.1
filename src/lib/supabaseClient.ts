@@ -145,13 +145,13 @@ export const cloudDb = {
       const h = data[0];
       return {
         id: h.id,
-        name: h.name || 'Madura House Maintenance',
-        address: h.address || 'No. 42, Bypass Road, Ellis Nagar',
-        city: h.city || 'Maduravoyal',
+        name: h.name || 'Madura House',
+        address: h.address || 'No. 42, Bypass Road',
+        city: h.city || 'Madurai',
         postalCode: h.postal_code || '625001',
-        totalUnits: Number(h.total_units) || 5,
+        totalUnits: Number(h.total_units) || 6,
         ownerId: h.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        settings: h.settings || {},
+        settings: h.settings || { currency: 'INR' },
       };
     } catch (err) {
       console.warn('Cloud DB fetch house fallback:', err);

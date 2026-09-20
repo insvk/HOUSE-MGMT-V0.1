@@ -1,5 +1,5 @@
 import React from 'react';
-import { MaintenanceRecord } from '../types';
+import { MaintenanceRecord, House } from '../types';
 import { 
   BarChart, 
   Bar, 
@@ -17,12 +17,14 @@ import {
 } from 'recharts';
 import { BarChart3, PieChart as PieIcon, TrendingUp, IndianRupee, Download } from 'lucide-react';
 import { exportMaintenanceToExcel } from '../utils/exportUtils';
+import { playSuccessChime } from '../utils/audioUtils';
 
 interface AnalyticsDashboardProps {
   records: MaintenanceRecord[];
+  house?: House;
 }
 
-export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records }) => {
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records, house }) => {
   const monthNames = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -64,14 +66,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
             <BarChart3 className="w-5 h-5 text-[#405189]" /> Financial Analytics & Visual Trends
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Historical expenditure trends, category ratios & share history
+            {house?.name || 'Madura House'} • Historical expenditure trends, category ratios & share history
           </p>
         </div>
 
         <button
           onClick={() => {
             if (records.length > 0) {
-              exportMaintenanceToExcel(records[0]);
+              exportMaintenanceToExcel(records[0], house);
+              playSuccessChime();
             }
           }}
           className="px-3 py-1.5 bg-[#299cdb]/10 hover:bg-[#299cdb]/20 text-[#299cdb] text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"

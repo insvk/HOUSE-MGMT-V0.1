@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { MaintenanceRecord, Expense, ExpenseCategory, UserRole, User, House, NotificationLog } from '../types';
+import { initialHouse } from '../data/initialData';
 import { 
   Plus, 
   Trash2, 
@@ -146,15 +147,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
           ],
         };
 
-        const targetHouse = house || {
-          id: '11111111-2222-3333-4444-555555555555',
-          name: 'Madura House Maintenance',
-          address: 'No. 42, Bypass Road, Ellis Nagar',
-          city: 'Maduravoyal',
-          postalCode: '625001',
-          totalUnits: 5,
-          ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        };
+        const targetHouse = house || initialHouse;
 
         sendExpenseAlertEmails({
           expense: {
@@ -209,15 +202,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     setIsBulkResendSyncing(true);
     try {
       const activeResidents = users.filter((u) => u.occupancyStatus === 'active' && u.email);
-      const targetHouse = house || {
-        id: '11111111-2222-3333-4444-555555555555',
-        name: 'Madura House Maintenance',
-        address: 'No. 42, Bypass Road, Ellis Nagar',
-        city: 'Maduravoyal',
-        postalCode: '625001',
-        totalUnits: 5,
-        ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      };
+      const targetHouse = house || initialHouse;
 
       const result = await sendBulkMaintenanceEmails({
         recipients: activeResidents.map((r) => ({
