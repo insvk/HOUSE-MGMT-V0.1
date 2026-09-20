@@ -1220,15 +1220,15 @@ export function App() {
     showToast(`✅ Deleted resident ${targetUser.fullName} (removed from cloud database).`);
   };
 
-  const handleToggleTenantPaymentStatus = async (userId: string) => {
-    let nextStatus: 'paid' | 'pending' | 'unpaid' = 'paid';
+  const handleToggleTenantPaymentStatus = async (userId: string, explicitStatus?: 'paid' | 'pending' | 'unpaid') => {
+    let nextStatus: 'paid' | 'pending' | 'unpaid' = explicitStatus || 'paid';
     let targetEmail = '';
     const previousUsers = users;
 
     setUsers((prev) => {
       const updated = prev.map((u) => {
         if (u.id === userId || u.email.toLowerCase() === userId.toLowerCase()) {
-          nextStatus = u.paymentStatus === 'paid' ? 'pending' : u.paymentStatus === 'pending' ? 'unpaid' : 'paid';
+          nextStatus = explicitStatus || (u.paymentStatus === 'paid' ? 'pending' : u.paymentStatus === 'pending' ? 'unpaid' : 'paid');
           targetEmail = u.email;
           return { ...u, paymentStatus: nextStatus };
         }
@@ -1240,6 +1240,10 @@ export function App() {
       return updated;
     });
 
+    if (currentUser.id === userId || (targetEmail && currentUser.email.toLowerCase() === targetEmail.toLowerCase())) {
+      setCurrentUser((prev) => ({ ...prev, paymentStatus: nextStatus }));
+    }
+
     if (targetEmail) {
       const res = await cloudDb.updateUserPaymentStatus(targetEmail, nextStatus);
       if (!res.success) {
@@ -1248,14 +1252,56 @@ export function App() {
           localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
         } catch {}
         playWarningChime();
-        showToast(`❌ Failed to update payment status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+        showToast(`❌ Failed to update rent status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
         return;
       }
     }
 
-    await recordAudit('UPDATE_PAYMENT_STATUS', 'users', userId);
+    await recordAudit('UPDATE_RENT_PAYMENT_STATUS', 'users', userId);
     playSuccessChime();
-    showToast(`Updated resident maintenance payment status to ${nextStatus.toUpperCase()} (saved in Cloud DB).`);
+    showToast(`Updated resident rent status to ${nextStatus.toUpperCase()} (persisted to Cloud DB).`);
+  };
+
+  const handleToggleTenantMaintenanceStatus = async (userId: string, explicitStatus?: 'paid' | 'pending' | 'unpaid') => {
+    let nextStatus: 'paid' | 'pending' | 'unpaid' = explicitStatus || 'paid';
+    let targetEmail = '';
+    const previousUsers = users;
+
+    setUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === userId || u.email.toLowerCase() === userId.toLowerCase()) {
+          nextStatus = explicitStatus || (u.maintenanceStatus === 'paid' ? 'pending' : u.maintenanceStatus === 'pending' ? 'unpaid' : 'paid');
+          targetEmail = u.email;
+          return { ...u, maintenanceStatus: nextStatus };
+        }
+        return u;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentUser.id === userId || (targetEmail && currentUser.email.toLowerCase() === targetEmail.toLowerCase())) {
+      setCurrentUser((prev) => ({ ...prev, maintenanceStatus: nextStatus }));
+    }
+
+    if (targetEmail) {
+      const res = await cloudDb.updateUserMaintenanceStatus(targetEmail, nextStatus);
+      if (!res.success) {
+        setUsers(previousUsers);
+        try {
+          localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
+        } catch {}
+        playWarningChime();
+        showToast(`❌ Failed to update maintenance status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+        return;
+      }
+    }
+
+    await recordAudit('UPDATE_MAINTENANCE_STATUS', 'users', userId);
+    playSuccessChime();
+    showToast(`Updated resident maintenance status to ${nextStatus.toUpperCase()} (persisted to Cloud DB).`);
   };
 
   // Property Master Update Handler (God Mode) - Permanently Saves to Cloud DB
@@ -1916,6 +1962,7 @@ export function App() {
               onOpenEditExpense={(exp) => setEditingExpense(exp)}
               onDeleteExpense={handleDeleteExpense}
               onToggleTenantPaymentStatus={handleToggleTenantPaymentStatus}
+              onToggleTenantMaintenanceStatus={handleToggleTenantMaintenanceStatus}
               onExportReport={handleExportReport}
               onUpdateHouse={handleUpdateHouse}
               onUpdateRecord={handleUpdateRecord}
@@ -1943,6 +1990,7 @@ export function App() {
               onAddExpense={handleAddExpense}
               onOpenEditExpense={(exp) => setEditingExpense(exp)}
               onDeleteExpense={handleDeleteExpense}
+              onToggleTenantMaintenanceStatus={handleToggleTenantMaintenanceStatus}
               onExportExcel={handleExportExcel}
               onExportPDF={handleExportPDF}
               onAddNotificationLog={handleAddNotificationLog}
@@ -1958,6 +2006,7 @@ export function App() {
               onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
               onToggleTenantPaymentStatus={handleToggleTenantPaymentStatus}
+              onToggleTenantMaintenanceStatus={handleToggleTenantMaintenanceStatus}
             />
           )}
 

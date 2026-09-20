@@ -43,6 +43,7 @@ interface TenantDirectoryProps {
   onUpdateUser: (updatedUser: User) => void;
   onDeleteUser: (userId: string) => void;
   onToggleTenantPaymentStatus?: (userId: string) => void;
+  onToggleTenantMaintenanceStatus?: (userId: string) => void;
 }
 
 export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
@@ -52,6 +53,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   onUpdateUser,
   onDeleteUser,
   onToggleTenantPaymentStatus,
+  onToggleTenantMaintenanceStatus,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -68,6 +70,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
   const [role, setRole] = useState<UserRole>('TENANT');
   const [occupancyStatus, setOccupancyStatus] = useState<'active' | 'inactive' | 'evicted'>('active');
   const [paymentStatus, setPaymentStatus] = useState<'paid' | 'pending' | 'unpaid'>('paid');
+  const [maintenanceStatus, setMaintenanceStatus] = useState<'paid' | 'pending' | 'unpaid'>('unpaid');
   const [moveInDate, setMoveInDate] = useState('');
   const [rentAmount, setRentAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -117,6 +120,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setRole('TENANT');
     setOccupancyStatus('active');
     setPaymentStatus('paid');
+    setMaintenanceStatus('unpaid');
     setAvatarUrl(DEFAULT_AVATARS[0].url);
     setShowModalAvatarPresets(false);
     setMoveInDate(new Date().toISOString().split('T')[0]);
@@ -138,6 +142,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     setRole(user.role);
     setOccupancyStatus(user.occupancyStatus);
     setPaymentStatus(user.paymentStatus || 'paid');
+    setMaintenanceStatus(user.maintenanceStatus || 'unpaid');
     setAvatarUrl(user.avatarUrl || DEFAULT_AVATARS[0].url);
     setShowModalAvatarPresets(false);
     setMoveInDate(user.moveInDate || '');
@@ -165,6 +170,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         avatarUrl,
         occupancyStatus,
         paymentStatus,
+        maintenanceStatus,
         moveInDate,
         rentAmount: rentAmount ? parseFloat(rentAmount) : 0,
         depositAmount: depositAmount ? parseFloat(depositAmount) : 0,
@@ -183,6 +189,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         avatarUrl,
         occupancyStatus,
         paymentStatus,
+        maintenanceStatus,
         moveInDate: moveInDate || new Date().toISOString().split('T')[0],
         rentAmount: rentAmount ? parseFloat(rentAmount) : 0,
         depositAmount: depositAmount ? parseFloat(depositAmount) : 0,
@@ -308,6 +315,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         {filteredUsers.map((user) => {
           const isPaid = user.paymentStatus === 'paid';
           const isPending = user.paymentStatus === 'pending';
+          const isMaintPaid = user.maintenanceStatus === 'paid';
+          const isMaintPending = user.maintenanceStatus === 'pending';
 
           return (
             <div 
@@ -348,7 +357,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex flex-col items-end gap-1.5">
                     <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
                       user.role === 'OWNER' ? 'bg-[#405189]/10 text-[#405189]' :
                       user.role === 'ADMIN_TENANT' ? 'bg-[#299cdb]/10 text-[#299cdb]' :
@@ -357,17 +366,45 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       {user.role}
                     </span>
 
-                    <button
-                      onClick={() => onToggleTenantPaymentStatus && onToggleTenantPaymentStatus(user.id)}
-                      className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                        isPaid ? 'bg-[#0ab39c]/10 text-[#0ab39c]' :
-                        isPending ? 'bg-[#f7b84b]/10 text-[#f7b84b]' :
-                        'bg-[#f06548]/10 text-[#f06548]'
-                      }`}
-                      title="Toggle payment status"
-                    >
-                      {user.paymentStatus || 'unpaid'}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {/* Rent Status Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleTenantPaymentStatus && onToggleTenantPaymentStatus(user.id);
+                        }}
+                        disabled={currentUserRole === 'TENANT'}
+                        className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase transition-all flex items-center gap-1 ${
+                          currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                        } ${
+                          isPaid ? 'bg-[#0ab39c]/15 text-[#0ab39c] border border-[#0ab39c]/30' :
+                          isPending ? 'bg-[#f7b84b]/15 text-[#b88015] border border-[#f7b84b]/30' :
+                          'bg-[#f06548]/15 text-[#f06548] border border-[#f06548]/30'
+                        }`}
+                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Rent status (Paid → Pending → Unpaid)" : "Monthly Rent Status"}
+                      >
+                        <span className="font-semibold opacity-70">Rent:</span> {user.paymentStatus || 'unpaid'}
+                      </button>
+
+                      {/* Maintenance Status Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(user.id);
+                        }}
+                        disabled={currentUserRole === 'TENANT'}
+                        className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase transition-all flex items-center gap-1 ${
+                          currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                        } ${
+                          isMaintPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                          isMaintPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                          'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}
+                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Maintenance status (Paid → Pending → Unpaid)" : "Monthly Maintenance Status"}
+                      >
+                        <span className="font-semibold opacity-70">Maint:</span> {user.maintenanceStatus || 'unpaid'}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -663,7 +700,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Role Privilege</label>
                   <select
@@ -691,10 +728,23 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Payment Status</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Rent Status</label>
                   <select
                     value={paymentStatus}
                     onChange={(e) => setPaymentStatus(e.target.value as any)}
+                    className="w-full velzon-input px-2.5 py-2 text-xs font-bold"
+                  >
+                    <option value="paid">Paid (100%)</option>
+                    <option value="pending">Pending</option>
+                    <option value="unpaid">Unpaid (0%)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Maintenance Status</label>
+                  <select
+                    value={maintenanceStatus}
+                    onChange={(e) => setMaintenanceStatus(e.target.value as any)}
                     className="w-full velzon-input px-2.5 py-2 text-xs font-bold"
                   >
                     <option value="paid">Paid (100%)</option>

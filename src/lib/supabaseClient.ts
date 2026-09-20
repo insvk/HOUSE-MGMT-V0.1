@@ -61,6 +61,7 @@ export function mapDbRowToUser(u: any): User {
     role: OWNER_EMAILS.includes(emailLower) ? 'OWNER' : (u.role || 'TENANT'),
     occupancyStatus: u.occupancy_status || 'active',
     paymentStatus: u.payment_status || 'paid',
+    maintenanceStatus: u.maintenance_status || 'unpaid',
     avatarUrl: u.avatar_url || undefined,
     moveInDate: u.move_in_date || undefined,
     rentAmount: u.rent_amount != null ? Number(u.rent_amount) : 0,
@@ -255,6 +256,7 @@ export const cloudDb = {
         role: user.role || 'TENANT',
         occupancy_status: user.occupancyStatus || 'active',
         payment_status: user.paymentStatus || 'paid',
+        maintenance_status: user.maintenanceStatus || 'unpaid',
         avatar_url: user.avatarUrl || null,
         move_in_date: user.moveInDate || null,
         rent_amount: user.rentAmount ?? null,
@@ -295,6 +297,7 @@ export const cloudDb = {
         role: user.role || 'TENANT',
         occupancy_status: user.occupancyStatus || 'active',
         payment_status: user.paymentStatus || 'paid',
+        maintenance_status: user.maintenanceStatus || 'unpaid',
         avatar_url: user.avatarUrl || null,
         move_in_date: user.moveInDate || null,
         rent_amount: user.rentAmount ?? null,
@@ -496,7 +499,7 @@ export const cloudDb = {
     }
   },
 
-  // Update User Payment Status in Cloud DB
+  // Update User Rent Payment Status in Cloud DB
   async updateUserPaymentStatus(email: string, paymentStatus: string): Promise<{ success: boolean; error?: string }> {
     if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
     try {
@@ -513,6 +516,26 @@ export const cloudDb = {
     } catch (err: any) {
       console.warn('Cloud DB update payment status notice:', err);
       return { success: false, error: err?.message || 'Failed to update payment status' };
+    }
+  },
+
+  // Update User Maintenance Fee Status in Cloud DB
+  async updateUserMaintenanceStatus(email: string, maintenanceStatus: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Cloud DB not configured' };
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          maintenance_status: maintenanceStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('email', email.toLowerCase().trim());
+
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      console.warn('Cloud DB update maintenance status notice:', err);
+      return { success: false, error: err?.message || 'Failed to update maintenance status' };
     }
   },
 

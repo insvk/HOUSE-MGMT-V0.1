@@ -45,10 +45,18 @@ DO $$ BEGIN
   END;
 END $$;
 
--- payment_status
+-- payment_status (Monthly Rent)
 DO $$ BEGIN
   BEGIN
     ALTER TABLE public.users ADD COLUMN payment_status VARCHAR(20) DEFAULT 'paid';
+  EXCEPTION WHEN duplicate_column THEN
+  END;
+END $$;
+
+-- maintenance_status (Monthly Maintenance Fee)
+DO $$ BEGIN
+  BEGIN
+    ALTER TABLE public.users ADD COLUMN maintenance_status VARCHAR(20) DEFAULT 'unpaid';
   EXCEPTION WHEN duplicate_column THEN
   END;
 END $$;

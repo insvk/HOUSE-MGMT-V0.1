@@ -41,6 +41,7 @@ interface MaintenanceModuleProps {
   onDeleteExpense: (expenseId: string) => void;
   onExportExcel: () => void;
   onExportPDF: () => void;
+  onToggleTenantMaintenanceStatus?: (userId: string) => void;
   onAddNotificationLog?: (log: Omit<NotificationLog, 'id' | 'sentAt'>) => void;
   showToast?: (msg: string) => void;
 }
@@ -58,6 +59,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
   onDeleteExpense,
   onExportExcel,
   onExportPDF,
+  onToggleTenantMaintenanceStatus,
   onAddNotificationLog,
   showToast,
 }) => {
@@ -249,6 +251,25 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
     }
   };
 
+  // Unique residents deduplicated by email
+  const residentUsers = React.useMemo(() => {
+    const map = new Map<string, User>();
+    users.forEach((u) => {
+      const emailKey = (u.email || '').toLowerCase().trim();
+      if (!emailKey) return;
+      if (!map.has(emailKey) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+        map.set(emailKey, u);
+      }
+    });
+    return Array.from(map.values()).filter((u) => u.occupancyStatus !== 'inactive' && u.occupancyStatus !== 'evicted');
+  }, [users]);
+
+  const paidResidentsCount = residentUsers.filter((u) => u.maintenanceStatus === 'paid').length;
+  const totalResidentsCount = residentUsers.length || activeRecord.activeTenantsCount || 5;
+  const totalMaintCollected = paidResidentsCount * activeRecord.individualContribution;
+  const totalMaintDue = totalResidentsCount * activeRecord.individualContribution;
+  const collectionPercentage = totalResidentsCount > 0 ? Math.round((paidResidentsCount / totalResidentsCount) * 100) : 0;
+
   return (
     <div className="space-y-5">
       {/* Header & Controls */}
@@ -350,7 +371,89 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
         </div>
       </div>
 
-      {/* Main Expense Table & Mobile Card View */}
+      {/* Resident Maintenance Fee Collection Status */}
+      <div className="velzon-card overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-emerald-50/40">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Resident Maintenance Fee Collection Status
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                {collectionPercentage}% Collected
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Admin controls to toggle and audit each resident's ₹{activeRecord.individualContribution.toFixed(2)} maintenance contribution
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="text-right">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Collected</div>
+              <div className="font-bold text-emerald-700 font-mono text-sm">₹{totalMaintCollected.toLocaleString('en-IN')}</div>
+            </div>
+            <div className="h-6 w-px bg-slate-200" />
+            <div className="text-right">
+              <div className="text-[10px] text-slate-400 font-semibold uppercase">Pending Dues</div>
+              <div className="font-bold text-rose-600 font-mono text-sm">₹{(totalMaintDue - totalMaintCollected).toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {residentUsers.map((u) => {
+              const isPaid = u.maintenanceStatus === 'paid';
+              const isPending = u.maintenanceStatus === 'pending';
+              const isCurrentUser = currentUser?.id === u.id;
+
+              return (
+                <div
+                  key={u.id}
+                  className={`p-3 rounded-lg border flex items-center justify-between transition-all ${
+                    isCurrentUser ? 'border-[#405189]/40 bg-indigo-50/20 shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <img
+                      src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                      alt={u.fullName}
+                      className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-800 truncate flex items-center gap-1.5" title={u.fullName}>
+                        {u.fullName}
+                        {isCurrentUser && <span className="text-[9px] text-[#405189] font-normal">(You)</span>}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                        <span className="font-bold text-slate-700">{u.flatNumber}</span>
+                        <span>• Share: ₹{activeRecord.individualContribution.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(u.id)}
+                    disabled={currentUserRole === 'TENANT'}
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all shrink-0 ${
+                      currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                    } ${
+                      isPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                      isPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}
+                    title={currentUserRole !== 'TENANT' ? "Click to cycle status (Paid → Pending → Unpaid)" : "Maintenance Fee Status"}
+                  >
+                    {u.maintenanceStatus || 'unpaid'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
       <div className="velzon-card overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-800">

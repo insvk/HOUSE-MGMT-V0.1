@@ -21,6 +21,7 @@ export interface User {
   role: UserRole;
   occupancyStatus: 'active' | 'inactive' | 'evicted';
   paymentStatus?: 'paid' | 'pending' | 'unpaid';
+  maintenanceStatus?: 'paid' | 'pending' | 'unpaid';
   avatarUrl?: string;
   moveInDate?: string;
   rentAmount?: number;

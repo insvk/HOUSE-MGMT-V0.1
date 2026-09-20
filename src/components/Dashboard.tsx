@@ -70,6 +70,7 @@ interface DashboardProps {
   onOpenEditExpense?: (expense: Expense) => void;
   onDeleteExpense?: (expenseId: string) => void;
   onToggleTenantPaymentStatus?: (userId: string) => void;
+  onToggleTenantMaintenanceStatus?: (userId: string) => void;
   onExportReport: () => void;
   onUpdateHouse: (updatedHouse: House) => void;
   onUpdateRecord: (updatedRecord: MaintenanceRecord) => void;
@@ -99,6 +100,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenEditExpense,
   onDeleteExpense,
   onToggleTenantPaymentStatus,
+  onToggleTenantMaintenanceStatus,
   onExportReport,
   onUpdateHouse,
   onUpdateRecord,
@@ -115,7 +117,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [timeFilter, setTimeFilter] = useState<'All' | '1M' | '6M' | '1Y'>('1M');
   const [selectedSort, setSelectedSort] = useState<'Today' | 'Monthly' | 'Yearly'>('Monthly');
   const [dashboardInvoicePreview, setDashboardInvoicePreview] = useState<InvoicePreviewData | null>(null);
-  const [activeDashboardTab, setActiveDashboardTab] = useState<'property' | 'personal' | 'activities'>('property');
+  const [activeDashboardTab, setActiveDashboardTab] = useState<'property' | 'personal' | 'activities'>(
+    currentUserRole === 'TENANT' ? 'personal' : 'property'
+  );
 
   // God Mode Master Modal State (Exclusively for Sampath Kumar / Owner)
   const isGodMode = currentUser.email.toLowerCase() === 'sampathkumar@chemadura.com' || currentUserRole === 'OWNER';
@@ -325,23 +329,75 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <thead className="text-slate-400 font-normal border-b border-slate-100 sticky top-0 bg-white">
                 <tr>
                   <th className="pb-2 font-medium">Tenant</th>
-                  <th className="pb-2 font-medium">Aging</th>
-                  <th className="pb-2 font-medium">Category</th>
-                  <th className="pb-2 font-medium text-right">Amount</th>
+                  <th className="pb-2 font-medium">Rent</th>
+                  <th className="pb-2 font-medium">Maintenance</th>
+                  <th className="pb-2 font-medium text-right">Dues Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {users.filter(u => u.paymentStatus !== 'paid').slice(0, 5).map(u => (
-                  <tr key={u.id}>
-                    <td className="py-3 truncate font-medium text-slate-800">{u.fullName}</td>
-                    <td className="py-3 text-rose-600 font-medium">{u.paymentStatus === 'unpaid' ? '> 30 days' : '15 days'}</td>
-                    <td className="py-3">Maintenance</td>
-                    <td className="py-3 text-right font-medium">₹{currentRecord.individualContribution.toLocaleString('en-IN')}</td>
-                  </tr>
-                ))}
-                {users.filter(u => u.paymentStatus !== 'paid').length === 0 && (
+                {users.filter(u => u.paymentStatus !== 'paid' || u.maintenanceStatus !== 'paid').slice(0, 8).map(u => {
+                  const isRentPaid = u.paymentStatus === 'paid';
+                  const isRentPending = u.paymentStatus === 'pending';
+                  const isMaintPaid = u.maintenanceStatus === 'paid';
+                  const isMaintPending = u.maintenanceStatus === 'pending';
+
+                  const dueRent = isRentPaid ? 0 : (u.rentAmount || 14000);
+                  const dueMaint = isMaintPaid ? 0 : currentRecord.individualContribution;
+                  const totalDue = dueRent + dueMaint;
+
+                  return (
+                    <tr key={u.id}>
+                      <td className="py-2.5">
+                        <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={u.fullName}>
+                          {u.fullName}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          {u.flatNumber}
+                        </div>
+                      </td>
+                      <td className="py-2.5">
+                        <button
+                          onClick={() => onToggleTenantPaymentStatus && onToggleTenantPaymentStatus(u.id)}
+                          disabled={currentUserRole === 'TENANT'}
+                          className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase transition-all ${
+                            currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                          } ${
+                            isRentPaid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            isRentPending ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                            'bg-rose-50 text-rose-700 border border-rose-200'
+                          }`}
+                          title={currentUserRole !== 'TENANT' ? "Click to toggle Rent status" : "Rent Status"}
+                        >
+                          {u.paymentStatus || 'unpaid'}
+                        </button>
+                      </td>
+                      <td className="py-2.5">
+                        <button
+                          onClick={() => onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(u.id)}
+                          disabled={currentUserRole === 'TENANT'}
+                          className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase transition-all ${
+                            currentUserRole !== 'TENANT' ? 'cursor-pointer hover:shadow-xs active:scale-95' : 'cursor-default'
+                          } ${
+                            isMaintPaid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            isMaintPending ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                            'bg-rose-50 text-rose-700 border border-rose-200'
+                          }`}
+                          title={currentUserRole !== 'TENANT' ? "Click to toggle Maintenance status" : "Maintenance Status"}
+                        >
+                          {u.maintenanceStatus || 'unpaid'}
+                        </button>
+                      </td>
+                      <td className="py-2.5 text-right font-bold text-xs text-rose-600 font-mono">
+                        ₹{totalDue.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {users.filter(u => u.paymentStatus !== 'paid' || u.maintenanceStatus !== 'paid').length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-slate-400">All dues are cleared.</td>
+                    <td colSpan={4} className="py-8 text-center text-emerald-600 font-medium text-xs">
+                      🎉 All resident rent and maintenance dues are fully cleared!
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -496,27 +552,319 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </>
       )}
 
-      {activeDashboardTab === 'personal' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm mb-4">
-            <img src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'} alt="Avatar" className="w-full h-full object-cover" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900">{currentUser.fullName}</h2>
-          <span className="px-3 py-1 bg-sky-50 text-sky-700 text-xs font-bold rounded-full uppercase mt-2">
-            {currentUser.flatNumber}
-          </span>
-          <div className="grid grid-cols-2 gap-8 mt-8 w-full max-w-md">
-            <div className="flex flex-col items-center">
-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Monthly Rent</span>
-              <span className="text-xl font-bold text-slate-900">₹{currentUser.rentAmount?.toLocaleString('en-IN') || '0'}</span>
+      {activeDashboardTab === 'personal' && (() => {
+        const isRentPaid = currentUser.paymentStatus === 'paid';
+        const isRentPending = currentUser.paymentStatus === 'pending';
+        const isMaintPaid = currentUser.maintenanceStatus === 'paid';
+        const isMaintPending = currentUser.maintenanceStatus === 'pending';
+
+        const rentAmount = currentUser.rentAmount || 14000;
+        const maintAmount = currentRecord.individualContribution || 660;
+        const depositAmount = currentUser.depositAmount || 70000;
+
+        const totalDue = (isRentPaid ? 0 : rentAmount) + (isMaintPaid ? 0 : maintAmount);
+        const isAllCleared = isRentPaid && isMaintPaid;
+
+        return (
+          <div className="space-y-6">
+            {/* 1. Tenant Profile Banner */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className="relative group/avatar shrink-0">
+                  <img
+                    src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                    alt={currentUser.fullName}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-indigo-100 shadow-sm"
+                  />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" title="Active Resident" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl font-bold text-slate-900">{currentUser.fullName}</h2>
+                    <span className="px-2.5 py-0.5 bg-[#405189]/10 text-[#405189] text-xs font-bold rounded-full uppercase">
+                      {currentUser.flatNumber}
+                    </span>
+                    <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full uppercase">
+                      {currentUserRole.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
+                    <span>{currentUser.email}</span>
+                    {currentUser.phone && <span>• {currentUser.phone}</span>}
+                    {currentUser.username && <span className="font-mono text-[#405189]">@{currentUser.username.replace(/^@/, '')}</span>}
+                  </p>
+                </div>
+              </div>
+
+              {/* Clearance Status Pill */}
+              <div className="flex flex-col sm:items-end gap-1.5 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                  {currentMonthName} {currentRecord.year} Account Status
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                    isAllCleared
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  }`}>
+                    {isAllCleared ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        All Accounts Cleared
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                        Payment Due: ₹{totalDue.toLocaleString('en-IN')}
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center">
-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Status</span>
-              <span className="text-xl font-bold text-emerald-600 uppercase">{currentUser.paymentStatus || 'PAID'}</span>
+
+            {/* 2. DUAL STATUS FINANCIAL CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              
+              {/* CARD 1: Monthly Rent */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                        <IndianRupee className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Monthly Rent</span>
+                    </div>
+                    
+                    {/* Status Badge */}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
+                      isRentPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                      isRentPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}>
+                      {isRentPaid ? <CheckCircle2 className="w-3 h-3" /> : isRentPending ? <Clock className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                      {currentUser.paymentStatus || 'unpaid'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                      ₹{rentAmount.toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Due on 5th of each month • Verified by Administrator
+                    </p>
+                  </div>
+                </div>
+
+                {/* Admin Quick Status Setter or Tenant Info */}
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500 font-medium">Admin toggle:</span>
+                      <button
+                        onClick={() => onToggleTenantPaymentStatus && onToggleTenantPaymentStatus(currentUser.id)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
+                      >
+                        Cycle Rent Status
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <Shield className="w-3.5 h-3.5 text-[#405189]" />
+                      Official receipt auto-generated upon clearance
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CARD 2: Monthly Maintenance Fee */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center">
+                        <Receipt className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Maintenance Fee</span>
+                    </div>
+
+                    {/* Status Badge */}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
+                      isMaintPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                      isMaintPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}>
+                      {isMaintPaid ? <CheckCircle2 className="w-3 h-3" /> : isMaintPending ? <Clock className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                      {currentUser.maintenanceStatus || 'unpaid'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                      ₹{maintAmount.toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {currentMonthName} share (₹{currentRecord.grandTotal.toLocaleString('en-IN')} / {currentRecord.activeTenantsCount || 5} flats)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Admin Quick Status Setter or Tenant Info */}
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500 font-medium">Admin toggle:</span>
+                      <button
+                        onClick={() => onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(currentUser.id)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
+                      >
+                        Cycle Maint Status
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                      Audited live across building utility & repair log
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CARD 3: Combined Balance & Deposit */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                        <Wallet className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Deposit & Escrow</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase">
+                      Active Lease
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                      ₹{depositAmount.toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Refundable Security Deposit held safely in Escrow
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-medium">Total Pending Due:</span>
+                  <span className={`font-mono font-bold ${totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    ₹{totalDue.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+
             </div>
+
+            {/* 3. Itemized Maintenance Cost Transparency Table */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#405189]" />
+                    {currentMonthName} {currentRecord.year} Maintenance Ledger Breakdown
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Itemized building expenses split equally across {currentRecord.activeTenantsCount || 5} active apartment units
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-slate-400">Total Expenditure</div>
+                  <div className="text-sm font-bold text-slate-900 font-mono">
+                    ₹{currentRecord.grandTotal.toLocaleString('en-IN')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase">
+                    <tr>
+                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">Particulars</th>
+                      <th className="px-4 py-3">Recorded By</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                      <th className="px-4 py-3 text-right">Your Share (1/{currentRecord.activeTenantsCount || 5})</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {currentRecord.expenses.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-slate-400">
+                          No expenses recorded for this month yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      currentRecord.expenses.map((exp) => (
+                        <tr key={exp.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-4 py-3 capitalize font-medium text-slate-800 flex items-center gap-1.5">
+                            <Tag className="w-3 h-3 text-slate-400" />
+                            {exp.category}
+                          </td>
+                          <td className="px-4 py-3">{exp.particular}</td>
+                          <td className="px-4 py-3 text-slate-500">{exp.addedBy}</td>
+                          <td className="px-4 py-3 text-right font-mono font-medium">₹{exp.amount.toLocaleString('en-IN')}</td>
+                          <td className="px-4 py-3 text-right font-mono font-bold text-[#405189]">
+                            ₹{(exp.amount / (currentRecord.activeTenantsCount || 5)).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-800">
+                    <tr>
+                      <td colSpan={3} className="px-4 py-3">Total Monthly Contribution Due</td>
+                      <td className="px-4 py-3 text-right font-mono">₹{currentRecord.grandTotal.toLocaleString('en-IN')}</td>
+                      <td className="px-4 py-3 text-right font-mono text-emerald-700 text-sm">
+                        ₹{maintAmount.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            {/* 4. Payment Remittance Instructions & Support */}
+            <div className="bg-gradient-to-r from-slate-900 to-[#1e293b] text-white rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  Official Remittance & UPI Payment
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                  Transfer Rent and Maintenance via UPI / NEFT to <strong>sampathkumar@chemadura.com</strong>.
+                  Once remitted, status will update to <strong>PAID</strong> in your live portal following admin verification.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText('sampathkumar@chemadura.com');
+                    alert('UPI ID (sampathkumar@chemadura.com) copied to clipboard!');
+                  }}
+                  className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5 text-sky-400" />
+                  Copy UPI ID
+                </button>
+              </div>
+            </div>
+
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {activeDashboardTab === 'activities' && (
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm min-h-[400px]">
