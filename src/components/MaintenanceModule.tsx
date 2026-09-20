@@ -269,7 +269,7 @@ export const MaintenanceModule: React.FC<MaintenanceModuleProps> = ({
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Live audited line items with automated per-unit split calculation
+            CHE-MADURA HS-1 MGMT • Live audited line items with automated per-unit split calculation
           </p>
         </div>
 

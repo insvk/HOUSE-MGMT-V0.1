@@ -97,7 +97,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoic
     } else {
       // Generate downloadable simulated text / SVG report blob
       const content = `===============================================================
-MADURA HOUSE RESIDENTIAL MAINTENANCE - OFFICIAL INVOICE RECEIPT
+CHE-MADURA HS-1 MGMT RESIDENTIAL MAINTENANCE - OFFICIAL INVOICE RECEIPT
 ===============================================================
 Document Reference: ${invoice.fileName}
 Particular: ${invoice.particular || 'Maintenance Line Expense'}
@@ -343,7 +343,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                             ? 'SRI BALAJI ELECTRICAL WORKSHOP & REPAIR'
                             : invoice.fileName.includes('Janitorial') || invoice.fileName.includes('Murugan')
                             ? 'SRI MURUGAN GENERAL & JANITORIAL SUPPLIES'
-                            : 'MADURA HOUSE MAINTENANCE VENDOR SERVICES'}
+                            : 'CHE-MADURA HS-1 MGMT MAINTENANCE VENDOR SERVICES'}
                         </h1>
                         <p className="text-[11px] text-slate-500 mt-1">
                           {invoice.fileName.includes('TANGEDCO')
@@ -352,7 +352,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                             ? 'GSTIN: 33AAACJ1284K1Z8 • AMC Unit, Anna Nagar, Chennai'
                             : invoice.fileName.includes('Motor')
                             ? 'GSTIN: 33AALPB8841P1ZQ • No. 42 Trunk Road, Maduravoyal, Chennai - 600095'
-                            : 'Property Maintenance Administration • Madura House, Maduravoyal, Chennai - 600095'}
+                            : 'Property Maintenance Administration • CHE-MADURA HS-1 MGMT, Maduravoyal, Chennai - 600095'}
                         </p>
                       </div>
 
@@ -386,7 +386,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
 
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Property / Site</span>
-                      <span className="font-bold text-slate-800">Madura House (6 Flats)</span>
+                      <span className="font-bold text-slate-800">CHE-MADURA HS-1 MGMT (6 Flats)</span>
                     </div>
 
                     <div>
@@ -441,14 +441,14 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                     <div>
                       <div className="text-[10px] text-slate-400 uppercase font-bold">Audit Verification Note:</div>
                       <p className="text-[11px] text-slate-600 max-w-sm mt-0.5">
-                        {invoice.ocrText || 'Audited and passed for equal split among registered tenants of Madura House.'}
+                        {invoice.ocrText || 'Audited and passed for equal split among registered tenants of CHE-MADURA HS-1 MGMT.'}
                       </p>
                     </div>
 
                     <div className="text-right">
                       <div className="inline-block border border-emerald-600/40 bg-emerald-50 px-3 py-1.5 rounded-lg text-center mb-1">
                         <div className="text-[9px] font-extrabold text-emerald-800 tracking-wider">OFFICIAL VAULT CERTIFIED</div>
-                        <div className="text-[8px] text-emerald-600 font-mono">MADURA HOUSE ADMIN</div>
+                        <div className="text-[8px] text-emerald-600 font-mono">CHE-MADURA HS-1 ADMIN</div>
                       </div>
                       <div className="text-[10px] text-slate-400">Authorized Signatory: <strong>Sampath Kumar</strong></div>
                     </div>
@@ -541,7 +541,7 @@ NOTES: ${invoice.notes || 'No remarks provided.'}`}
         {/* Footer info bar */}
         <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 text-slate-500 text-[11px] flex items-center justify-between shrink-0">
           <span className="flex items-center gap-1">
-            <Building2 className="w-3.5 h-3.5 text-indigo-600" /> Madura House Maintenance Management • Digital Document Vault
+            <Building2 className="w-3.5 h-3.5 text-indigo-600" /> CHE-MADURA HS-1 MGMT • Digital Document Vault
           </span>
           <span className="font-mono text-[10px] text-slate-400">
             Press ESC to close

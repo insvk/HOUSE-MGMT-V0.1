@@ -1,5 +1,5 @@
 // Utility for Image Resizing, Canvas Compression & Avatar Presets
-// Madura House Maintenance Management Platform (HMMP)
+// CHE-MADURA HS-1 MGMT Maintenance Management Platform (HMMP)
 
 export const DEFAULT_AVATARS = [
   {

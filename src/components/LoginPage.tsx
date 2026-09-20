@@ -408,7 +408,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       {/* Top Header */}
       <div className="px-4 sm:px-8 py-4 sm:py-7 flex items-center justify-between w-full max-w-7xl mx-auto z-20 gap-2 relative">
         <span className="font-extrabold text-xs sm:text-base md:text-xl tracking-tight text-[#111827] uppercase font-sans truncate">
-          MADURA HOUSE MAINTENANCE MGMT V0.1
+          CHE-MADURA HS-1 MGMT V0.1
         </span>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <GoogleClock variant="header" />
@@ -825,7 +825,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       <div className="fixed bottom-6 right-6 z-30">
         <button
           type="button"
-          onClick={() => alert('Madura House Resident Support: Connect with Property Administration.')}
+          onClick={() => alert('CHE-MADURA HS-1 MGMT Resident Support: Connect with Property Administration.')}
           className="w-12 h-12 rounded-2xl bg-[#111827] hover:bg-black text-white flex items-center justify-center shadow-xl shadow-black/20 transition-transform duration-200 hover:scale-105 active:scale-95 cursor-pointer"
           title="Need Help?"
         >

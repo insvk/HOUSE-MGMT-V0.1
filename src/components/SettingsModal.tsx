@@ -62,7 +62,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [name, setName] = useState(house.name);
   const [address, setAddress] = useState(house.address);
   const [city, setCity] = useState(house.city);
-  const [postalCode, setPostalCode] = useState(house.postalCode || '625001');
+  const [postalCode, setPostalCode] = useState(house.postalCode || '600095');
   const [totalUnits, setTotalUnits] = useState(house.totalUnits.toString());
   const [currency, setCurrency] = useState(house.settings?.currency || 'INR');
   const [upiId, setUpiId] = useState(house.settings?.upiId || '');
@@ -73,7 +73,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setName(house.name || '');
     setAddress(house.address || '');
     setCity(house.city || '');
-    setPostalCode(house.postalCode || '625001');
+    setPostalCode(house.postalCode || '600095');
     setTotalUnits((house.totalUnits || 5).toString());
     setCurrency(house.settings?.currency || 'INR');
     setUpiId(house.settings?.upiId || '');
@@ -146,8 +146,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const backupData = {
       version: '1.0.0',
       exportTimestamp: new Date().toISOString(),
-      platform: 'MADURA HOUSE MAINTENANCE MGMT V0.1',
-      house: { ...house, name, address, city, postalCode, totalUnits: parseInt(totalUnits) || 5 },
+      platform: 'CHE-MADURA HS-1 MGMT V0.1',
+      house: { ...house, name, address, city, postalCode, totalUnits: parseInt(totalUnits) || 5, settings: { ...house.settings, currency, upiId, upiName } },
       users,
       records,
       invoices,
@@ -159,7 +159,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `MaduraHouse_System_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `CHE_MADURA_HS_1_MGMT_System_Backup_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -204,7 +204,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-800">Property & Platform Settings</h3>
-              <p className="text-[11px] text-slate-500">Enterprise configuration for Madura House</p>
+              <p className="text-[11px] text-slate-500">Enterprise configuration for CHE-MADURA HS-1 MGMT</p>
             </div>
           </div>
 
@@ -340,7 +340,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     disabled={currentUserRole !== 'OWNER' && currentUserRole !== 'ADMIN_TENANT'}
                     value={upiName}
                     onChange={(e) => setUpiName(e.target.value)}
-                    placeholder="e.g. Sampath Kumar / Madura House"
+                    placeholder="e.g. Sampath Kumar / CHE-MADURA HS-1 MGMT"
                     className="w-full velzon-input px-3 py-2 text-xs"
                   />
                 </div>

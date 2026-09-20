@@ -1,6 +1,6 @@
 {
-  "short_name": "Madura House",
-  "name": "MADURA HOUSE MAINTENANCE MGMT V0.1",
+  "short_name": "CHE-MADURA HS-1",
+  "name": "CHE-MADURA HS-1 MGMT V0.1",
   "icons": [
     {
       "src": "/favicon.svg",
@@ -13,5 +13,5 @@
   "theme_color": "#405189",
   "display": "standalone",
   "orientation": "portrait",
-  "description": "Official Enterprise Maintenance, Expense & Tenant Management Platform for Madura House."
+  "description": "Official Enterprise Maintenance, Expense & Tenant Management Platform for CHE-MADURA HS-1 MGMT."
 }

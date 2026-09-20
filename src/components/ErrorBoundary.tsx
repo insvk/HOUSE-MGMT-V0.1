@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleCopyDiagnostic = () => {
-    const diagnostic = `MADURA HOUSE PLATFORM DIAGNOSTIC:
+    const diagnostic = `CHE-MADURA HS-1 MGMT PLATFORM DIAGNOSTIC:
 Error: ${this.state.error?.message || 'Unknown'}
 Stack: ${this.state.error?.stack || 'No stack'}
 Component Stack: ${this.state.errorInfo?.componentStack || 'No component stack'}
@@ -69,7 +69,7 @@ User Agent: ${navigator.userAgent}`;
                   Application Resilience Alert
                 </h1>
                 <p className="text-xs text-slate-400">
-                  Madura House Maintenance Platform encountered an isolated runtime exception.
+                  CHE-MADURA HS-1 MGMT Platform encountered an isolated runtime exception.
                 </p>
               </div>
             </div>

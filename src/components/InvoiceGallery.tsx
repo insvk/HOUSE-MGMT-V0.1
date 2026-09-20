@@ -52,7 +52,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
       fileType: isPdf ? 'application/pdf' : 'image/png',
       storagePath: `invoices/2026/09/${fileName}`,
       uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadura.com' : 'admin@chemadura.com'),
-      ocrText: customText || `OCR EXTRACTED SUMMARY FOR ${fileName}: Amount Rs. ${(Math.random() * 2000 + 1000).toFixed(2)}. Verified Tax Invoice. Madura House Maintenance.`,
+      ocrText: customText || `OCR EXTRACTED SUMMARY FOR ${fileName}: Amount Rs. ${(Math.random() * 2000 + 1000).toFixed(2)}. Verified Tax Invoice. CHE-MADURA HS-1 MGMT Maintenance.`,
     };
 
     onUploadInvoice(newInv);
@@ -70,7 +70,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
           fileType: isPdf ? 'application/pdf' : 'image/jpeg',
           storagePath: `invoices/${Date.now()}_${file.name}`,
           uploadedBy: currentUser?.email || (currentUserRole === 'OWNER' ? 'sampathkumar@chemadura.com' : 'admin@chemadura.com'),
-          ocrText: `OCR EXTRACTED SUMMARY FOR ${file.name}: Official verified maintenance receipt under Madura House administration.`,
+          ocrText: `OCR EXTRACTED SUMMARY FOR ${file.name}: Official verified maintenance receipt under CHE-MADURA HS-1 MGMT administration.`,
         };
         onUploadInvoice(newInv);
       } catch {
@@ -98,7 +98,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
             <FileText className="w-5 h-5 text-[#405189]" /> Digital Invoices & OCR Document Archive
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Click any PDF or invoice file to open the interactive document preview popup
+            CHE-MADURA HS-1 MGMT • Click any PDF or invoice file to open the interactive document preview popup
           </p>
         </div>
 
@@ -359,7 +359,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                             ? 'TAMIL NADU GENERATION AND DISTRIBUTION CORP (TANGEDCO)'
                             : selectedInvoice.fileName.includes('Motor') || selectedInvoice.fileName.includes('Repair')
                             ? 'SRI BALAJI ELECTRICAL WORKSHOP & CONTRACTORS'
-                            : 'MADURA HOUSE RESIDENTIAL MAINTENANCE'}
+                            : 'CHE-MADURA HS-1 MGMT RESIDENTIAL MAINTENANCE'}
                         </h2>
                         <p className="text-xs text-slate-600 mt-1">
                           {selectedInvoice.fileName.includes('TNEB')
@@ -397,7 +397,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
 
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">Customer / Unit</span>
-                      <span className="font-bold text-slate-800">Madura House (All 6 Units)</span>
+                      <span className="font-bold text-slate-800">CHE-MADURA HS-1 MGMT (All 6 Units)</span>
                     </div>
 
                     <div>

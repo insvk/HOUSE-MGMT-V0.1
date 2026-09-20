@@ -663,7 +663,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   value={houseName}
                   onChange={(e) => setHouseName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-semibold"
-                  placeholder="e.g. Madura House Maintenance"
+                  placeholder="e.g. CHE-MADURA HS-1 MGMT"
                 />
               </div>
 
@@ -675,7 +675,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   value={houseAddress}
                   onChange={(e) => setHouseAddress(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
-                  placeholder="e.g. No. 42, Bypass Road"
+                  placeholder="e.g. 91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal"
                 />
               </div>
 
@@ -688,7 +688,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     value={houseCity}
                     onChange={(e) => setHouseCity(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
-                    placeholder="e.g. Madurai"
+                    placeholder="e.g. Chennai"
                   />
                 </div>
 
@@ -700,7 +700,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     value={housePostalCode}
                     onChange={(e) => setHousePostalCode(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
-                    placeholder="e.g. 625001"
+                    placeholder="e.g. 600095"
                   />
                 </div>
               </div>
@@ -1546,7 +1546,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     value={announcementSubject}
                     onChange={(e) => setAnnouncementSubject(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
-                    placeholder="e.g. [Madura House] Water Tank Cleaning scheduled on Sunday 10 AM"
+                    placeholder="e.g. [CHE-MADURA HS-1 MGMT] Water Tank Cleaning scheduled on Sunday 10 AM"
                   />
                 </div>
 

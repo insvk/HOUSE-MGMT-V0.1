@@ -48,7 +48,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs, house }) =
             <ShieldCheck className="w-5 h-5 text-[#405189]" /> Security Audit Trail & Immutable Log
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            {house?.name || 'Madura House'} • Row-Level Security telemetry, user mutation actions & access timestamps
+            {house?.name || 'CHE-MADURA HS-1 MGMT'} • Row-Level Security telemetry, user mutation actions & access timestamps
           </p>
         </div>
 

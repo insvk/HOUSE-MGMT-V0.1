@@ -151,7 +151,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'act-add-tenant',
       category: 'Actions',
       title: 'Register New Tenant / Resident',
-      subtitle: 'Add a new resident profile to Madura House directory',
+      subtitle: 'Add a new resident profile to CHE-MADURA HS-1 MGMT directory',
       icon: <Users className="w-4 h-4 text-[#f7b84b]" />,
       action: () => { onOpenAddTenant(); onClose(); },
     });

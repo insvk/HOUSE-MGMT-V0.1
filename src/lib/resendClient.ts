@@ -5,7 +5,7 @@ const RESEND_FROM_STORAGE_KEY = 'madura_resend_from_email';
 
 const DEFAULT_KEY_B64 = 'cmVfTHcyUmdEQzFfRHRRSmFIZTJlNmlCYmJiTEQ4NzZXbThM';
 export const DEFAULT_RESEND_API_KEY = typeof atob === 'function' ? atob(DEFAULT_KEY_B64) : '';
-export const DEFAULT_RESEND_FROM_EMAIL = 'Madura House Maintenance <onboarding@resend.dev>';
+export const DEFAULT_RESEND_FROM_EMAIL = 'CHE-MADURA HS-1 MGMT <onboarding@resend.dev>';
 export const RESEND_OWNER_EMAIL = 'production.chemadura26@gmail.com';
 
 export interface EmailRecipient {
@@ -116,7 +116,7 @@ export const generateMaintenanceEmailHtml = ({
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Madura House Maintenance Statement</title>
+  <title>CHE-MADURA HS-1 MGMT Maintenance Statement</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b;">
   <div style="max-width: 620px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
@@ -205,7 +205,7 @@ export const generateMaintenanceEmailHtml = ({
 
     <!-- Footer -->
     <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; font-size: 11px; color: #94a3b8; text-align: center;">
-      This is an official transactional maintenance statement dispatched via Resend Email Cloud API for Madura House Maintenance Management V0.1. Direct replies route to production.chemadura26@gmail.com.
+      This is an official transactional maintenance statement dispatched via Resend Email Cloud API for CHE-MADURA HS-1 MGMT V0.1. Direct replies route to production.chemadura26@gmail.com.
     </div>
 
   </div>
@@ -285,7 +285,7 @@ export async function sendBulkMaintenanceEmails({
   let failedCount = 0;
 
   for (const recipient of recipients) {
-    const subject = `[Madura House] ${monthName} ${record.year} Maintenance Notice - ₹${record.individualContribution.toFixed(2)} Due`;
+    const subject = `[CHE-MADURA HS-1 MGMT] ${monthName} ${record.year} Maintenance Notice - ₹${record.individualContribution.toFixed(2)} Due`;
     const html = generateMaintenanceEmailHtml({ recipient, record, house, senderName });
 
     if (isLive) {
@@ -476,7 +476,7 @@ export async function sendExpenseAlertEmails({
   let failedCount = 0;
 
   for (const recipient of recipients) {
-    const subject = `[Madura House] New Maintenance Expense: ${expense.particular} (₹${expense.amount.toLocaleString('en-IN')})`;
+    const subject = `[CHE-MADURA HS-1 MGMT] New Maintenance Expense: ${expense.particular} (₹${expense.amount.toLocaleString('en-IN')})`;
     const html = generateExpenseAlertHtml({ expense, record, house, recipient, senderName });
 
     if (isLive) {

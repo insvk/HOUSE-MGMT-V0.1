@@ -236,7 +236,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
             <Users className="w-5 h-5 text-[#405189]" /> Tenant Directory & Occupant Administration
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Resident contact records, rent/deposit ledger & role privileges
+            CHE-MADURA HS-1 MGMT • Resident contact records, rent/deposit ledger & role privileges
           </p>
         </div>
 
@@ -465,7 +465,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          const creds = `Madura House Tenant Login:\nPortal: ${window.location.origin}\nID / Email: ${user.email} (or ID: ${user.id}${user.username ? `, @${user.username}` : ''})\nPassword: ${user.password || 'Tenant@123'}\nFlat: ${user.flatNumber}`;
+                          const creds = `CHE-MADURA HS-1 MGMT Tenant Login:\nPortal: ${window.location.origin}\nID / Email: ${user.email} (or ID: ${user.id}${user.username ? `, @${user.username}` : ''})\nPassword: ${user.password || 'Tenant@123'}\nFlat: ${user.flatNumber}`;
                           copyToClipboard(creds, `cred_${user.id}`);
                         }}
                         className="p-1 hover:bg-slate-200 text-slate-500 hover:text-[#405189] rounded transition-colors cursor-pointer"

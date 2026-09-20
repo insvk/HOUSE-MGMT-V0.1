@@ -1515,7 +1515,7 @@ export function App() {
       maintenanceRecordId: activeRecord.id,
       recipientEmail: u.email,
       type: 'maintenance_added',
-      subject: `[Madura House] ${MONTH_NAMES[(activeRecord.month - 1)] || 'Monthly'} ${activeRecord.year} Maintenance Notice - ₹${activeRecord.individualContribution.toFixed(2)} Due`,
+      subject: `[CHE-MADURA HS-1 MGMT] ${MONTH_NAMES[(activeRecord.month - 1)] || 'Monthly'} ${activeRecord.year} Maintenance Notice - ₹${activeRecord.individualContribution.toFixed(2)} Due`,
       status: 'sent',
       sentAt: new Date().toISOString(),
     }));
@@ -1778,7 +1778,7 @@ export function App() {
             {/* Mobile Mini Brand Title */}
             <div className="lg:hidden flex items-center gap-1.5 font-bold text-xs text-slate-800 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
               <Building2 className="w-4 h-4 text-[#405189] shrink-0" />
-              <span className="truncate">MADURA HOUSE</span>
+              <span className="truncate">CHE-MADURA HS-1</span>
             </div>
 
             {/* Desktop Command Palette Search Input */}
@@ -2109,7 +2109,7 @@ export function App() {
 
         {/* 4. Velzon Footer */}
         <footer className="bg-white border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-500 gap-1 text-center sm:text-left mb-14 lg:mb-0">
-          <div>2026 © Madura House Maintenance Management Platform.</div>
+          <div>2026 © CHE-MADURA HS-1 MGMT • Maintenance Management Platform.</div>
           <div className="hidden sm:block">Design & Developed with Enterprise Cloud Architecture</div>
         </footer>
 

@@ -91,7 +91,7 @@ export const cloudDb = {
       if (error) throw error;
       return {
         connected: true,
-        message: `Connected to Cloud PostgreSQL (${data?.[0]?.name || 'Madura House'})`,
+        message: `Connected to Cloud PostgreSQL (${data?.[0]?.name || 'CHE-MADURA HS-1 MGMT'})`,
       };
     } catch (err: any) {
       return {
@@ -145,10 +145,10 @@ export const cloudDb = {
       const h = data[0];
       return {
         id: h.id,
-        name: h.name || 'Madura House',
-        address: h.address || 'No. 42, Bypass Road',
-        city: h.city || 'Madurai',
-        postalCode: h.postal_code || '625001',
+        name: h.name || 'CHE-MADURA HS-1 MGMT',
+        address: h.address || '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal',
+        city: h.city || 'Chennai',
+        postalCode: h.postal_code || '600095',
         totalUnits: Number(h.total_units) || 6,
         ownerId: h.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
         settings: h.settings || { currency: 'INR' },

@@ -66,7 +66,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records,
             <BarChart3 className="w-5 h-5 text-[#405189]" /> Financial Analytics & Visual Trends
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            {house?.name || 'Madura House'} • Historical expenditure trends, category ratios & share history
+            {house?.name || 'CHE-MADURA HS-1 MGMT'} • Historical expenditure trends, category ratios & share history
           </p>
         </div>
 

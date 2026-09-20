@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Enterprise House Maintenance Management Application",
-  "author": "Madura House",
+  "author": "CHE-MADURA HS-1 MGMT",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.madurahouse.app",
-    "productName": "Madura House Maintenance",
+    "productName": "CHE-MADURA HS-1 MGMT",
     "directories": {
       "output": "release"
     },

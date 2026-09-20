@@ -76,7 +76,7 @@ export const sanitizeFileName = (name: string): string => {
  */
 export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: House) => {
   const activeHouse = getActiveHouse(house);
-  const propName = activeHouse.name || 'Madura House';
+  const propName = activeHouse.name || 'CHE-MADURA HS-1 MGMT';
   const propAddress = formatHouseAddress(activeHouse);
   const currency = activeHouse.settings?.currency || 'INR';
   const monthName = monthNames[record.month - 1] || `Month-${record.month}`;
@@ -165,7 +165,7 @@ export const exportMaintenanceToExcel = (record: MaintenanceRecord, house?: Hous
  */
 export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House) => {
   const activeHouse = getActiveHouse(house);
-  const propName = activeHouse.name || 'Madura House';
+  const propName = activeHouse.name || 'CHE-MADURA HS-1 MGMT';
   const propAddress = formatHouseAddress(activeHouse);
   const currency = activeHouse.settings?.currency || 'INR';
   const pdfCurrency = currency === '₹' || currency === '?' ? 'Rs.' : currency;
@@ -390,7 +390,7 @@ export const exportMaintenanceToPDF = (record: MaintenanceRecord, house?: House)
  */
 export const exportTenantsToExcel = (users: User[], house?: House) => {
   const activeHouse = getActiveHouse(house);
-  const propName = activeHouse.name || 'Madura House';
+  const propName = activeHouse.name || 'CHE-MADURA HS-1 MGMT';
   const propAddress = formatHouseAddress(activeHouse);
   const currency = activeHouse.settings?.currency || 'INR';
   const propertySlug = sanitizeFileName(propName);
@@ -466,7 +466,7 @@ export const exportTenantsToExcel = (users: User[], house?: House) => {
  */
 export const exportTenantsToPDF = (users: User[], house?: House) => {
   const activeHouse = getActiveHouse(house);
-  const propName = activeHouse.name || 'Madura House';
+  const propName = activeHouse.name || 'CHE-MADURA HS-1 MGMT';
   const propAddress = formatHouseAddress(activeHouse);
   const currency = activeHouse.settings?.currency || 'INR';
   const pdfCurrency = currency === '₹' || currency === '?' ? 'Rs.' : currency;
@@ -571,7 +571,7 @@ export const exportTenantsToPDF = (users: User[], house?: House) => {
  */
 export const exportAuditLogsToCSV = (logs: AuditLog[], house?: House) => {
   const activeHouse = getActiveHouse(house);
-  const propName = activeHouse.name || 'Madura House';
+  const propName = activeHouse.name || 'CHE-MADURA HS-1 MGMT';
   const propertySlug = sanitizeFileName(propName);
   const fileName = `${propertySlug}_Security_Audit_${new Date().toISOString().split('T')[0]}.csv`;
 

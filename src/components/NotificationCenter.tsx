@@ -125,10 +125,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   );
 
   const handleCopyWhatsApp = () => {
-    const text = `📢 *MADURA HOUSE MAINTENANCE NOTICE - ${monthName.toUpperCase()} ${activeRecord.year}*
+    const text = `📢 *${(house?.name || 'CHE-MADURA HS-1 MGMT').toUpperCase()} MAINTENANCE NOTICE - ${monthName.toUpperCase()} ${activeRecord.year}*
 
 Dear Residents,
-The monthly maintenance statement for *${house?.name || 'Madura House Maintenance'}* has been generated:
+The monthly maintenance statement for *${house?.name || 'CHE-MADURA HS-1 MGMT'}* has been generated:
 
 💰 *Total Month Expenditure:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}
 👥 *Active Flats:* ${payingUnits} Units
@@ -172,8 +172,8 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
     try {
       const res = await sendSingleResendEmail({
         to: RESEND_OWNER_EMAIL,
-        subject: `[Madura House] Live Resend API Key Test • ${new Date().toLocaleTimeString('en-IN')}`,
-        html: `<h3>Resend API Key Verified Successfully</h3><p>Your Resend API key is connected and working directly with the Madura House Management Platform.</p><p>Timestamp: ${new Date().toISOString()}</p>`,
+        subject: `[CHE-MADURA HS-1 MGMT] Live Resend API Key Test • ${new Date().toLocaleTimeString('en-IN')}`,
+        html: `<h3>Resend API Key Verified Successfully</h3><p>Your Resend API key is connected and working directly with the CHE-MADURA HS-1 MGMT Platform.</p><p>Timestamp: ${new Date().toISOString()}</p>`,
         apiKey: resendKeyInput,
         fromEmail: resendFromInput,
       });
@@ -196,9 +196,9 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
   const handleSendTestToOwner = async () => {
     setIsTestingOwner(true);
     try {
-      const subject = `[Madura House] ${monthName} ${activeRecord.year} Verified Statement Test - ₹${calculatedContribution.toFixed(2)} Due`;
+      const subject = `[CHE-MADURA HS-1 MGMT] ${monthName} ${activeRecord.year} Verified Statement Test - ₹${calculatedContribution.toFixed(2)} Due`;
       const html = `<div style="font-family:sans-serif;padding:20px;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;">
-        <h2 style="color:#1e1b4b;margin-top:0;">Madura House Maintenance Statement (Live Test)</h2>
+        <h2 style="color:#1e1b4b;margin-top:0;">CHE-MADURA HS-1 MGMT Maintenance Statement (Live Test)</h2>
         <p>This is a live transactional email dispatched via Resend API Key <code>${getResendApiKey().slice(0, 10)}...</code></p>
         <div style="background:#f1f5f9;padding:15px;border-radius:8px;margin:15px 0;">
           <div><strong>Total Expenses:</strong> ₹${calculatedGrandTotal.toLocaleString('en-IN')}</div>
@@ -290,7 +290,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         maintenanceRecordId: activeRecord.id,
         recipientEmail: d.recipientEmail,
         type: 'maintenance_added',
-        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
+        subject: `[${house?.name || 'CHE-MADURA HS-1 MGMT'}] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
         status: 'sent',
         sentAt: d.timestamp,
       }));
@@ -350,7 +350,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         maintenanceRecordId: activeRecord.id,
         recipientEmail: d.recipientEmail,
         type: 'maintenance_added',
-        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
+        subject: `[CHE-MADURA HS-1 MGMT] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
         status: 'sent',
         sentAt: d.timestamp,
       }));
@@ -387,7 +387,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Madura House • Official itemized statements dispatched live via Resend Cloud Engine. Direct replies route to <strong>{RESEND_OWNER_EMAIL}</strong>.
+            CHE-MADURA HS-1 MGMT • Official itemized statements dispatched live via Resend Cloud Engine. Direct replies route to <strong>{RESEND_OWNER_EMAIL}</strong>.
           </p>
         </div>
 
@@ -593,13 +593,13 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           </div>
 
           <div>
-            <strong>Subject:</strong> <span className="font-semibold text-slate-900">[Madura House] {monthName} {activeRecord.year} Maintenance Notice - ₹{calculatedContribution.toFixed(2)} Due</span>
+            <strong>Subject:</strong> <span className="font-semibold text-slate-900">[{house?.name || 'CHE-MADURA HS-1 MGMT'}] {monthName} {activeRecord.year} Maintenance Notice - ₹{calculatedContribution.toFixed(2)} Due</span>
           </div>
 
           <div className="pt-1 text-slate-800 leading-relaxed space-y-3">
             <p>Dear Resident,</p>
             <p>
-              The monthly maintenance summary for <strong>{house?.name || 'Madura House Maintenance'}</strong> has been audited and finalized for <strong>{monthName} {activeRecord.year}</strong>.
+              The monthly maintenance summary for <strong>{house?.name || 'CHE-MADURA HS-1 MGMT'}</strong> has been audited and finalized for <strong>{monthName} {activeRecord.year}</strong>.
             </p>
             
             {/* Financial Highlights Box */}
@@ -620,7 +620,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
-                <span>Property: <strong>{house?.name || 'Madura House'} • {house?.address || 'No. 42, Bypass Road'}, {house?.city || 'Madurai'}</strong></span>
+                <span>Property: <strong>{house?.name || 'CHE-MADURA HS-1 MGMT'} • {house?.address || '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal'}, {house?.city || 'Chennai'} - {house?.postalCode || '600095'}</strong></span>
                 <span>Due Date: <strong>10th {monthName} {activeRecord.year}</strong></span>
               </div>
             </div>
@@ -872,7 +872,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   type="text"
                   value={resendFromInput}
                   onChange={(e) => setResendFromInput(e.target.value)}
-                  placeholder="Madura House Maintenance <onboarding@resend.dev>"
+                  placeholder="CHE-MADURA HS-1 MGMT <onboarding@resend.dev>"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">

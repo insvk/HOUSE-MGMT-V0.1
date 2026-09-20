@@ -2,10 +2,10 @@ import { House, User, MaintenanceRecord, Expense, Invoice, NotificationLog, Audi
 
 export const initialHouse: House = {
   id: '11111111-2222-3333-4444-555555555555',
-  name: 'Madura House',
-  address: 'No. 42, Bypass Road',
-  city: 'Madurai',
-  postalCode: '625001',
+  name: 'CHE-MADURA HS-1 MGMT',
+  address: '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal',
+  city: 'Chennai',
+  postalCode: '600095',
   totalUnits: 6,
   ownerId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   settings: {
@@ -73,7 +73,7 @@ export const initialUsers: User[] = [
     rentAmount: 0,
     depositAmount: 0,
     emergencyContact: '+91 7338716690',
-    notes: 'Property Developer & Primary Owner of Madura House',
+    notes: 'Property Developer & Primary Owner of CHE-MADURA HS-1 MGMT',
   },
 ];
 
