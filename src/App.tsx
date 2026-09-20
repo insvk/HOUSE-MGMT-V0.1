@@ -109,7 +109,7 @@ export function App() {
             if (!u.email || isDummyLegacyAccount(u.email)) return;
             const emailKey = u.email.toLowerCase().trim();
             const existing = map.get(emailKey);
-            const isOwner = emailKey === 'sampathkumar@chemadura.com' || emailKey === 'rsivanaresh@gmail.com';
+            const isOwner = emailKey === 'sampathkumar@chemadura.com';
             if (existing) {
               map.set(emailKey, {
                 ...existing,
@@ -266,7 +266,7 @@ export function App() {
   }, [house]);
 
   useEffect(() => {
-    if (isLoggedIn && currentUserRole === 'OWNER') {
+    if (isLoggedIn && (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT')) {
       cloudDb.getSecret('RESEND_API_KEY').then(key => {
         if (key) setGlobalResendConfig(key, null);
       });
@@ -420,7 +420,7 @@ export function App() {
               if (!ru.email || isDummyLegacyAccount(ru.email)) return;
               const emailKey = ru.email.toLowerCase().trim();
               const existing = userMap.get(emailKey);
-              const isOwner = emailKey === 'sampathkumar@chemadura.com' || emailKey === 'rsivanaresh@gmail.com';
+              const isOwner = emailKey === 'sampathkumar@chemadura.com';
               if (existing) {
                 userMap.set(emailKey, {
                   ...existing,
@@ -833,7 +833,7 @@ export function App() {
   const recordAudit = async (action: string, resourceType: string, resourceId?: string) => {
     const newAudit: AuditLog = {
       id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
+      userId: (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action,
       resourceType,
@@ -1143,7 +1143,7 @@ export function App() {
     // 3. Audit log on confirmed success
     const newAudit: AuditLog = {
       id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
+      userId: (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'CREATE_TENANT_PROFILE',
       resourceType: 'users',
@@ -1208,7 +1208,7 @@ export function App() {
 
     const newAudit: AuditLog = {
       id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
+      userId: (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'UPDATE_TENANT_PROFILE',
       resourceType: 'users',
@@ -1257,7 +1257,7 @@ export function App() {
 
     const newAudit: AuditLog = {
       id: generateUUID(),
-      userId: currentUserRole === 'OWNER' ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
+      userId: (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' : currentUser.id,
       userEmail: currentUser.email,
       action: 'DELETE_TENANT_PROFILE',
       resourceType: 'users',

@@ -112,7 +112,7 @@ export const authService = {
         fullName: targetEmail.split('@')[0],
         phone: '',
         flatNumber: 'Tenant',
-        role: (targetEmail === 'sampathkumar@chemadura.com' || targetEmail === 'rsivanaresh@gmail.com') ? 'OWNER' : 'TENANT',
+        role: targetEmail === 'sampathkumar@chemadura.com' ? 'OWNER' : targetEmail === 'rsivanaresh@gmail.com' ? 'ADMIN_TENANT' : 'TENANT',
         occupancyStatus: 'active',
         paymentStatus: 'paid',
       };
@@ -273,7 +273,7 @@ export const authService = {
    * ROOT CAUSE #3 FIX: the public.users insert uses snake_case column names.
    * ROOT CAUSE #4 FIX: auth_id is linked in the same operation.
    *
-   * Note: We do NOT create the public.users row here — that is handled by:
+   * Note: We do NOT create the public.users row here â€” that is handled by:
    *   a) The DB trigger `on_auth_user_created` (defined in fix_auth_schema.sql), OR
    *   b) The calling code in App.tsx (handleSignUpSuccess) which calls cloudDb.createUser()
    * The trigger handles race conditions automatically.
@@ -439,7 +439,7 @@ export const authService = {
   },
 
   /**
-   * Log Security Events to DB (fire-and-forget — audit logs are non-critical path)
+   * Log Security Events to DB (fire-and-forget â€” audit logs are non-critical path)
    */
   logSecurityEvent(eventType: string, email: string, authId?: string) {
     if (!supabase) return;

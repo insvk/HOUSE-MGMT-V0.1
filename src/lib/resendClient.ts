@@ -104,7 +104,7 @@ export const generateMaintenanceEmailHtml = ({
           ${e.category}
         </td>
         <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #0f172a; font-family: monospace;">
-          ?${e.amount.toLocaleString('en-IN')}
+          ₹${e.amount.toLocaleString('en-IN')}
         </td>
       </tr>
     `
@@ -149,7 +149,7 @@ export const generateMaintenanceEmailHtml = ({
       <div style="background-color: #f1f5f9; border-radius: 12px; border: 1px solid #cbd5e1; padding: 20px; margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px;">
           <span style="color: #64748b; font-weight: 600;">Total Month Expenditure:</span>
-          <strong style="color: #0f172a; font-family: monospace; font-size: 15px;">?${record.grandTotal.toLocaleString('en-IN')}</strong>
+          <strong style="color: #0f172a; font-family: monospace; font-size: 15px;">₹${record.grandTotal.toLocaleString('en-IN')}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px;">
           <span style="color: #64748b; font-weight: 600;">Total Paying Flats:</span>
@@ -159,11 +159,11 @@ export const generateMaintenanceEmailHtml = ({
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="color: #1e293b; font-weight: 700; font-size: 14px;">Your Flat Share Due (${recipient.flatNumber}):</span>
           <span style="background-color: #059669; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 16px; font-family: monospace;">
-            ?${record.individualContribution.toFixed(2)}
+            ₹${record.individualContribution.toFixed(2)}
           </span>
         </div>
         <div style="margin-top: 10px; font-size: 12px; color: #b45309; font-weight: 600;">
-          ??? Remittance Due Date: 10th ${monthName} ${record.year}
+          🗓️ Remittance Due Date: 10th ${monthName} ${record.year}
         </div>
       </div>
 
@@ -189,7 +189,7 @@ export const generateMaintenanceEmailHtml = ({
       <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; font-size: 12px; color: #1e40af; line-height: 1.6; margin-bottom: 24px;">
         <strong>Remittance Options:</strong><br>
         1. <strong>UPI / QR Transfer:</strong> Pay to property admin via UPI ID on file.<br>
-        2. <strong>Direct Email / Contact:</strong> Contact Property Administrator <strong>${senderName}</strong> (Email: <a href="mailto:production.chemadura26@gmail.com" style="color:#1e40af;font-weight:bold;">production.chemadura26@gmail.com</a> � Phone: +91 98421 00000).<br>
+        2. <strong>Direct Email / Contact:</strong> Contact Property Administrator <strong>${senderName}</strong> (Email: <a href="mailto:production.chemadura26@gmail.com" style="color:#1e40af;font-weight:bold;">production.chemadura26@gmail.com</a> • Phone: +91 98421 00000).<br>
         3. Payment receipts will be audited and marked 'Paid' in your Resident Portal.
       </div>
 
@@ -198,7 +198,7 @@ export const generateMaintenanceEmailHtml = ({
         Warm regards,<br>
         <strong style="color: #1e293b;">${senderName}</strong><br>
         Property Developer & Primary Owner<br>
-        ${house.name} � <a href="mailto:production.chemadura26@gmail.com" style="color:#405189;">production.chemadura26@gmail.com</a>
+        ${house.name} • <a href="mailto:production.chemadura26@gmail.com" style="color:#405189;">production.chemadura26@gmail.com</a>
       </p>
 
     </div>
@@ -285,7 +285,7 @@ export async function sendBulkMaintenanceEmails({
   let failedCount = 0;
 
   for (const recipient of recipients) {
-    const subject = `[Madura House] ${monthName} ${record.year} Maintenance Notice - ?${record.individualContribution.toFixed(2)} Due`;
+    const subject = `[Madura House] ${monthName} ${record.year} Maintenance Notice - ₹${record.individualContribution.toFixed(2)} Due`;
     const html = generateMaintenanceEmailHtml({ recipient, record, house, senderName });
 
     if (isLive) {
@@ -388,7 +388,7 @@ export const generateExpenseAlertHtml = ({
     <!-- Top Header -->
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); padding: 24px 28px; color: #ffffff;">
       <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;">
-        REAL-TIME EXPENSE UPDATE � RESEND SYNC
+        REAL-TIME EXPENSE UPDATE • RESEND SYNC
       </div>
       <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff;">
         ${house.name}
@@ -416,22 +416,22 @@ export const generateExpenseAlertHtml = ({
           ${expense.particular}
         </div>
         <div style="font-size: 22px; font-weight: 800; color: #0f172a; font-family: monospace;">
-          ?${expense.amount.toLocaleString('en-IN')}
-          ${expense.gstApplicable ? `<span style="font-size: 12px; color: #64748b; font-weight: normal;"> (+?${expense.gstAmount} GST)</span>` : ''}
+          ₹${expense.amount.toLocaleString('en-IN')}
+          ${expense.gstApplicable ? `<span style="font-size: 12px; color: #64748b; font-weight: normal;"> (+₹${expense.gstAmount} GST)</span>` : ''}
         </div>
         ${expense.notes ? `<div style="font-size: 12px; color: #64748b; margin-top: 6px; font-style: italic;">Note: ${expense.notes}</div>` : ''}
-        ${expense.invoiceFileName ? `<div style="font-size: 11px; color: #405189; font-weight: 600; margin-top: 8px;">?? Attached Document: ${expense.invoiceFileName}</div>` : ''}
+        ${expense.invoiceFileName ? `<div style="font-size: 11px; color: #405189; font-weight: 600; margin-top: 8px;">📎 Attached Document: ${expense.invoiceFileName}</div>` : ''}
       </div>
 
       <!-- Updated Per-Unit Contribution Balance -->
       <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; color: #1e40af; margin-bottom: 6px;">
           <span>Updated Total Month Expense:</span>
-          <strong>?${record.grandTotal.toLocaleString('en-IN')}</strong>
+          <strong>₹${record.grandTotal.toLocaleString('en-IN')}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; color: #1e3a8a; font-weight: bold;">
           <span>Your Updated Share Due (${recipient.flatNumber}):</span>
-          <span style="color: #059669; font-family: monospace; font-size: 15px;">?${record.individualContribution.toFixed(2)}</span>
+          <span style="color: #059669; font-family: monospace; font-size: 15px;">₹${record.individualContribution.toFixed(2)}</span>
         </div>
       </div>
 
@@ -443,7 +443,7 @@ export const generateExpenseAlertHtml = ({
 
     <!-- Footer -->
     <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 28px; font-size: 11px; color: #94a3b8; text-align: center;">
-      Automated real-time dispatch via Resend Cloud API � ${house.name} � Replies to production.chemadura26@gmail.com
+      Automated real-time dispatch via Resend Cloud API • ${house.name} • Replies to production.chemadura26@gmail.com
     </div>
   </div>
 </body>
@@ -476,7 +476,7 @@ export async function sendExpenseAlertEmails({
   let failedCount = 0;
 
   for (const recipient of recipients) {
-    const subject = `[Madura House] New Maintenance Expense: ${expense.particular} (?${expense.amount.toLocaleString('en-IN')})`;
+    const subject = `[Madura House] New Maintenance Expense: ${expense.particular} (₹${expense.amount.toLocaleString('en-IN')})`;
     const html = generateExpenseAlertHtml({ expense, record, house, recipient, senderName });
 
     if (isLive) {

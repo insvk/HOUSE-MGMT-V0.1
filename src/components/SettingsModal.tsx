@@ -417,7 +417,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-          {activeTab === 'general' && currentUserRole === 'OWNER' ? (
+          {activeTab === 'general' && (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? (
             <button
               onClick={handleSaveGeneral}
               className="px-4 py-1.5 rounded bg-[#405189] hover:bg-[#364574] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"

@@ -11,7 +11,7 @@ export const initialHouse: House = {
 };
 
 // Clean Production Accounts: Property Owner (Admin)
-// Default credential constants — used only for initial login matching.
+// Default credential constants â€” used only for initial login matching.
 // NOT stored in the User objects to prevent leakage via localStorage/state.
 export const DEFAULT_CREDENTIALS: Record<string, string> = {
   'sampathkumar@chemadura.com': 'Sampath@123',
@@ -43,10 +43,10 @@ export const initialUsers: User[] = [
   {
     id: 'b1ffcd99-8d0c-4ef8-bb6d-6bb9bd380a22',
     email: 'rsivanaresh@gmail.com',
-    fullName: 'Siva Naresh',
+    fullName: 'SIVA R',
     phone: '+91 9444408895',
     flatNumber: 'Admin Suite',
-    role: 'OWNER',
+    role: 'ADMIN_TENANT',
     occupancyStatus: 'active',
     paymentStatus: 'paid',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',

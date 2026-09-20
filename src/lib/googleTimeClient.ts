@@ -1,7 +1,7 @@
 /**
  * Google NTP Time Synchronization Engine & Astronomical Calculator (IST)
  * Connects directly to time.google.com via NTP HTTP bridge to guarantee atomic precision
- * Provides astronomical sunrise/sunset calculations for Madura House (Maduravoyal, Tamil Nadu: 13.0674° N, 80.1712° E)
+ * Provides astronomical sunrise/sunset calculations for Madura House (Maduravoyal, Tamil Nadu: 13.0674Â° N, 80.1712Â° E)
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
