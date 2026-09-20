@@ -1193,7 +1193,7 @@ export function App() {
     // 2. Persist soft-delete to cloud and check
     const dbResult = await cloudDb.deleteUser(userId);
 
-    if (!dbResult) {
+    if (!dbResult.success) {
       // ROLLBACK
       setUsers(previousUsers);
       try {
