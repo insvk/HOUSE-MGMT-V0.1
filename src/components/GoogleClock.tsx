@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useGoogleTime } from '../lib/googleTimeClient';
 import { RefreshCw, X, Sun, Calendar, MapPin, Clock, ShieldCheck } from 'lucide-react';
 
@@ -46,12 +46,12 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
     return (
       <>
         <div
-          className={`flex items-center gap-2 sm:gap-3 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group ${className}`}
+          className={`flex items-center gap-2 sm:gap-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group ${className}`}
           onClick={() => setIsModalOpen(true)}
-          title="Google NTP Atomic Clock (IST) • Click for Full Precision Chronometer"
+          title="Google NTP Atomic Clock (IST) â€¢ Click for Full Precision Chronometer"
         >
           {/* Live Sync Status Indicator Pulse */}
-          <div className="flex items-center shrink-0" title={`Synced with ${source} • RTT: ${latencyMs}ms`}>
+          <div className="flex items-center shrink-0" title={`Synced with ${source} â€¢ RTT: ${latencyMs}ms`}>
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
@@ -60,16 +60,16 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
 
           {/* Main Digits */}
           <div className="flex items-baseline gap-1 font-mono tabular-nums tracking-tight">
-            <span className="font-bold text-sm text-slate-800">
+            <span className="font-bold text-sm text-slate-800 dark:text-slate-100">
               {timeString}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
               {is24Hour ? 'IST' : ampm}
             </span>
           </div>
 
           {/* Date Info */}
-          <div className="hidden lg:block text-[11px] text-slate-500 border-l border-slate-200 pl-3 font-medium whitespace-nowrap">
+          <div className="hidden lg:block text-[11px] text-slate-500 dark:text-slate-400 border-l border-slate-200 dark:border-slate-700 pl-3 font-medium whitespace-nowrap">
             {dayName}, {monthShort} {dayOfMonth}
           </div>
         </div>
@@ -107,10 +107,10 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
   const progressPercent = Math.min(100, Math.max(0, ((secondNum + 1) / 60) * 100));
 
   return (
-    <div className={`relative bg-gradient-to-b from-white via-white to-slate-50/80 border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/40 w-full select-none transition-all duration-300 ${className}`}>
+    <div className={`relative bg-gradient-to-b from-white via-white to-slate-50/80 border border-slate-200 dark:border-slate-700/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/40 w-full select-none transition-all duration-300 ${className}`}>
       
       {/* Top Header: System Status & Controls */}
-      <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100">
+      <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-700">
         
         {/* Live NTP Sync Beacon */}
         <div className="flex items-center gap-2">
@@ -119,11 +119,11 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-slate-800 text-xs tracking-tight">
+            <span className="font-semibold text-slate-800 dark:text-slate-100 text-xs tracking-tight">
               {source === 'Local System Clock' ? 'Local System Time' : 'Google NTP Atomic Sync'}
             </span>
-            <span className="text-slate-300">•</span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
+            <span className="text-slate-300">â€¢</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
               IST (UTC+5:30)
             </span>
             {latencyMs > 0 && (
@@ -137,7 +137,7 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
         {/* Right Controls: 12h/24h toggle & Sync button */}
         <div className="flex items-center gap-2 shrink-0">
           {/* 12h / 24h Pill */}
-          <div className="flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200/80 shadow-2xs">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800/90 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700/80 shadow-2xs">
             <button
               type="button"
               onClick={() => {
@@ -146,8 +146,8 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
               }}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 !is24Hour
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white'
               }`}
             >
               12h
@@ -160,8 +160,8 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
               }}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 is24Hour
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white'
               }`}
             >
               24h
@@ -173,22 +173,22 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             type="button"
             onClick={handleManualSync}
             disabled={isSyncing}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-lg shadow-2xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/90 rounded-lg shadow-2xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
             title="Force synchronization with atomic time servers"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-indigo-600' : 'text-slate-500'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-indigo-600' : 'text-slate-500 dark:text-slate-400'}`} />
             <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
           </button>
         </div>
       </div>
 
       {/* Main Digital Chronometer Hero Display */}
-      <div className="my-5 sm:my-7 py-5 sm:py-7 px-4 bg-gradient-to-b from-slate-50/70 to-slate-100/40 rounded-2xl border border-slate-200/70 shadow-inner">
+      <div className="my-5 sm:my-7 py-5 sm:py-7 px-4 bg-gradient-to-b from-slate-50/70 to-slate-100/40 rounded-2xl border border-slate-200 dark:border-slate-700/70 shadow-inner">
         <div className="flex items-center justify-center">
           <div className="flex items-center font-mono tabular-nums tracking-tighter select-all">
             
             {/* Hours */}
-            <span className="font-bold text-slate-900 text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none drop-shadow-xs">
+            <span className="font-bold text-slate-900 dark:text-white text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none drop-shadow-xs">
               {hoursStr}
             </span>
             
@@ -198,7 +198,7 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             </span>
             
             {/* Minutes */}
-            <span className="font-bold text-slate-900 text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none drop-shadow-xs">
+            <span className="font-bold text-slate-900 dark:text-white text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none drop-shadow-xs">
               {minutes}
             </span>
             
@@ -208,7 +208,7 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
             </span>
             
             {/* Seconds */}
-            <span className="font-bold text-slate-700 text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none">
+            <span className="font-bold text-slate-700 dark:text-slate-200 text-6xl sm:text-7xl md:text-8xl lg:text-[96px] leading-none">
               {seconds}
             </span>
 
@@ -219,20 +219,20 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
                   <span className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold tracking-widest font-mono uppercase transition-all ${
                     ampm === 'AM'
                       ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-300 border border-slate-200/80 bg-white/70'
+                      : 'text-slate-300 border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70'
                   }`}>
                     AM
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold tracking-widest font-mono uppercase transition-all ${
                     ampm === 'PM'
                       ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-300 border border-slate-200/80 bg-white/70'
+                      : 'text-slate-300 border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70'
                   }`}>
                     PM
                   </span>
                 </div>
               ) : (
-                <span className="px-2 py-1 rounded text-[10px] sm:text-xs font-bold tracking-wider font-mono uppercase bg-slate-200/80 text-slate-600 border border-slate-300/70">
+                <span className="px-2 py-1 rounded text-[10px] sm:text-xs font-bold tracking-wider font-mono uppercase bg-slate-200 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600/70">
                   24H
                 </span>
               )}
@@ -242,17 +242,17 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
         </div>
 
         {/* Dynamic 60-Second Cadence Timeline */}
-        <div className="w-full max-w-sm sm:max-w-md mx-auto mt-4 sm:mt-5 pt-3 border-t border-slate-200/60">
+        <div className="w-full max-w-sm sm:max-w-md mx-auto mt-4 sm:mt-5 pt-3 border-t border-slate-200 dark:border-slate-700/60">
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1.5">
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3 text-slate-400" />
               <span>Second Cadence</span>
             </span>
-            <span className="font-semibold text-slate-600 tabular-nums">
+            <span className="font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
               {seconds}s / 60s
             </span>
           </div>
-          <div className="h-1.5 w-full bg-slate-200/80 rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/80 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-slate-900 via-indigo-600 to-emerald-500 rounded-full transition-all duration-300 ease-linear"
               style={{ width: `${progressPercent}%` }}
@@ -265,27 +265,27 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 text-left">
         
         {/* Card 1: Calendar Date */}
-        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-700/80 shadow-2xs hover:border-slate-300 dark:border-slate-600 transition-colors">
           <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Calendar className="w-3.5 h-3.5 text-indigo-500" />
             <span>Calendar</span>
           </div>
-          <div className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight truncate">
+          <div className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm tracking-tight truncate">
             {dayName}
           </div>
-          <div className="text-[11px] font-medium text-slate-500 truncate font-mono">
+          <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate font-mono">
             {monthShort} {dayOfMonth}, {year}
           </div>
         </div>
 
         {/* Card 2: Solar Window */}
-        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-700/80 shadow-2xs hover:border-slate-300 dark:border-slate-600 transition-colors">
           <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
             <Sun className="w-3.5 h-3.5 text-amber-500" />
             <span>Maduravoyal Solar</span>
           </div>
-          <div className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight font-mono tabular-nums">
-            {sunTimes.sunrise} – {sunTimes.sunset}
+          <div className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm tracking-tight font-mono tabular-nums">
+            {sunTimes.sunrise} â€“ {sunTimes.sunset}
           </div>
           <div className="text-[11px] font-medium text-amber-600/90 truncate flex items-center gap-1 font-mono">
             {sunTimes.duration} daylight
@@ -293,16 +293,16 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
         </div>
 
         {/* Card 3: Location / Reference */}
-        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-700/80 shadow-2xs hover:border-slate-300 dark:border-slate-600 transition-colors">
           <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
             <MapPin className="w-3.5 h-3.5 text-emerald-500" />
             <span>Location</span>
           </div>
-          <div className="font-bold text-slate-800 text-xs sm:text-sm tracking-tight truncate">
+          <div className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm tracking-tight truncate">
             Maduravoyal, TN
           </div>
-          <div className="text-[11px] font-medium text-slate-500 truncate font-mono">
-            13.0674° N, 80.1712° E
+          <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate font-mono">
+            13.0674Â° N, 80.1712Â° E
           </div>
         </div>
 
@@ -311,3 +311,4 @@ export const GoogleClock: React.FC<GoogleClockProps> = ({ variant = 'card', clas
     </div>
   );
 };
+

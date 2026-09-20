@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { House, UserRole, User, MaintenanceRecord, Invoice, NotificationLog, AuditLog } from '../types';
 import { 
   Settings, 
@@ -173,31 +173,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-lg w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
         
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#405189]/10 text-[#405189] flex items-center justify-center">
               <Settings className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800">Property & Platform Settings</h3>
-              <p className="text-[11px] text-slate-500">Enterprise configuration for Madura House</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Property & Platform Settings</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Enterprise configuration for Madura House</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:text-slate-300">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-100 px-5 pt-2 gap-4 text-xs font-semibold overflow-x-auto">
+        <div className="flex border-b border-slate-100 dark:border-slate-700 px-5 pt-2 gap-4 text-xs font-semibold overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
             className={`pb-2.5 transition-colors border-b-2 ${
-              activeTab === 'general' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 hover:text-slate-800'
+              activeTab === 'general' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             Property Details
@@ -205,7 +205,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             onClick={() => setActiveTab('cloud')}
             className={`pb-2.5 transition-colors border-b-2 ${
-              activeTab === 'cloud' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 hover:text-slate-800'
+              activeTab === 'cloud' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             Cloud DB & Audio
@@ -213,7 +213,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             onClick={() => setActiveTab('backup')}
             className={`pb-2.5 transition-colors border-b-2 ${
-              activeTab === 'backup' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 hover:text-slate-800'
+              activeTab === 'backup' ? 'border-[#405189] text-[#405189]' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             Backup & Restore
@@ -221,13 +221,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs text-slate-700">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs text-slate-700 dark:text-slate-200">
           
           {/* TAB 1: General Property Details */}
           {activeTab === 'general' && (
             <div className="space-y-3.5">
               <div>
-                <label className="block font-semibold uppercase text-slate-500 mb-1">Property Name</label>
+                <label className="block font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Property Name</label>
                 <input
                   type="text"
                   disabled={currentUserRole !== 'OWNER'}
@@ -238,7 +238,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div>
-                <label className="block font-semibold uppercase text-slate-500 mb-1">Street Address</label>
+                <label className="block font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Street Address</label>
                 <input
                   type="text"
                   disabled={currentUserRole !== 'OWNER'}
@@ -250,7 +250,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold uppercase text-slate-500 mb-1">City</label>
+                  <label className="block font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">City</label>
                   <input
                     type="text"
                     disabled={currentUserRole !== 'OWNER'}
@@ -260,7 +260,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold uppercase text-slate-500 mb-1">Postal Code</label>
+                  <label className="block font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Postal Code</label>
                   <input
                     type="text"
                     disabled={currentUserRole !== 'OWNER'}
@@ -272,7 +272,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div>
-                <label className="block font-semibold uppercase text-slate-500 mb-1">Total Residential Units</label>
+                <label className="block font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Total Residential Units</label>
                 <input
                   type="number"
                   disabled={currentUserRole !== 'OWNER'}
@@ -282,9 +282,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 font-mono text-[11px]">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1 font-mono text-[11px]">
                 <div className="text-[#405189] font-bold">PROPERTY ADMIN CREDENTIALS:</div>
-                <div>Email: <span className="text-slate-900 font-bold">sampathkumar@chemadura.com</span></div>
+                <div>Email: <span className="text-slate-900 dark:text-white font-bold">sampathkumar@chemadura.com</span></div>
                 <div>Role: <span className="text-[#0ab39c] font-bold">OWNER (Super Admin)</span></div>
               </div>
             </div>
@@ -294,13 +294,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'cloud' && (
             <div className="space-y-4">
               {/* Audio Settings */}
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     {audioEnabled ? <Volume2 className="w-4 h-4 text-[#0ab39c]" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
                     Synthesized Audio Chimes
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Subtle audio feedback on invoice downloads, payments & additions
                   </p>
                 </div>
@@ -312,7 +312,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }`}
                 >
                   <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-900 shadow-sm ring-0 transition duration-200 ease-in-out ${
                       audioEnabled ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
@@ -320,13 +320,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Cloud DB Connection Status */}
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-3">
+              <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                       <Database className="w-4 h-4 text-[#405189]" /> Cloud PostgreSQL Sync
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       {isSupabaseConfigured
                         ? 'Live Cloud DB environment variables detected in .env'
                         : 'Operating in Local Encrypted Vault mode'}
@@ -343,7 +343,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   type="button"
                   disabled={testingCloud}
                   onClick={handleTestCloudDb}
-                  className="w-full py-2 px-3 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-2 px-3 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${testingCloud ? 'animate-spin' : ''}`} />
                   {testingCloud ? 'Testing Connection...' : 'Test Cloud Connection & Latency'}
@@ -364,11 +364,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 3: Backup & Restore */}
           {activeTab === 'backup' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+              <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                   <Download className="w-4 h-4 text-[#405189]" /> Export Full Platform Snapshot
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Download an immutable JSON archive of all property metadata, verified tenants, itemized maintenance expenses, invoice links, and audit trails.
                 </p>
                 <button
@@ -380,11 +380,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     <Upload className="w-4 h-4 text-[#0ab39c]" /> Restore Platform from Backup
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                     Upload a previously generated JSON backup to restore complete property states.
                   </p>
                   
@@ -398,7 +398,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-3.5 py-1.5 rounded bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer mt-2"
+                    className="px-3.5 py-1.5 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer mt-2"
                   >
                     <Upload className="w-3.5 h-3.5 text-[#0ab39c]" /> Select JSON File to Restore
                   </button>
@@ -416,7 +416,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex justify-end gap-2">
           {activeTab === 'general' && currentUserRole === 'OWNER' ? (
             <button
               onClick={handleSaveGeneral}
@@ -427,7 +427,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           ) : (
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
             >
               Close
             </button>
@@ -438,3 +438,4 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     </div>
   );
 };
+

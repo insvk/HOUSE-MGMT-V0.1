@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { 
   House, 
   MaintenanceRecord, 
@@ -475,7 +475,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
       fileType: 'application/pdf',
       storagePath: `invoices/${Date.now()}_${invoiceFileName.replace(/\s+/g, '_')}.pdf`,
       uploadedBy: 'sampathkumar@chemadura.com',
-      ocrText: invoiceOcrText.trim() || `Official invoice verified by Sampath Kumar. Amount: ₹${invoiceAmount || '0'}`,
+      ocrText: invoiceOcrText.trim() || `Official invoice verified by Sampath Kumar. Amount: â‚¹${invoiceAmount || '0'}`,
     });
 
     playSuccessChime();
@@ -514,7 +514,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-5xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh] text-slate-800 animate-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh] text-slate-800 dark:text-slate-100 animate-in zoom-in-95 duration-150">
         
         {/* Header with God Mode Accents */}
         <div className="bg-gradient-to-r from-slate-900 via-[#1e1b4b] to-[#312e81] text-white p-4 sm:p-5 flex items-center justify-between shrink-0 shadow-sm border-b border-indigo-900/40">
@@ -539,7 +539,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl bg-white dark:bg-slate-900/10 hover:bg-white dark:bg-slate-900/20 text-white transition-colors cursor-pointer"
             title="Close Editor"
           >
             <X className="w-5 h-5" />
@@ -547,14 +547,14 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
         </div>
 
         {/* Tab Navigation Strip */}
-        <div className="bg-slate-100 border-b border-slate-200 px-3 sm:px-6 flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 shrink-0 scrollbar-none text-xs font-bold">
+        <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-3 sm:px-6 flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 shrink-0 scrollbar-none text-xs font-bold">
           <button
             type="button"
             onClick={() => setActiveTab('property')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'property'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" /> Property Profile
@@ -565,8 +565,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('ledger')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'ledger'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" /> Financial Rules & Split
@@ -577,8 +577,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('residents')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'residents'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <Users className="w-3.5 h-3.5" /> Residents & Credentials
@@ -589,8 +589,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('expenses')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'expenses'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <IndianRupee className="w-3.5 h-3.5" /> Expenses ({currentRecord.expenses.length})
@@ -601,8 +601,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('invoices')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'invoices'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <Receipt className="w-3.5 h-3.5" /> Invoices & Bills ({invoices.length})
@@ -613,8 +613,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('announcements')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'announcements'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <Bell className="w-3.5 h-3.5" /> Broadcast Notices
@@ -625,8 +625,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             onClick={() => setActiveTab('raw')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'raw'
-                ? 'bg-white text-indigo-900 shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'bg-white dark:bg-slate-900 text-indigo-900 shadow-xs border border-slate-200 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white dark:bg-slate-900/60'
             }`}
           >
             <Code className="w-3.5 h-3.5" /> Raw Data
@@ -639,7 +639,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" /> {toast}
             </span>
-            <button onClick={() => setToast(null)} className="text-white hover:opacity-80">✕</button>
+            <button onClick={() => setToast(null)} className="text-white hover:opacity-80">âœ•</button>
           </div>
         )}
 
@@ -652,54 +652,54 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {activeTab === 'property' && (
             <form onSubmit={handleSaveHouse} className="space-y-4 max-w-2xl mx-auto">
               <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-3.5 text-blue-900 text-xs">
-                <span className="font-bold">🏢 Property Root Configuration:</span> Changes made here reflect immediately across headers, official PDF statements, Excel exports, and receipts.
+                <span className="font-bold">ðŸ¢ Property Root Configuration:</span> Changes made here reflect immediately across headers, official PDF statements, Excel exports, and receipts.
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Property / Complex Name *</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Property / Complex Name *</label>
                 <input
                   type="text"
                   required
                   value={houseName}
                   onChange={(e) => setHouseName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-semibold"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-semibold"
                   placeholder="e.g. Madura House Maintenance"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Street Address *</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Street Address *</label>
                 <input
                   type="text"
                   required
                   value={houseAddress}
                   onChange={(e) => setHouseAddress(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                   placeholder="e.g. No. 42, Bypass Road, Ellis Nagar"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">City *</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">City *</label>
                   <input
                     type="text"
                     required
                     value={houseCity}
                     onChange={(e) => setHouseCity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     placeholder="e.g. Maduravoyal"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Postal Code / PIN *</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Postal Code / PIN *</label>
                   <input
                     type="text"
                     required
                     value={housePostalCode}
                     onChange={(e) => setHousePostalCode(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                     placeholder="e.g. 625001"
                   />
                 </div>
@@ -707,30 +707,30 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Total Residential Units</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Total Residential Units</label>
                   <input
                     type="number"
                     min="1"
                     max="100"
                     value={houseTotalUnits}
                     onChange={(e) => setHouseTotalUnits(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">Default 5 standard units (GF, F01-FRONT, F01-BACK, F02-FRONT, F02-BACK)</p>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Owner System User ID</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Owner System User ID</label>
                   <input
                     type="text"
                     value={houseOwnerId}
                     onChange={(e) => setHouseOwnerId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 flex justify-end">
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-end">
                 <button
                   type="submit"
                   className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-bold rounded-xl shadow flex items-center gap-2 cursor-pointer transition-all"
@@ -747,16 +747,16 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {activeTab === 'ledger' && (
             <form onSubmit={handleSaveLedger} className="space-y-4 max-w-2xl mx-auto">
               <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-amber-950 text-xs">
-                <span className="font-bold">💰 Maintenance Billing & Split Formula:</span> You can customize the active month, total maintenance expenses, total paying occupants, and the individual per-flat contribution.
+                <span className="font-bold">ðŸ’° Maintenance Billing & Split Formula:</span> You can customize the active month, total maintenance expenses, total paying occupants, and the individual per-flat contribution.
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Billing Month (1 - 12) *</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Billing Month (1 - 12) *</label>
                   <select
                     value={recordMonth}
                     onChange={(e) => setRecordMonth(parseInt(e.target.value, 10))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                   >
                     {[
                       'January', 'February', 'March', 'April', 'May', 'June',
@@ -770,55 +770,55 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Billing Year *</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Billing Year *</label>
                   <input
                     type="number"
                     value={recordYear}
                     onChange={(e) => setRecordYear(parseInt(e.target.value, 10))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Grand Total Expenses (₹)</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Grand Total Expenses (â‚¹)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={recordGrandTotal}
                     onChange={(e) => setRecordGrandTotal(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-slate-900 dark:text-white"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">Sum of all itemized expenses</p>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Active Paying Flats</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Active Paying Flats</label>
                   <input
                     type="number"
                     min="1"
                     value={recordActiveTenants}
                     onChange={(e) => setRecordActiveTenants(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-slate-900 dark:text-white"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">Split divisor</p>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Each Flat Share (₹)</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Each Flat Share (â‚¹)</label>
                   <div className="flex gap-1.5">
                     <input
                       type="number"
                       step="0.01"
                       value={recordContribution}
                       onChange={(e) => setRecordContribution(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-emerald-700"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-emerald-700"
                     />
                     <button
                       type="button"
                       onClick={handleRecalculateSplit}
-                      className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-[10px] font-bold shrink-0 cursor-pointer"
+                      className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-[10px] font-bold shrink-0 cursor-pointer"
                       title="Auto calculate Total / Units"
                     >
                       Calc
@@ -829,17 +829,17 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Period Summary / Ledger Notes</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Period Summary / Ledger Notes</label>
                 <textarea
                   rows={3}
                   value={recordNotes}
                   onChange={(e) => setRecordNotes(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                   placeholder="e.g. September 2026 Regular Maintenance & Motor Pump servicing."
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-200 flex justify-end">
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-end">
                 <button
                   type="submit"
                   className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-bold rounded-xl shadow flex items-center gap-2 cursor-pointer transition-all"
@@ -856,13 +856,13 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {activeTab === 'residents' && (
             <div className="space-y-4">
               {/* Resident Picker Selector Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-slate-700">Select Resident to Edit:</span>
+                  <span className="font-bold text-xs text-slate-700 dark:text-slate-200">Select Resident to Edit:</span>
                   <select
                     value={selectedUserId}
                     onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   >
                     {users.map((u) => (
                       <option key={u.id} value={u.id}>
@@ -883,10 +883,10 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </div>
 
               {/* Comprehensive Resident Edit Form */}
-              <form onSubmit={handleSaveResident} className="space-y-4 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
+              <form onSubmit={handleSaveResident} className="space-y-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-xs">
                 
                 {/* Photo & Identity Banner */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
                   <div className="relative group shrink-0">
                     <img
                       src={resAvatar}
@@ -905,17 +905,17 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <h3 className="text-sm font-bold text-slate-800">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                         {isCreatingResident ? 'New Resident Profile' : resFullName || 'Resident'}
                       </h3>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 uppercase">
                         {resRole}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
                         {resFlat}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       {isCreatingResident ? 'Enter credentials and lease terms below.' : `System ID: ${selectedUserId}`}
                     </p>
                     
@@ -923,21 +923,21 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                       <button
                         type="button"
                         onClick={() => residentFileInputRef.current?.click()}
-                        className="px-2.5 py-1 bg-white border border-slate-300 hover:border-indigo-700 text-slate-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer shadow-xs"
+                        className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 hover:border-indigo-700 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer shadow-xs"
                       >
                         <UploadCloud className="w-3 h-3 text-indigo-700" /> Upload Custom Photo
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowAvatarPresets(!showAvatarPresets)}
-                        className="px-2.5 py-1 bg-white border border-slate-300 text-slate-700 rounded-lg text-[11px] font-semibold cursor-pointer"
+                        className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold cursor-pointer"
                       >
                         {showAvatarPresets ? 'Hide Presets' : 'Pick Preset'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setResAvatar(getInitialsAvatar(resFullName || 'Resident'))}
-                        className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                        className="px-2 py-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 font-medium cursor-pointer"
                       >
                         Initials Avatar
                       </button>
@@ -955,7 +955,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
                 {/* Preset Avatars Gallery */}
                 {showAvatarPresets && (
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
                     <div className="text-[10px] uppercase font-bold text-slate-400 mb-2">Select an Avatar Preset:</div>
                     <div className="grid grid-cols-8 gap-2">
                       {DEFAULT_AVATARS.map((av) => (
@@ -967,7 +967,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                             setShowAvatarPresets(false);
                           }}
                           className={`p-0.5 rounded-lg border-2 transition-all cursor-pointer ${
-                            resAvatar === av.url ? 'border-indigo-700 scale-105 shadow' : 'border-slate-200 hover:border-slate-300'
+                            resAvatar === av.url ? 'border-indigo-700 scale-105 shadow' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600'
                           }`}
                         >
                           <img src={av.url} alt={av.label} className="w-full aspect-square rounded object-cover" />
@@ -980,29 +980,29 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                 {/* Credentials & Contact */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Full Legal Name *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Full Legal Name *</label>
                     <input
                       type="text"
                       required
                       value={resFullName}
                       onChange={(e) => setResFullName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-semibold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-semibold"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Email Address (Login ID) *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Email Address (Login ID) *</label>
                     <input
                       type="email"
                       required
                       value={resEmail}
                       onChange={(e) => setResEmail(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
                       <span>Password (Editable) *</span>
                       <span className="text-[10px] text-amber-600 font-normal">Direct plaintext</span>
                     </label>
@@ -1011,7 +1011,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                       required
                       value={resPassword}
                       onChange={(e) => setResPassword(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-indigo-900"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold text-indigo-900"
                       placeholder="Password"
                     />
                   </div>
@@ -1020,11 +1020,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                 {/* Flat, Role, Status, Phone */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Flat / Unit Number *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Flat / Unit Number *</label>
                     <select
                       value={resFlat}
                       onChange={(e) => setResFlat(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       {AVAILABLE_FLATS.map((f) => (
                         <option key={f} value={f}>{f}</option>
@@ -1034,11 +1034,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">System Role *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">System Role *</label>
                     <select
                       value={resRole}
                       onChange={(e) => setResRole(e.target.value as UserRole)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="TENANT">Tenant (Standard)</option>
                       <option value="ADMIN_TENANT">Admin Tenant (Manager)</option>
@@ -1047,11 +1047,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Occupancy Status</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Occupancy Status</label>
                     <select
                       value={resOccupancy}
                       onChange={(e) => setResOccupancy(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="active">Active Resident</option>
                       <option value="inactive">Inactive / Vacated</option>
@@ -1060,11 +1060,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Payment Status</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Payment Status</label>
                     <select
                       value={resPayment}
                       onChange={(e) => setResPayment(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="paid">Paid</option>
                       <option value="pending">Pending</option>
@@ -1076,61 +1076,61 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                 {/* Financial Lease & Contacts */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Monthly Rent (₹)</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Monthly Rent (â‚¹)</label>
                     <input
                       type="number"
                       value={resRent}
                       onChange={(e) => setResRent(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Security Deposit (₹)</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Security Deposit (â‚¹)</label>
                     <input
                       type="number"
                       value={resDeposit}
                       onChange={(e) => setResDeposit(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Phone Number</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Phone Number</label>
                     <input
                       type="text"
                       value={resPhone}
                       onChange={(e) => setResPhone(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                       placeholder="+91 98421 00000"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Emergency Contact</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Emergency Contact</label>
                     <input
                       type="text"
                       value={resEmergency}
                       onChange={(e) => setResEmergency(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                       placeholder="+91 98421 99999"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Admin Internal Notes</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Admin Internal Notes</label>
                   <input
                     type="text"
                     value={resNotes}
                     onChange={(e) => setResNotes(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     placeholder="Lease notes, vehicle info, or remarks"
                   />
                 </div>
 
                 {/* Form Action Buttons */}
-                <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                   {!isCreatingResident && selectedUserId !== 'u-owner-01' ? (
                     <button
                       type="button"
@@ -1160,9 +1160,9 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {activeTab === 'expenses' && (
             <div className="space-y-4">
               {/* Expense Add / Edit Form */}
-              <form onSubmit={handleSaveExpense} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+              <form onSubmit={handleSaveExpense} className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                  <span className="font-bold text-xs text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     <Edit3 className="w-3.5 h-3.5 text-indigo-700" />
                     {editingExpId ? `Edit Expense Item (ID: ${editingExpId})` : 'Add New Maintenance Expense Item'}
                   </span>
@@ -1170,7 +1170,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     <button
                       type="button"
                       onClick={resetExpenseForm}
-                      className="text-[11px] text-slate-500 hover:text-slate-800 font-bold cursor-pointer"
+                      className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 font-bold cursor-pointer"
                     >
                       Cancel Edit
                     </button>
@@ -1179,26 +1179,26 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-700 mb-1">Particulars / Description *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Particulars / Description *</label>
                     <input
                       type="text"
                       required
                       value={expParticular}
                       onChange={(e) => setExpParticular(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                       placeholder="e.g. Common Motor Repair & Capacitor replacement"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Amount (₹) *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Amount (â‚¹) *</label>
                     <input
                       type="number"
                       required
                       step="0.01"
                       value={expAmount}
                       onChange={(e) => setExpAmount(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
                       placeholder="0.00"
                     />
                   </div>
@@ -1206,11 +1206,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Category</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Category</label>
                     <select
                       value={expCategory}
                       onChange={(e) => setExpCategory(e.target.value as ExpenseCategory)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="maintenance">Maintenance</option>
                       <option value="utilities">Utilities (EB/Water)</option>
@@ -1221,7 +1221,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">GST Applicable?</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">GST Applicable?</label>
                     <div className="flex items-center gap-2 h-9">
                       <input
                         type="checkbox"
@@ -1230,44 +1230,44 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                         onChange={(e) => setExpGst(e.target.checked)}
                         className="rounded accent-indigo-700 w-4 h-4 cursor-pointer"
                       />
-                      <label htmlFor="expGstCheck" className="text-xs text-slate-700 cursor-pointer">Yes, includes GST</label>
+                      <label htmlFor="expGstCheck" className="text-xs text-slate-700 dark:text-slate-200 cursor-pointer">Yes, includes GST</label>
                     </div>
                   </div>
 
                   {expGst && (
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">GST Amount (₹)</label>
+                      <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">GST Amount (â‚¹)</label>
                       <input
                         type="number"
                         value={expGstAmount}
                         onChange={(e) => setExpGstAmount(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono"
                       />
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Notes / Contractor / Serial No.</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Notes / Contractor / Serial No.</label>
                   <input
                     type="text"
                     value={expNotes}
                     onChange={(e) => setExpNotes(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     placeholder="e.g. Paid to Meenakshi Electricals, Cash voucher #104"
                   />
                 </div>
 
                 {/* Attached Invoice File Section */}
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                     Invoice / Bill Document Attachment (PDF / JPG / PNG)
                   </label>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => expFileInputRef.current?.click()}
-                      className="px-3 py-1.5 bg-white border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-indigo-900 rounded-xl font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                      className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 hover:border-indigo-600 text-slate-700 dark:text-slate-200 hover:text-indigo-900 rounded-xl font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
                     >
                       <UploadCloud className="w-3.5 h-3.5 text-indigo-600" />
                       {expInvoiceFileName ? 'Replace Attached Invoice' : 'Attach Invoice PDF / JPG'}
@@ -1311,7 +1311,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                           className="text-rose-600 hover:text-rose-800 font-bold text-[10px] ml-1 cursor-pointer"
                           title="Remove attached invoice"
                         >
-                          ✕
+                          âœ•
                         </button>
                       </div>
                     ) : (
@@ -1331,9 +1331,9 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </form>
 
               {/* Expense Table List */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="p-3">#</th>
                       <th className="p-3">Particulars & Attached Invoice</th>
@@ -1351,10 +1351,10 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                       </tr>
                     ) : (
                       currentRecord.expenses.map((exp, idx) => (
-                        <tr key={exp.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={exp.id} className="hover:bg-slate-50 dark:bg-slate-800 transition-colors">
                           <td className="p-3 font-mono text-slate-400 align-top">{idx + 1}</td>
-                          <td className="p-3 font-semibold text-slate-800 align-top">
-                            <div className="font-bold text-slate-900">{exp.particular}</div>
+                          <td className="p-3 font-semibold text-slate-800 dark:text-slate-100 align-top">
+                            <div className="font-bold text-slate-900 dark:text-white">{exp.particular}</div>
                             {exp.notes && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{exp.notes}</div>}
                             
                             {/* Invoice attachment pill badge */}
@@ -1365,12 +1365,12 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                             />
                           </td>
                           <td className="p-3 align-top">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
                               {exp.category}
                             </span>
                           </td>
-                          <td className="p-3 font-mono font-bold text-slate-900 align-top">
-                            ₹{exp.amount.toLocaleString('en-IN')}
+                          <td className="p-3 font-mono font-bold text-slate-900 dark:text-white align-top">
+                            â‚¹{exp.amount.toLocaleString('en-IN')}
                           </td>
                           <td className="p-3 text-right space-x-1 align-top">
                             <button
@@ -1409,56 +1409,56 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {/* ========================================================================= */}
           {activeTab === 'invoices' && (
             <div className="space-y-4">
-              <form onSubmit={handleUploadNewInvoice} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <form onSubmit={handleUploadNewInvoice} className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
+                <span className="font-bold text-xs text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                   <UploadCloud className="w-3.5 h-3.5 text-indigo-700" />
                   Upload New Digital Bill / Invoice
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Invoice / Bill Name *</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Invoice / Bill Name *</label>
                     <input
                       type="text"
                       required
                       value={invoiceFileName}
                       onChange={(e) => setInvoiceFileName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                       placeholder="e.g. EB Bill Sept 2026.pdf"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Category / Vendor</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Category / Vendor</label>
                     <input
                       type="text"
                       value={invoiceCategory}
                       onChange={(e) => setInvoiceCategory(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                       placeholder="e.g. TANGEDCO / Meenakshi Plumbers"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Bill Amount (₹)</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Bill Amount (â‚¹)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={invoiceAmount}
                       onChange={(e) => setInvoiceAmount(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-mono font-bold"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">OCR Verification Summary / Notes</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">OCR Verification Summary / Notes</label>
                   <input
                     type="text"
                     value={invoiceOcrText}
                     onChange={(e) => setInvoiceOcrText(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     placeholder="Verified official digital receipt"
                   />
                 </div>
@@ -1474,9 +1474,9 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </form>
 
               {/* Invoices List */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="p-3">File Name</th>
                       <th className="p-3">Uploaded By</th>
@@ -1493,12 +1493,12 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                       </tr>
                     ) : (
                       invoices.map((inv) => (
-                        <tr key={inv.id} className="hover:bg-slate-50">
-                          <td className="p-3 font-semibold text-slate-800">
+                        <tr key={inv.id} className="hover:bg-slate-50 dark:bg-slate-800">
+                          <td className="p-3 font-semibold text-slate-800 dark:text-slate-100">
                             <div>{inv.fileName}</div>
                             {inv.ocrText && <div className="text-[10px] text-slate-400 font-normal">{inv.ocrText}</div>}
                           </td>
-                          <td className="p-3 text-slate-500">{inv.uploadedBy}</td>
+                          <td className="p-3 text-slate-500 dark:text-slate-400">{inv.uploadedBy}</td>
                           <td className="p-3 font-mono text-slate-400">
                             {new Date(inv.uploadedAt).toLocaleDateString()}
                           </td>
@@ -1532,31 +1532,31 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
           {/* ========================================================================= */}
           {activeTab === 'announcements' && (
             <div className="space-y-4 max-w-2xl mx-auto">
-              <form onSubmit={handleSendAnnouncement} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <form onSubmit={handleSendAnnouncement} className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-3">
+                <span className="font-bold text-xs text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                   <Bell className="w-3.5 h-3.5 text-indigo-700" />
                   Dispatch Community Notice to Resident Portals
                 </span>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Announcement Subject *</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Announcement Subject *</label>
                   <input
                     type="text"
                     required
                     value={announcementSubject}
                     onChange={(e) => setAnnouncementSubject(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs"
                     placeholder="e.g. [Madura House] Water Tank Cleaning scheduled on Sunday 10 AM"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Target Residents</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Target Residents</label>
                     <select
                       value={announcementRecipient}
                       onChange={(e) => setAnnouncementRecipient(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="all">All Active Occupants (5 Flats)</option>
                       {users.map((u) => (
@@ -1566,11 +1566,11 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Notification Priority Type</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Notification Priority Type</label>
                     <select
                       value={announcementType}
                       onChange={(e) => setAnnouncementType(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs font-bold"
                     >
                       <option value="maintenance_added">Maintenance Activity Update</option>
                       <option value="contribution_due">Payment Due Notice</option>
@@ -1590,8 +1590,8 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
               </form>
 
               {/* Notification Logs */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="p-3 bg-slate-100 font-bold text-slate-700 text-xs border-b border-slate-200">
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                <div className="p-3 bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-200 text-xs border-b border-slate-200 dark:border-slate-700">
                   Recent Dispatched Broadcasts ({notificationLogs.length})
                 </div>
                 <div className="divide-y divide-slate-100 max-h-56 overflow-y-auto">
@@ -1599,9 +1599,9 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
                     <div className="p-4 text-center text-slate-400">Zero notifications logged.</div>
                   ) : (
                     notificationLogs.map((nl) => (
-                      <div key={nl.id} className="p-3 flex items-center justify-between text-xs hover:bg-slate-50">
+                      <div key={nl.id} className="p-3 flex items-center justify-between text-xs hover:bg-slate-50 dark:bg-slate-800">
                         <div>
-                          <div className="font-semibold text-slate-800">{nl.subject}</div>
+                          <div className="font-semibold text-slate-800 dark:text-slate-100">{nl.subject}</div>
                           <div className="text-[10px] text-slate-400">To: {nl.recipientEmail}</div>
                         </div>
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700">
@@ -1640,7 +1640,7 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0 text-xs text-slate-500">
+        <div className="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0 text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-1.5">
             <Shield className="w-4 h-4 text-amber-500" />
             <span>Changes persist immediately to local encrypted vault & Supabase cloud DB.</span>
@@ -1665,3 +1665,4 @@ export const GodModeMasterModal: React.FC<GodModeMasterModalProps> = ({
     </div>
   );
 };
+

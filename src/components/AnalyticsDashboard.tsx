@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { MaintenanceRecord } from '../types';
 import { 
   BarChart, 
@@ -60,11 +60,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
       {/* Header */}
       <div className="velzon-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-[#405189]" /> Financial Analytics & Visual Trends
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Historical expenditure trends, category ratios & share history
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Madura House â€¢ Historical expenditure trends, category ratios & share history
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Chart 1: Monthly Expenditure Trend */}
         <div className="velzon-card p-5">
-          <div className="pb-3 border-b border-slate-100 mb-4">
-            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <div className="pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#0ab39c]" /> Monthly Expense Trend
             </h3>
             <p className="text-[11px] text-slate-400">Total monthly expenditure comparison</p>
@@ -96,10 +96,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
               <BarChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `â‚¹${v}`} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '6px', fontSize: '12px' }}
-                  formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Expenditure']}
+                  formatter={(value: any) => [`â‚¹${Number(value).toLocaleString('en-IN')}`, 'Expenditure']}
                 />
                 <Bar dataKey="Total" fill="#405189" radius={[4, 4, 0, 0]} barSize={28} />
               </BarChart>
@@ -109,8 +109,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
 
         {/* Chart 2: Category Expense Breakdown */}
         <div className="velzon-card p-5">
-          <div className="pb-3 border-b border-slate-100 mb-4">
-            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <div className="pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <PieIcon className="w-4 h-4 text-[#f7b84b]" /> Category Breakdown
             </h3>
             <p className="text-[11px] text-slate-400">Expense distribution across categories</p>
@@ -120,7 +120,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
             {pieData.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-slate-400 text-xs gap-2">
                 <PieIcon className="w-8 h-8 text-slate-300" />
-                <span className="font-semibold text-slate-600">No expense categories recorded yet</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-300">No expense categories recorded yet</span>
                 <span className="text-[11px]">Add line items to generate real-time visual distributions.</span>
               </div>
             ) : (
@@ -141,7 +141,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
                   </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '6px', fontSize: '11px' }}
-                    formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Total']}
+                    formatter={(val: any) => [`â‚¹${Number(val).toLocaleString('en-IN')}`, 'Total']}
                   />
                   <Legend />
                 </PieChart>
@@ -153,8 +153,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
 
       {/* Individual Tenant Share History */}
       <div className="velzon-card p-5">
-        <div className="pb-3 border-b border-slate-100 mb-4">
-          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+        <div className="pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <IndianRupee className="w-4 h-4 text-[#0ab39c]" /> Individual Tenant Share History
           </h3>
           <p className="text-[11px] text-slate-400">Trend of per-flat contribution amount over recorded months</p>
@@ -165,10 +165,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
               <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+              <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `â‚¹${v}`} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '6px', fontSize: '12px' }}
-                formatter={(val: any) => [`₹${Number(val).toFixed(2)}`, 'Per Flat Due']}
+                formatter={(val: any) => [`â‚¹${Number(val).toFixed(2)}`, 'Per Flat Due']}
               />
               <Line type="monotone" dataKey="PerTenantShare" stroke="#0ab39c" strokeWidth={3} dot={{ r: 5, fill: '#0ab39c' }} />
             </LineChart>
@@ -178,3 +178,4 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ records 
     </div>
   );
 };
+

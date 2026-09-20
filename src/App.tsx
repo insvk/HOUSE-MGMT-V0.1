@@ -68,7 +68,9 @@ import {
   Home,
   Maximize,
   Camera,
-  Wrench
+  Wrench,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const STORAGE_KEY_USERS = 'madura_house_users_v2';
@@ -325,6 +327,64 @@ export function App() {
   const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [showSecurityDashboard, setShowSecurityDashboard] = useState<boolean>(false);
+
+  // Theme State
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const storedTheme = localStorage.getItem('madura_theme');
+      if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('madura_theme', theme);
+    } catch {}
+  }, [theme]);
+
+  // Read theme from currentUser profile on mount/change
+  useEffect(() => {
+    if (isLoggedIn && currentUser?.preferences?.theme) {
+      if (currentUser.preferences.theme === 'dark' || currentUser.preferences.theme === 'light') {
+        setTheme(currentUser.preferences.theme);
+      }
+    }
+  }, [isLoggedIn, currentUser?.id]);
+
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    
+    // Sync with cloud preferences if logged in
+    if (isLoggedIn && currentUser) {
+      try {
+        const updatedPrefs: User['preferences'] = { ...(currentUser.preferences || {}), theme: newTheme };
+        await cloudDb.updateUserPreferences(currentUser.email, updatedPrefs);
+        setCurrentUser(prev => ({ ...prev, preferences: updatedPrefs }));
+        
+        // Also update the users array locally
+        setUsers(prev => {
+          const updatedList = prev.map(u => 
+            u.id === currentUser.id ? { ...u, preferences: updatedPrefs } : u
+          );
+          try {
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(updatedList));
+          } catch {}
+          return updatedList;
+        });
+      } catch (err) {
+        console.warn('Failed to sync theme preference to cloud', err);
+      }
+    }
+  };
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -766,7 +826,7 @@ export function App() {
           localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
         } catch {}
         playWarningChime();
-        showToast(`❌ Failed to update profile photo in database: ${res.error || 'Unknown error'}`);
+        showToast(`âŒ Failed to update profile photo in database: ${res.error || 'Unknown error'}`);
         return;
       }
     }
@@ -842,7 +902,7 @@ export function App() {
 
   // Sign Up Handler
   const handleSignUpSuccess = async (newUser: User) => {
-    // 1. Attempt cloud DB persistence FIRST — this is the source of truth
+    // 1. Attempt cloud DB persistence FIRST â€” this is the source of truth
     const dbResult = await cloudDb.createUser(newUser);
     if (!dbResult.success) {
       // On DB failure, still allow the locally-registered user to proceed
@@ -950,13 +1010,13 @@ export function App() {
     if (!res.success) {
       setRecords(previousRecords);
       playWarningChime();
-      showToast(`❌ Failed to save expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to save expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
     await recordAudit('ADD_EXPENSE_ITEM', 'expenses', expenseId);
     playSuccessChime();
-    showToast(`Added expense "${newExpenseData.particular}" (₹${newExpenseData.amount.toLocaleString('en-IN')})`);
+    showToast(`Added expense "${newExpenseData.particular}" (â‚¹${newExpenseData.amount.toLocaleString('en-IN')})`);
   };
 
   // Edit Expense Handler - Authenticated & Permanently Persisted to Cloud DB
@@ -993,7 +1053,7 @@ export function App() {
     if (!res.success) {
       setRecords(previousRecords);
       playWarningChime();
-      showToast(`❌ Failed to update expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to update expense in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1036,7 +1096,7 @@ export function App() {
     if (!res.success) {
       setRecords(previousRecords);
       playWarningChime();
-      showToast(`❌ Failed to delete expense from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to delete expense from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1070,7 +1130,7 @@ export function App() {
       return updated;
     });
 
-    // 2. Persist to cloud DB — AWAIT and check result
+    // 2. Persist to cloud DB â€” AWAIT and check result
     const dbResult = await cloudDb.createUser(newUser);
 
     if (!dbResult.success) {
@@ -1084,7 +1144,7 @@ export function App() {
       });
       playWarningChime();
       showToast(
-        `❌ Failed to create resident in database: ${dbResult.error || 'Unknown error'}. No changes saved.`
+        `âŒ Failed to create resident in database: ${dbResult.error || 'Unknown error'}. No changes saved.`
       );
       return;
     }
@@ -1104,7 +1164,7 @@ export function App() {
 
     playSuccessChime();
     showToast(
-      `✅ Resident ${userData.fullName} (${userData.flatNumber}) created and saved to cloud database.`
+      `âœ… Resident ${userData.fullName} (${userData.flatNumber}) created and saved to cloud database.`
     );
   };
 
@@ -1150,7 +1210,7 @@ export function App() {
       }
       playWarningChime();
       showToast(
-        `❌ Failed to update profile in database: ${dbResult.error || 'Unknown error'}. Changes reverted.`
+        `âŒ Failed to update profile in database: ${dbResult.error || 'Unknown error'}. Changes reverted.`
       );
       return;
     }
@@ -1167,7 +1227,7 @@ export function App() {
     };
     setAuditLogs((prev) => [newAudit, ...prev]);
 
-    showToast(`✅ Updated complete profile for ${updatedUser.fullName} (saved to cloud database).`);
+    showToast(`âœ… Updated complete profile for ${updatedUser.fullName} (saved to cloud database).`);
   };
 
   // ROOT CAUSE #1 FIX: await DB, rollback on failure
@@ -1200,7 +1260,7 @@ export function App() {
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
       } catch {}
       playWarningChime();
-      showToast(`❌ Failed to delete resident from database. Changes reverted.`);
+      showToast(`âŒ Failed to delete resident from database. Changes reverted.`);
       return;
     }
 
@@ -1217,7 +1277,7 @@ export function App() {
     setAuditLogs((prev) => [newAudit, ...prev]);
 
     playWarningChime();
-    showToast(`✅ Deleted resident ${targetUser.fullName} (removed from cloud database).`);
+    showToast(`âœ… Deleted resident ${targetUser.fullName} (removed from cloud database).`);
   };
 
   const handleToggleTenantPaymentStatus = async (userId: string, explicitStatus?: 'paid' | 'pending' | 'unpaid') => {
@@ -1252,7 +1312,7 @@ export function App() {
           localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
         } catch {}
         playWarningChime();
-        showToast(`❌ Failed to update rent status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+        showToast(`âŒ Failed to update rent status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
         return;
       }
     }
@@ -1294,7 +1354,7 @@ export function App() {
           localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(previousUsers));
         } catch {}
         playWarningChime();
-        showToast(`❌ Failed to update maintenance status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+        showToast(`âŒ Failed to update maintenance status in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
         return;
       }
     }
@@ -1319,7 +1379,7 @@ export function App() {
         localStorage.setItem('madura_house_property_v1', JSON.stringify(previousHouse));
       } catch {}
       playWarningChime();
-      showToast(`❌ Failed to update property profile in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to update property profile in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1345,7 +1405,7 @@ export function App() {
     if (!res.success) {
       setRecords(previousRecords);
       playWarningChime();
-      showToast(`❌ Failed to update billing period in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to update billing period in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1377,7 +1437,7 @@ export function App() {
         localStorage.setItem('madura_house_invoices_v1', JSON.stringify(previousInvoices));
       } catch {}
       playWarningChime();
-      showToast(`❌ Failed to save invoice in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to save invoice in Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1404,7 +1464,7 @@ export function App() {
         localStorage.setItem('madura_house_invoices_v1', JSON.stringify(previousInvoices));
       } catch {}
       playWarningChime();
-      showToast(`❌ Failed to delete invoice from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
+      showToast(`âŒ Failed to delete invoice from Cloud DB: ${res.error || 'Unknown error'}. Reverted.`);
       return;
     }
 
@@ -1464,7 +1524,7 @@ export function App() {
       maintenanceRecordId: activeRecord.id,
       recipientEmail: u.email,
       type: 'maintenance_added',
-      subject: `[Madura House] ${MONTH_NAMES[(activeRecord.month - 1)] || 'Monthly'} ${activeRecord.year} Maintenance Notice - ₹${activeRecord.individualContribution.toFixed(2)} Due`,
+      subject: `[Madura House] ${MONTH_NAMES[(activeRecord.month - 1)] || 'Monthly'} ${activeRecord.year} Maintenance Notice - â‚¹${activeRecord.individualContribution.toFixed(2)} Due`,
       status: 'sent',
       sentAt: new Date().toISOString(),
     }));
@@ -1546,7 +1606,7 @@ export function App() {
 
       {/* 1. Left White Sidebar (CosmoLex Style) */}
       <aside 
-        className={`shrink-0 transition-all duration-300 flex flex-col justify-between z-50 fixed inset-y-0 left-0 bg-[#fbfbfe] border-r border-slate-200 ${
+        className={`shrink-0 transition-all duration-300 flex flex-col justify-between z-50 fixed inset-y-0 left-0 bg-[#fbfbfe] border-r border-slate-200 dark:border-slate-700 ${
           mobileSidebarOpen 
             ? 'translate-x-0 w-64 shadow-2xl' 
             : '-translate-x-full lg:translate-x-0'
@@ -1563,7 +1623,7 @@ export function App() {
               </div>
               {(!sidebarCollapsed || mobileSidebarOpen) && (
                 <div>
-                  <span className="font-semibold text-slate-900 text-xl tracking-tight block leading-tight">
+                  <span className="font-semibold text-slate-900 dark:text-white text-xl tracking-tight block leading-tight">
                     Madura
                   </span>
                 </div>
@@ -1573,7 +1633,7 @@ export function App() {
             {/* Close Button on Mobile Drawer */}
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:bg-slate-800 transition-colors cursor-pointer"
               title="Close Menu"
             >
               <X className="w-5 h-5" />
@@ -1585,22 +1645,22 @@ export function App() {
             <button
               onClick={() => { setActiveTab('dashboard'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                activeTab === 'dashboard' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                activeTab === 'dashboard' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
               }`}
               title="Dashboard"
             >
-              <Home className={`w-4 h-4 shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-500'}`} />
+              <Home className={`w-4 h-4 shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Dashboard</span>}
             </button>
 
             <button
               onClick={() => { setActiveTab('maintenance'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                activeTab === 'maintenance' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                activeTab === 'maintenance' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
               }`}
               title="Monthly Maintenance"
             >
-              <Calendar className={`w-4 h-4 shrink-0 ${activeTab === 'maintenance' ? 'text-slate-900' : 'text-slate-500'}`} />
+              <Calendar className={`w-4 h-4 shrink-0 ${activeTab === 'maintenance' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Maintenance</span>}
             </button>
 
@@ -1608,11 +1668,11 @@ export function App() {
               <button
                 onClick={() => { setActiveTab('tenants'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                  activeTab === 'tenants' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                  activeTab === 'tenants' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
                 }`}
                 title="Tenant Directory"
               >
-                <Users className={`w-4 h-4 shrink-0 ${activeTab === 'tenants' ? 'text-slate-900' : 'text-slate-500'}`} />
+                <Users className={`w-4 h-4 shrink-0 ${activeTab === 'tenants' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                 {(!sidebarCollapsed || mobileSidebarOpen) && <span>Tenants & CRM</span>}
               </button>
             )}
@@ -1621,26 +1681,26 @@ export function App() {
               <button
                 onClick={() => { setActiveTab('notifications'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                  activeTab === 'notifications' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                  activeTab === 'notifications' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
                 }`}
                 title="Email Notifications"
               >
-                <Mail className={`w-4 h-4 shrink-0 ${activeTab === 'notifications' ? 'text-slate-900' : 'text-slate-500'}`} />
+                <Mail className={`w-4 h-4 shrink-0 ${activeTab === 'notifications' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                 {(!sidebarCollapsed || mobileSidebarOpen) && <span>Communications</span>}
               </button>
             )}
 
             {/* Divider */}
-            <div className="h-px bg-slate-200 my-4 mx-2"></div>
+            <div className="h-px bg-slate-200 dark:bg-slate-700 my-4 mx-2"></div>
 
             <button
               onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                activeTab === 'invoices' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                activeTab === 'invoices' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
               }`}
               title="Digital Invoices"
             >
-              <Receipt className={`w-4 h-4 shrink-0 ${activeTab === 'invoices' ? 'text-slate-900' : 'text-slate-500'}`} />
+              <Receipt className={`w-4 h-4 shrink-0 ${activeTab === 'invoices' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
               {(!sidebarCollapsed || mobileSidebarOpen) && <span>Invoices & OCR</span>}
             </button>
 
@@ -1648,11 +1708,11 @@ export function App() {
               <button
                 onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                  activeTab === 'analytics' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                  activeTab === 'analytics' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
                 }`}
                 title="Financial Analytics"
               >
-                <BarChart3 className={`w-4 h-4 shrink-0 ${activeTab === 'analytics' ? 'text-slate-900' : 'text-slate-500'}`} />
+                <BarChart3 className={`w-4 h-4 shrink-0 ${activeTab === 'analytics' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                 {(!sidebarCollapsed || mobileSidebarOpen) && <span>Financial Analytics</span>}
               </button>
             )}
@@ -1661,11 +1721,11 @@ export function App() {
               <button
                 onClick={() => { setActiveTab('audit'); setMobileSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] transition-all cursor-pointer ${
-                  activeTab === 'audit' ? 'bg-[#f1f2f4] font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50 font-medium'
+                  activeTab === 'audit' ? 'bg-[#f1f2f4] font-semibold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium'
                 }`}
                 title="Security Audit Log"
               >
-                <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'audit' ? 'text-slate-900' : 'text-slate-500'}`} />
+                <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'audit' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                 {(!sidebarCollapsed || mobileSidebarOpen) && <span>Audit Trail</span>}
               </button>
             )}
@@ -1677,18 +1737,18 @@ export function App() {
           {(!sidebarCollapsed || mobileSidebarOpen) && (
             <>
               <button
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 hover:bg-slate-50 font-medium transition-all cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium transition-all cursor-pointer"
                 title="Integrations"
               >
-                <Zap className="w-4 h-4 shrink-0 text-slate-500" />
+                <Zap className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
                 <span>Integrations</span>
               </button>
               <button
                 onClick={() => { setShowSettings(true); setMobileSidebarOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 hover:bg-slate-50 font-medium transition-all cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800 font-medium transition-all cursor-pointer"
                 title="Settings"
               >
-                <Settings className="w-4 h-4 shrink-0 text-slate-500" />
+                <Settings className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
                 <span>Settings</span>
               </button>
             </>
@@ -1702,14 +1762,14 @@ export function App() {
       }`}>
         
         {/* 2. Top Navigation Bar (CosmoLex Header) */}
-        <header className="h-[72px] bg-white sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between border-b border-slate-200 shadow-sm">
+        <header className="h-[72px] bg-white dark:bg-slate-900 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between border-b border-slate-200 dark:border-slate-700 shadow-sm">
           
           {/* Left: Hamburger & Search */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Desktop Collapse Toggle */}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex p-2 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+              className="hidden lg:flex p-2 rounded hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Toggle Sidebar"
             >
               <Menu className="w-5 h-5" />
@@ -1718,14 +1778,14 @@ export function App() {
             {/* Mobile Drawer Open Button */}
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+              className="lg:hidden p-2 rounded hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               title="Open Navigation Drawer"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             {/* Mobile Mini Brand Title */}
-            <div className="lg:hidden flex items-center gap-1.5 font-bold text-xs text-slate-800 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+            <div className="lg:hidden flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-100 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
               <Building2 className="w-4 h-4 text-[#405189] shrink-0" />
               <span className="truncate">MADURA HOUSE</span>
             </div>
@@ -1733,22 +1793,22 @@ export function App() {
             {/* Desktop Command Palette Search Input */}
             <button
               onClick={() => setShowCommandPalette(true)}
-              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f4f6] hover:bg-slate-200 border-none px-4 py-2 rounded-full text-[13px] text-slate-500 w-44 md:w-[320px] transition-all cursor-pointer group"
+              className="hidden sm:flex items-center justify-between gap-3 bg-[#f3f4f6] hover:bg-slate-200 dark:bg-slate-700 border-none px-4 py-2 rounded-full text-[13px] text-slate-500 dark:text-slate-400 w-44 md:w-[320px] transition-all cursor-pointer group"
               title="Open Command Palette (Ctrl+K / Cmd+K)"
             >
               <div className="flex items-center gap-2 truncate">
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#405189] shrink-0" />
                 <span className="font-medium truncate">Search anything...</span>
               </div>
-              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-400">
-                ⌘K
+              <kbd className="hidden md:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 text-slate-400">
+                âŒ˜K
               </kbd>
             </button>
 
             {/* Mobile Quick Search Icon Button */}
             <button
               onClick={() => setShowCommandPalette(true)}
-              className="sm:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600 cursor-pointer"
+              className="sm:hidden p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer"
               title="Search"
             >
               <Search className="w-4 h-4" />
@@ -1765,9 +1825,9 @@ export function App() {
               className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all shadow-2xs ${
                 cloudConnected
                   ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
               }`}
-              title={cloudConnected ? `Connected to Cloud PostgreSQL • Last synced: ${lastSynced} • Click to sync` : 'Local Encrypted Vault Active • Click to test Cloud DB connection'}
+              title={cloudConnected ? `Connected to Cloud PostgreSQL â€¢ Last synced: ${lastSynced} â€¢ Click to sync` : 'Local Encrypted Vault Active â€¢ Click to test Cloud DB connection'}
             >
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
@@ -1797,7 +1857,7 @@ export function App() {
 
             {/* Active View Role Display */}
             {currentUser.role === 'OWNER' ? (
-              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs text-slate-700 max-w-[125px] sm:max-w-none">
+              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 max-w-[125px] sm:max-w-none">
                 <UserCheck className="w-3.5 h-3.5 text-[#405189] shrink-0 hidden sm:inline" />
                 <select
                   value={currentUserRole}
@@ -1814,7 +1874,7 @@ export function App() {
                 </select>
               </div>
             ) : (
-              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs text-slate-700">
+              <div className="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200">
                 <UserCheck className="w-3.5 h-3.5 text-[#0ab39c] shrink-0 hidden sm:inline" />
                 <span className="text-[11px] font-bold text-[#0ab39c] uppercase truncate">
                   {currentUser.role === 'ADMIN_TENANT' ? 'Admin Tenant' : currentUser.flatNumber}
@@ -1837,32 +1897,45 @@ export function App() {
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullScreen}
-              className="p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer hidden lg:block"
+              className="p-2 rounded hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer hidden lg:block"
               title="Toggle Fullscreen"
             >
               <Maximize className="w-4 h-4" />
             </button>
 
+            {/* Dark / Light Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 sm:p-2 rounded hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 dark:text-slate-400 cursor-pointer transition-colors"
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            >
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
             {/* Quick Settings Icon */}
             <button 
               onClick={() => setShowSettings(true)}
-              className="p-1.5 sm:p-2 rounded hover:bg-slate-100 text-slate-500 cursor-pointer" 
+              className="p-1.5 sm:p-2 rounded hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer" 
               title="Settings & Backup"
             >
               <Settings className="w-4 h-4" />
             </button>
 
             {/* User Profile Info & Dropdown */}
-            <div className="relative border-l border-slate-200 pl-4 ml-2">
+            <div className="relative border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-50 transition-all text-left cursor-pointer"
+                className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-50 dark:bg-slate-800 transition-all text-left cursor-pointer"
               >
                 <div className="relative group/navavatar shrink-0">
                   <img
                     src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
                     alt={currentUser.fullName}
-                    className="w-8 h-8 rounded-full object-cover border border-slate-300"
+                    className="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600"
                   />
                   <span
                     onClick={(e) => {
@@ -1876,11 +1949,11 @@ export function App() {
                   </span>
                 </div>
                 <div className="hidden sm:block text-left whitespace-nowrap">
-                  <div className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[120px]">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight truncate max-w-[120px]">
                     {currentUser.fullName}
                   </div>
                   <div className="text-[10px] text-slate-400 capitalize truncate max-w-[120px]">
-                    {currentUserRole.toLowerCase().replace('_', ' ')} • {currentUser.flatNumber}
+                    {currentUserRole.toLowerCase().replace('_', ' ')} â€¢ {currentUser.flatNumber}
                   </div>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
@@ -1888,47 +1961,47 @@ export function App() {
 
               {/* Dropdown Menu */}
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
-                  <div className="px-4 py-2 border-b border-slate-100 font-semibold text-slate-700">
+                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
+                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-200">
                     {currentUser.fullName} ({currentUser.email})
                   </div>
 
                   <button
                     onClick={() => { setShowAvatarModal(true); setUserDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                    className="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800 flex items-center gap-2 cursor-pointer font-medium"
                   >
                     <Camera className="w-3.5 h-3.5 text-[#405189]" /> Change Profile Photo
                   </button>
 
                   <button
                     onClick={() => { setShowProfileModal(true); setUserDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                    className="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800 flex items-center gap-2 cursor-pointer font-medium"
                   >
                     <UserCheck className="w-3.5 h-3.5 text-[#405189]" /> Edit Profile & Username
                   </button>
 
                   <button
                     onClick={() => { setActiveTab('tenants'); setUserDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                    className="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800 flex items-center gap-2 cursor-pointer"
                   >
                     <Users className="w-3.5 h-3.5 text-slate-400" /> Tenant Profile
                   </button>
 
                   <button
                     onClick={() => { setShowSettings(true); setUserDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                    className="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800 flex items-center gap-2 cursor-pointer"
                   >
                     <Settings className="w-3.5 h-3.5 text-slate-400" /> Property Settings
                   </button>
 
                   <button
                     onClick={() => { setShowSecurityDashboard(true); setUserDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                    className="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800 flex items-center gap-2 cursor-pointer"
                   >
                     <Shield className="w-3.5 h-3.5 text-slate-400" /> Account Security
                   </button>
 
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-slate-100 dark:border-slate-700 my-1" />
 
                   <button
                     onClick={handleLogout}
@@ -2043,17 +2116,17 @@ export function App() {
         </main>
 
         {/* 4. Velzon Footer */}
-        <footer className="bg-white border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-500 gap-1 text-center sm:text-left mb-14 lg:mb-0">
-          <div>2026 © Madura House Maintenance Management Platform.</div>
+        <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-0 sm:h-12 flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 gap-1 text-center sm:text-left mb-14 lg:mb-0">
+          <div>2026 Â© Madura House Maintenance Management Platform.</div>
           <div className="hidden sm:block">Design & Developed with Enterprise Cloud Architecture</div>
         </footer>
 
         {/* 5. Mobile Bottom Navigation Bar (Visible only on < lg screens) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around py-1.5 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 flex items-center justify-around py-1.5 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'dashboard' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+              activeTab === 'dashboard' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium'
             }`}
           >
             <LayoutDashboard className="w-5 h-5 mb-0.5" />
@@ -2062,7 +2135,7 @@ export function App() {
           <button
             onClick={() => setActiveTab('maintenance')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'maintenance' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+              activeTab === 'maintenance' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium'
             }`}
           >
             <Wrench className="w-5 h-5 mb-0.5" />
@@ -2072,7 +2145,7 @@ export function App() {
             <button
               onClick={() => setActiveTab('tenants')}
               className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-                activeTab === 'tenants' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+                activeTab === 'tenants' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium'
               }`}
             >
               <Users className="w-5 h-5 mb-0.5" />
@@ -2082,7 +2155,7 @@ export function App() {
           <button
             onClick={() => setActiveTab('invoices')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'invoices' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+              activeTab === 'invoices' ? 'text-[#405189] font-bold' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium'
             }`}
           >
             <Receipt className="w-5 h-5 mb-0.5" />
@@ -2090,7 +2163,7 @@ export function App() {
           </button>
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-600 font-medium transition-colors"
+            className="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium transition-colors"
           >
             <Menu className="w-5 h-5 mb-0.5" />
             <span className="text-[10px]">More</span>
@@ -2200,7 +2273,7 @@ export function App() {
               setUsers(previousUsers);
               setCurrentUser(previousCurrentUser);
               playWarningChime();
-              showToast(`❌ Failed to update profile in Cloud DB: ${res.error || 'Unknown error'}. Changes reverted.`);
+              showToast(`âŒ Failed to update profile in Cloud DB: ${res.error || 'Unknown error'}. Changes reverted.`);
               return;
             }
 
@@ -2224,3 +2297,4 @@ export function App() {
 }
 
 export default App;
+

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Invoice, UserRole, User } from '../types';
 import { 
   FileText, 
@@ -94,11 +94,11 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
       {/* Header */}
       <div className="velzon-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
             <FileText className="w-5 h-5 text-[#405189]" /> Digital Invoices & OCR Document Archive
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Click any PDF or invoice file to open the interactive document preview popup
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Madura House â€¢ Click any PDF or invoice file to open the interactive document preview popup
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
               placeholder="Search invoices..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-full sm:w-44 sm:focus:w-56 transition-all"
+              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 w-full sm:w-44 sm:focus:w-56 transition-all"
             />
           </div>
 
@@ -148,13 +148,13 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
             }
           }}
           className={`velzon-card p-6 border-2 border-dashed text-center flex flex-col items-center justify-center cursor-pointer transition-all ${
-            isDragOver ? 'border-[#405189] bg-[#405189]/5' : 'border-slate-300 hover:border-slate-400'
+            isDragOver ? 'border-[#405189] bg-[#405189]/5' : 'border-slate-300 dark:border-slate-600 hover:border-slate-400'
           }`}
         >
           <div className="w-10 h-10 rounded-full bg-[#405189]/10 text-[#405189] flex items-center justify-center mb-2">
             <Upload className="w-5 h-5" />
           </div>
-          <h3 className="text-xs font-bold text-slate-800">Drag and drop invoice documents here or click to browse</h3>
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100">Drag and drop invoice documents here or click to browse</h3>
           <p className="text-[11px] text-slate-400 mt-0.5">Supports Official PDF, PNG, JPG bills & receipts (Auto-OCR processed)</p>
         </div>
       )}
@@ -166,8 +166,8 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
             <div className="w-12 h-12 rounded-full bg-[#405189]/10 text-[#405189] flex items-center justify-center mb-3">
               <FileText className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-slate-800">No invoice documents uploaded yet</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">No invoice documents uploaded yet</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
               Drag & drop electricity, water, or repair bill PDFs above to archive verified documents.
             </p>
           </div>
@@ -197,25 +197,25 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                     )}
                   </div>
 
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
                     {(inv.fileSize / 1024).toFixed(0)} KB
                   </span>
                 </div>
 
-                <h3 className="text-xs font-bold text-slate-800 mt-3 truncate group-hover:text-[#405189]" title={inv.fileName}>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-3 truncate group-hover:text-[#405189]" title={inv.fileName}>
                   {inv.fileName}
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5 truncate">Uploaded by: {inv.uploadedBy}</p>
 
                 {inv.ocrText && (
-                  <div className="mt-2.5 p-2 rounded bg-slate-50 border border-slate-100 text-[11px] text-slate-600 flex items-start gap-1.5">
+                  <div className="mt-2.5 p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300 flex items-start gap-1.5">
                     <ScanText className="w-3.5 h-3.5 text-[#0ab39c] shrink-0 mt-0.5" />
                     <span className="line-clamp-2">{inv.ocrText}</span>
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -236,7 +236,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                     setSelectedInvoice(inv);
                     setActivePreviewTab('visual');
                   }}
-                  className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" /> View
                 </button>
@@ -255,24 +255,24 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
           onClick={() => setSelectedInvoice(null)}
         >
           <div 
-            className="bg-white rounded-xl max-w-4xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-150"
+            className="bg-white dark:bg-slate-900 rounded-xl max-w-4xl w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header & Document Controls */}
-            <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+            <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs">
                   PDF
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 leading-tight flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight flex items-center gap-2">
                     {selectedInvoice.fileName}
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-0.5">
                       <BadgeCheck className="w-3 h-3" /> VERIFIED
                     </span>
                   </h3>
                   <div className="text-[11px] text-slate-400 mt-0.5">
-                    {(selectedInvoice.fileSize / 1024).toFixed(1)} KB • {selectedInvoice.fileType} • Uploaded on {new Date(selectedInvoice.uploadedAt).toLocaleDateString()}
+                    {(selectedInvoice.fileSize / 1024).toFixed(1)} KB â€¢ {selectedInvoice.fileType} â€¢ Uploaded on {new Date(selectedInvoice.uploadedAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -280,11 +280,11 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
               {/* Action Toolbar */}
               <div className="flex items-center gap-2">
                 {/* Tab Switcher */}
-                <div className="flex items-center bg-slate-200/80 p-0.5 rounded text-xs font-semibold">
+                <div className="flex items-center bg-slate-200 dark:bg-slate-700/80 p-0.5 rounded text-xs font-semibold">
                   <button
                     onClick={() => setActivePreviewTab('visual')}
                     className={`px-3 py-1 rounded transition-colors cursor-pointer ${
-                      activePreviewTab === 'visual' ? 'bg-white text-[#405189] shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      activePreviewTab === 'visual' ? 'bg-white dark:bg-slate-900 text-[#405189] shadow-xs font-bold' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     Document Preview
@@ -292,7 +292,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                   <button
                     onClick={() => setActivePreviewTab('ocr')}
                     className={`px-3 py-1 rounded transition-colors cursor-pointer ${
-                      activePreviewTab === 'ocr' ? 'bg-white text-[#405189] shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                      activePreviewTab === 'ocr' ? 'bg-white dark:bg-slate-900 text-[#405189] shadow-xs font-bold' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     OCR & Metadata
@@ -300,18 +300,18 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                 </div>
 
                 {/* Zoom Controls */}
-                <div className="hidden sm:flex items-center gap-1 bg-white border border-slate-200 rounded px-1.5 py-0.5">
+                <div className="hidden sm:flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5">
                   <button
                     onClick={() => setZoomLevel(Math.max(50, zoomLevel - 15))}
-                    className="p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
+                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 cursor-pointer"
                     title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-[11px] font-mono font-semibold px-1 text-slate-600">{zoomLevel}%</span>
+                  <span className="text-[11px] font-mono font-semibold px-1 text-slate-600 dark:text-slate-300">{zoomLevel}%</span>
                   <button
                     onClick={() => setZoomLevel(Math.min(150, zoomLevel + 15))}
-                    className="p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
+                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 cursor-pointer"
                     title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />
@@ -320,7 +320,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
 
                 <button
                   onClick={handlePrint}
-                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded transition-colors cursor-pointer"
+                  className="p-1.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded transition-colors cursor-pointer"
                   title="Print Invoice"
                 >
                   <Printer className="w-4 h-4" />
@@ -328,7 +328,7 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
 
                 <button
                   onClick={() => setSelectedInvoice(null)}
-                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded transition-colors cursor-pointer"
+                  className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded transition-colors cursor-pointer"
                   title="Close Preview"
                 >
                   <X className="w-4 h-4" />
@@ -337,42 +337,42 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
             </div>
 
             {/* Modal Body: Document Preview Canvas */}
-            <div className="flex-1 overflow-y-auto bg-slate-100 p-4 sm:p-6 flex justify-center">
+            <div className="flex-1 overflow-y-auto bg-slate-100 dark:bg-slate-800 p-4 sm:p-6 flex justify-center">
               
               {activePreviewTab === 'visual' ? (
                 /* ========================================================= */
                 /* HIGH-RESOLUTION VISUAL INVOICE SHEET PREVIEW             */
                 /* ========================================================= */
                 <div 
-                  className="bg-white shadow-xl rounded border border-slate-300 w-full max-w-2xl p-6 sm:p-8 text-[#1f2937] transition-transform origin-top duration-150"
+                  className="bg-white dark:bg-slate-900 shadow-xl rounded border border-slate-300 dark:border-slate-600 w-full max-w-2xl p-6 sm:p-8 text-[#1f2937] transition-transform origin-top duration-150"
                   style={{ transform: `scale(${zoomLevel / 100})` }}
                 >
                   {/* Top Header of Document */}
                   <div className="border-b-2 border-slate-800 pb-4 mb-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                           OFFICIAL TAX INVOICE & UTILITY RECEIPT
                         </div>
-                        <h2 className="text-xl font-black text-slate-900 tracking-tight mt-0.5">
+                        <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                           {selectedInvoice.fileName.includes('TNEB') 
                             ? 'TAMIL NADU GENERATION AND DISTRIBUTION CORP (TANGEDCO)'
                             : selectedInvoice.fileName.includes('Motor') || selectedInvoice.fileName.includes('Repair')
                             ? 'SRI BALAJI ELECTRICAL WORKSHOP & CONTRACTORS'
                             : 'MADURA HOUSE RESIDENTIAL MAINTENANCE'}
                         </h2>
-                        <p className="text-xs text-slate-600 mt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                           {selectedInvoice.fileName.includes('TNEB')
                             ? 'Maduravoyal Distribution Circle, Chennai Division, Maduravoyal - 600095'
                             : selectedInvoice.fileName.includes('Motor')
-                            ? 'GSTIN: 33AAACB2234M1Z5 • 42, Trunk Road, Maduravoyal'
-                            : 'Property Maintenance Administration • Maduravoyal, TN - 600095'}
+                            ? 'GSTIN: 33AAACB2234M1Z5 â€¢ 42, Trunk Road, Maduravoyal'
+                            : 'Property Maintenance Administration â€¢ Maduravoyal, TN - 600095'}
                         </p>
                       </div>
 
                       <div className="text-right">
-                        <div className="w-14 h-14 bg-slate-100 border border-slate-200 rounded p-1 flex items-center justify-center ml-auto">
-                          <QrCode className="w-12 h-12 text-slate-800" />
+                        <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1 flex items-center justify-center ml-auto">
+                          <QrCode className="w-12 h-12 text-slate-800 dark:text-slate-100" />
                         </div>
                         <div className="text-[9px] text-slate-400 font-mono mt-1">SCAN TO VERIFY</div>
                       </div>
@@ -380,24 +380,24 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                   </div>
 
                   {/* Document Meta Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded border border-slate-200 text-xs mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700 text-xs mb-4">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">Invoice / Ref #</span>
-                      <span className="font-bold text-slate-800">
+                      <span className="font-bold text-slate-800 dark:text-slate-100">
                         {selectedInvoice.fileName.includes('TNEB') ? 'TNEB-2026-0982' : '#INV-MH-8902'}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">Billing Date</span>
-                      <span className="font-bold text-slate-800">
+                      <span className="font-bold text-slate-800 dark:text-slate-100">
                         {new Date(selectedInvoice.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">Customer / Unit</span>
-                      <span className="font-bold text-slate-800">Madura House (All 6 Units)</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100">Madura House (All 6 Units)</span>
                     </div>
 
                     <div>
@@ -418,48 +418,48 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                         <th className="py-2 px-3 text-right rounded-r">Net Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 border-b border-slate-200">
+                    <tbody className="divide-y divide-slate-200 border-b border-slate-200 dark:border-slate-700">
                       {selectedInvoice.fileName.includes('TNEB') ? (
                         <>
                           <tr>
                             <td className="py-2.5 px-3 font-medium">1</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-800">
+                            <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">
                               Common Meter Power Consumption (Bi-Monthly)
-                              <div className="text-[10px] text-slate-500 font-normal">Meter #: 05-120-004-98 • Reading: 4580 kWh</div>
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Meter #: 05-120-004-98 â€¢ Reading: 4580 kWh</div>
                             </td>
-                            <td className="py-2.5 px-3 text-right text-slate-600">480 Units @ ₹5.00</td>
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-800">₹2,400.00</td>
+                            <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">480 Units @ â‚¹5.00</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-800 dark:text-slate-100">â‚¹2,400.00</td>
                           </tr>
                         </>
                       ) : selectedInvoice.fileName.includes('Motor') ? (
                         <>
                           <tr>
                             <td className="py-2.5 px-3 font-medium">1</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-800">
+                            <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">
                               Submersible Motor Starter Heavy Duty 50MFD Capacitor
-                              <div className="text-[10px] text-slate-500 font-normal">Havells 2HP Industrial Grade</div>
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Havells 2HP Industrial Grade</div>
                             </td>
-                            <td className="py-2.5 px-3 text-right text-slate-600">1 Unit</td>
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-800">₹1,000.00</td>
+                            <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">1 Unit</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-800 dark:text-slate-100">â‚¹1,000.00</td>
                           </tr>
                           <tr>
                             <td className="py-2.5 px-3 font-medium">2</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-800">
+                            <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">
                               Technician Labor & Rewiring Service Charge
                             </td>
-                            <td className="py-2.5 px-3 text-right text-slate-600">1 Service</td>
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-800">₹500.00</td>
+                            <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">1 Service</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-800 dark:text-slate-100">â‚¹500.00</td>
                           </tr>
                         </>
                       ) : (
                         <>
                           <tr>
                             <td className="py-2.5 px-3 font-medium">1</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-800">
+                            <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">
                               {selectedInvoice.fileName.replace('.pdf', '').replace(/_/g, ' ')}
                             </td>
-                            <td className="py-2.5 px-3 text-right text-slate-600">Fixed</td>
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-800">₹2,100.00</td>
+                            <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">Fixed</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-800 dark:text-slate-100">â‚¹2,100.00</td>
                           </tr>
                         </>
                       )}
@@ -468,40 +468,40 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
 
                   {/* Summary Totals */}
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-2">
-                    <div className="space-y-1 text-xs text-slate-500 max-w-xs">
-                      <div className="font-semibold text-slate-700">Payment Remarks:</div>
+                    <div className="space-y-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                      <div className="font-semibold text-slate-700 dark:text-slate-200">Payment Remarks:</div>
                       <div>Settled via NEFT / UPI Transaction Ref #AXIS982341.</div>
                       <div className="text-[10px] text-slate-400">All disputes subject to Maduravoyal jurisdiction.</div>
                     </div>
 
                     <div className="w-full sm:w-60 space-y-1.5 text-xs">
-                      <div className="flex justify-between text-slate-600">
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300">
                         <span>Subtotal:</span>
-                        <span className="font-semibold text-slate-800">
-                          {selectedInvoice.fileName.includes('TNEB') ? '₹2,400.00' : selectedInvoice.fileName.includes('Motor') ? '₹1,500.00' : '₹2,100.00'}
+                        <span className="font-semibold text-slate-800 dark:text-slate-100">
+                          {selectedInvoice.fileName.includes('TNEB') ? 'â‚¹2,400.00' : selectedInvoice.fileName.includes('Motor') ? 'â‚¹1,500.00' : 'â‚¹2,100.00'}
                         </span>
                       </div>
-                      <div className="flex justify-between text-slate-600">
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300">
                         <span>Taxes (GST 0% / Exempted):</span>
-                        <span className="font-semibold text-slate-800">₹0.00</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-100">â‚¹0.00</span>
                       </div>
-                      <div className="flex justify-between text-sm font-bold text-slate-900 border-t-2 border-slate-800 pt-1.5">
+                      <div className="flex justify-between text-sm font-bold text-slate-900 dark:text-white border-t-2 border-slate-800 pt-1.5">
                         <span>Grand Total:</span>
                         <span className="text-[#0ab39c]">
-                          {selectedInvoice.fileName.includes('TNEB') ? '₹2,400.00' : selectedInvoice.fileName.includes('Motor') ? '₹1,500.00' : '₹2,100.00'}
+                          {selectedInvoice.fileName.includes('TNEB') ? 'â‚¹2,400.00' : selectedInvoice.fileName.includes('Motor') ? 'â‚¹1,500.00' : 'â‚¹2,100.00'}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Stamp & Authorized Seal */}
-                  <div className="mt-8 pt-4 border-t border-dashed border-slate-200 flex items-center justify-between">
+                  <div className="mt-8 pt-4 border-t border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-between">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border-2 border-emerald-500 text-emerald-700 bg-emerald-50 text-xs font-black uppercase tracking-wider transform -rotate-3">
                       <CheckCircle2 className="w-4 h-4" /> AUDITED & CLEARED
                     </div>
 
                     <div className="text-right">
-                      <div className="font-script text-lg text-slate-700 font-serif italic">Sampath Kumar</div>
+                      <div className="font-script text-lg text-slate-700 dark:text-slate-200 font-serif italic">Sampath Kumar</div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Authorized Signatory</div>
                     </div>
                   </div>
@@ -510,9 +510,9 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                 /* ========================================================= */
                 /* OCR EXTRACTION & RAW METADATA TAB                         */
                 /* ========================================================= */
-                <div className="bg-white rounded-lg border border-slate-200 p-5 max-w-2xl w-full space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-5 max-w-2xl w-full space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                       <ScanText className="w-4 h-4 text-[#0ab39c]" /> OCR Parser Telemetry & Metadata
                     </h4>
                     <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold border border-emerald-200">
@@ -526,14 +526,14 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded bg-slate-50 border border-slate-200">
+                    <div className="p-3 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-slate-400 font-semibold block text-[10px] uppercase">Storage URI</span>
-                      <span className="font-mono text-slate-700 break-all">{selectedInvoice.storagePath}</span>
+                      <span className="font-mono text-slate-700 dark:text-slate-200 break-all">{selectedInvoice.storagePath}</span>
                     </div>
 
-                    <div className="p-3 rounded bg-slate-50 border border-slate-200">
+                    <div className="p-3 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-slate-400 font-semibold block text-[10px] uppercase">Uploaded By</span>
-                      <span className="text-slate-700 font-semibold">{selectedInvoice.uploadedBy}</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-semibold">{selectedInvoice.uploadedBy}</span>
                     </div>
                   </div>
                 </div>
@@ -542,15 +542,15 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
-              <div className="text-slate-500 hidden sm:block">
-                Press <kbd className="px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] font-mono">ESC</kbd> or click outside to close preview
+            <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+              <div className="text-slate-500 dark:text-slate-400 hidden sm:block">
+                Press <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-[10px] font-mono">ESC</kbd> or click outside to close preview
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => alert(`Downloading ${selectedInvoice.fileName} to local storage.`)}
-                  className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" /> Download File
                 </button>
@@ -570,3 +570,4 @@ export const InvoiceGallery: React.FC<InvoiceGalleryProps> = ({
     </div>
   );
 };
+

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { User, UserRole, AVAILABLE_FLATS } from '../types';
 import { DEFAULT_AVATARS, compressAndResizeImage, getInitialsAvatar } from '../utils/imageUtils';
 import { AvatarUploadModal } from './AvatarUploadModal';
@@ -230,11 +230,11 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
       {/* Header & Controls */}
       <div className="velzon-card p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-[#405189]" /> Tenant Directory & Occupant Administration
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Resident contact records, rent/deposit ledger & role privileges
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Madura House â€¢ Resident contact records, rent/deposit ledger & role privileges
           </p>
         </div>
 
@@ -247,17 +247,17 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               placeholder="Search tenant..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-full sm:w-48 sm:focus:w-60 transition-all"
+              className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 w-full sm:w-48 sm:focus:w-60 transition-all"
             />
           </div>
 
           {/* Filter Status */}
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded px-2.5 py-1 text-xs">
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-1 text-xs">
+            <Filter className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none"
+              className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer focus:outline-none"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -280,7 +280,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               exportTenantsToExcel(users);
               playSuccessChime();
             }}
-            className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="px-3.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-emerald-50 text-slate-700 dark:text-slate-200 hover:text-emerald-700 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
             title="Download complete resident roster & rent/deposit ledger as Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-4 h-4 text-[#0ab39c]" /> Excel
@@ -291,7 +291,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               exportTenantsToPDF(users);
               playSuccessChime();
             }}
-            className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-200 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="px-3.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-red-50 text-slate-700 dark:text-slate-200 hover:text-red-700 border border-slate-200 dark:border-slate-700 hover:border-red-300 text-xs font-semibold rounded-md flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
             title="Download official resident occupancy directory as PDF (.pdf)"
           >
             <FileText className="w-4 h-4 text-[#f06548]" /> PDF
@@ -304,8 +304,8 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
         <Shield className="w-4 h-4 text-[#405189] shrink-0 mt-0.5" />
         <div className="flex-1">
           <span className="font-bold text-[#405189]">Occupant Portal Login Enabled:</span>
-          <span className="text-slate-700 ml-1">
-            All occupants below can log in to the portal using their <strong>Tenant ID</strong>, <strong>Email</strong>, <strong>Username</strong>, or <strong>Flat Number</strong> alongside their assigned password. Click 👁️ to reveal passwords or 📋 to copy complete login credentials for any resident.
+          <span className="text-slate-700 dark:text-slate-200 ml-1">
+            All occupants below can log in to the portal using their <strong>Tenant ID</strong>, <strong>Email</strong>, <strong>Username</strong>, or <strong>Flat Number</strong> alongside their assigned password. Click ðŸ‘ï¸ to reveal passwords or ðŸ“‹ to copy complete login credentials for any resident.
           </span>
         </div>
       </div>
@@ -331,7 +331,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       <img
                         src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
                         alt={user.fullName}
-                        className="w-11 h-11 rounded-full object-cover border-2 border-slate-100 shadow-xs"
+                        className="w-11 h-11 rounded-full object-cover border-2 border-slate-100 dark:border-slate-700 shadow-xs"
                       />
                       {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
                         <button
@@ -348,7 +348,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       )}
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-slate-800 leading-tight">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight">
                         {user.fullName}
                       </h3>
                       <div className="text-[11px] text-[#405189] font-semibold flex items-center gap-1 mt-0.5">
@@ -361,7 +361,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                     <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
                       user.role === 'OWNER' ? 'bg-[#405189]/10 text-[#405189]' :
                       user.role === 'ADMIN_TENANT' ? 'bg-[#299cdb]/10 text-[#299cdb]' :
-                      'bg-slate-100 text-slate-600'
+                      'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}>
                       {user.role}
                     </span>
@@ -381,7 +381,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                           isPending ? 'bg-[#f7b84b]/15 text-[#b88015] border border-[#f7b84b]/30' :
                           'bg-[#f06548]/15 text-[#f06548] border border-[#f06548]/30'
                         }`}
-                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Rent status (Paid → Pending → Unpaid)" : "Monthly Rent Status"}
+                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Rent status (Paid â†’ Pending â†’ Unpaid)" : "Monthly Rent Status"}
                       >
                         <span className="font-semibold opacity-70">Rent:</span> {user.paymentStatus || 'unpaid'}
                       </button>
@@ -400,7 +400,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                           isMaintPending ? 'bg-amber-100 text-amber-800 border border-amber-300' :
                           'bg-rose-100 text-rose-800 border border-rose-300'
                         }`}
-                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Maintenance status (Paid → Pending → Unpaid)" : "Monthly Maintenance Status"}
+                        title={currentUserRole !== 'TENANT' ? "Click to toggle Monthly Maintenance status (Paid â†’ Pending â†’ Unpaid)" : "Monthly Maintenance Status"}
                       >
                         <span className="font-semibold opacity-70">Maint:</span> {user.maintenanceStatus || 'unpaid'}
                       </button>
@@ -409,18 +409,18 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 {/* Details list */}
-                <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
+                <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-1.5 text-xs">
                   {/* Tenant ID row */}
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                     <span className="text-slate-400 flex items-center gap-1.5"><Key className="w-3.5 h-3.5" /> Tenant ID:</span>
                     <div className="flex items-center gap-1">
-                      <span className="font-mono text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" title={user.id}>
+                      <span className="font-mono text-[10px] text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700" title={user.id}>
                         {user.id.length > 14 ? `${user.id.substring(0, 8)}...` : user.id}
                       </span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(user.id, `id_${user.id}`)}
-                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                        className="p-1 hover:bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 rounded transition-colors cursor-pointer"
                         title="Copy full Tenant ID"
                       >
                         {copiedKeyMap[`id_${user.id}`] ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
@@ -429,33 +429,33 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                   </div>
 
                   {user.username ? (
-                    <div className="flex items-center justify-between text-slate-600">
+                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                       <span className="text-slate-400 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Username:</span>
                       <span className="font-mono text-[11px] font-semibold text-[#405189]">@{user.username.replace(/^@/, '')}</span>
                     </div>
                   ) : null}
 
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                     <span className="text-slate-400 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> Email:</span>
-                    <span className="font-medium text-slate-800 truncate max-w-[160px]" title={user.email}>{user.email}</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-100 truncate max-w-[160px]" title={user.email}>{user.email}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                     <span className="text-slate-400 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Phone:</span>
-                    <span className="font-medium text-slate-800">{user.phone || 'N/A'}</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{user.phone || 'N/A'}</span>
                   </div>
 
                   {/* Password & Credentials row */}
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                     <span className="text-slate-400 flex items-center gap-1.5"><Key className="w-3.5 h-3.5" /> Password:</span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        {showPasswordMap[user.id] ? (user.password || 'Tenant@123') : '••••••••'}
+                        {showPasswordMap[user.id] ? (user.password || 'Tenant@123') : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}
                       </span>
                       <button
                         type="button"
                         onClick={() => toggleShowPassword(user.id)}
-                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded transition-colors cursor-pointer"
+                        className="p-1 hover:bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 rounded transition-colors cursor-pointer"
                         title={showPasswordMap[user.id] ? 'Hide Password' : 'Show Password'}
                       >
                         {showPasswordMap[user.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -466,7 +466,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                           const creds = `Madura House Tenant Login:\nPortal: ${window.location.origin}\nID / Email: ${user.email} (or ID: ${user.id}${user.username ? `, @${user.username}` : ''})\nPassword: ${user.password || 'Tenant@123'}\nFlat: ${user.flatNumber}`;
                           copyToClipboard(creds, `cred_${user.id}`);
                         }}
-                        className="p-1 hover:bg-slate-200 text-slate-500 hover:text-[#405189] rounded transition-colors cursor-pointer"
+                        className="p-1 hover:bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-[#405189] rounded transition-colors cursor-pointer"
                         title="Copy complete login credentials for resident"
                       >
                         {copiedKeyMap[`cred_${user.id}`] ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
@@ -475,22 +475,22 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                   </div>
 
                   {user.rentAmount ? (
-                    <div className="flex items-center justify-between text-slate-600">
+                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                       <span className="text-slate-400 flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5" /> Rent / mo:</span>
-                      <span className="font-bold text-[#0ab39c]">₹{user.rentAmount.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-[#0ab39c]">â‚¹{user.rentAmount.toLocaleString('en-IN')}</span>
                     </div>
                   ) : null}
 
                   {user.emergencyContact && (
-                    <div className="flex items-center justify-between text-slate-600">
+                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                       <span className="text-slate-400 flex items-center gap-1.5"><PhoneCall className="w-3.5 h-3.5" /> Emergency:</span>
-                      <span className="text-slate-700">{user.emergencyContact}</span>
+                      <span className="text-slate-700 dark:text-slate-200">{user.emergencyContact}</span>
                     </div>
                   )}
 
                   {user.notes && (
-                    <div className="p-2 rounded bg-slate-50 text-[11px] text-slate-600 mt-2">
-                      <strong className="text-slate-700">Notes:</strong> {user.notes}
+                    <div className="p-2 rounded bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300 mt-2">
+                      <strong className="text-slate-700 dark:text-slate-200">Notes:</strong> {user.notes}
                     </div>
                   )}
                 </div>
@@ -498,10 +498,10 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               {/* Action Toolbar */}
               {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') && (
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
                   <button
                     onClick={() => openEditModal(user)}
-                    className="flex-1 px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="flex-1 px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-[#405189]" /> Edit Profile
                   </button>
@@ -529,18 +529,18 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
       {/* Edit / Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 rounded-lg max-w-lg w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-[#405189]" />
                 {editingUser ? `Edit Profile - ${editingUser.fullName}` : 'Add New Resident Profile'}
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 dark:text-slate-300">âœ•</button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
               {/* Resident Profile Picture Picker */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+              <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                 <div className="flex items-center gap-3">
                   <div className="relative group shrink-0">
                     <img
@@ -560,7 +560,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700 uppercase">Tenant Profile Photo (PFP)</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase">Tenant Profile Photo (PFP)</span>
                       <button
                         type="button"
                         onClick={() => setShowModalAvatarPresets(!showModalAvatarPresets)}
@@ -575,14 +575,14 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                       <button
                         type="button"
                         onClick={() => modalFileInputRef.current?.click()}
-                        className="px-2.5 py-1 bg-white border border-slate-300 hover:border-[#405189] text-slate-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                        className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 hover:border-[#405189] text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                       >
                         <UploadCloud className="w-3 h-3 text-[#405189]" /> Upload Photo
                       </button>
                       <button
                         type="button"
                         onClick={() => setAvatarUrl(getInitialsAvatar(fullName || 'User'))}
-                        className="px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 cursor-pointer font-medium"
+                        className="px-2 py-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 cursor-pointer font-medium"
                       >
                         Initials
                       </button>
@@ -599,7 +599,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 />
 
                 {showModalAvatarPresets && (
-                  <div className="mt-3 pt-3 border-t border-slate-200 animate-in fade-in duration-150">
+                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 animate-in fade-in duration-150">
                     <div className="text-[10px] uppercase font-bold text-slate-400 mb-2">Preset Portraits:</div>
                     <div className="grid grid-cols-4 gap-2">
                       {DEFAULT_AVATARS.map((av) => (
@@ -611,7 +611,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                             setShowModalAvatarPresets(false);
                           }}
                           className={`p-0.5 rounded-lg border-2 transition-all cursor-pointer ${
-                            avatarUrl === av.url ? 'border-[#405189] scale-105 shadow' : 'border-slate-200 hover:border-slate-300'
+                            avatarUrl === av.url ? 'border-[#405189] scale-105 shadow' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600'
                           }`}
                         >
                           <img src={av.url} alt={av.label} className="w-full aspect-square rounded-md object-cover" />
@@ -624,7 +624,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Full Name *</label>
                   <input
                     type="text"
                     required
@@ -636,7 +636,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Username</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Username</label>
                   <input
                     type="text"
                     placeholder="@johndoe"
@@ -647,7 +647,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Email Address *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Email Address *</label>
                   <input
                     type="email"
                     required
@@ -659,7 +659,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Login Password *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Login Password *</label>
                   <input
                     type="text"
                     required
@@ -673,7 +673,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Flat / Unit Number *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Flat / Unit Number *</label>
                   <select
                     required
                     value={flatNumber}
@@ -689,7 +689,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Phone Number</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Phone Number</label>
                   <input
                     type="text"
                     placeholder="+91 98421 00000"
@@ -702,7 +702,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Role Privilege</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Role Privilege</label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as UserRole)}
@@ -715,7 +715,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Occupancy</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Occupancy</label>
                   <select
                     value={occupancyStatus}
                     onChange={(e) => setOccupancyStatus(e.target.value as any)}
@@ -728,7 +728,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Rent Status</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Rent Status</label>
                   <select
                     value={paymentStatus}
                     onChange={(e) => setPaymentStatus(e.target.value as any)}
@@ -741,7 +741,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Maintenance Status</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Maintenance Status</label>
                   <select
                     value={maintenanceStatus}
                     onChange={(e) => setMaintenanceStatus(e.target.value as any)}
@@ -756,7 +756,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Monthly Rent (₹)</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Monthly Rent (â‚¹)</label>
                   <input
                     type="number"
                     placeholder="14000"
@@ -767,7 +767,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Security Deposit (₹)</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Security Deposit (â‚¹)</label>
                   <input
                     type="number"
                     placeholder="70000"
@@ -780,7 +780,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Move In Date</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Move In Date</label>
                   <input
                     type="date"
                     value={moveInDate}
@@ -790,7 +790,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Emergency Contact</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Emergency Contact</label>
                   <input
                     type="text"
                     placeholder="+91 98421 99999"
@@ -802,7 +802,7 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Notes / Terms</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Notes / Terms</label>
                 <textarea
                   rows={2}
                   placeholder="Special conditions or notes"
@@ -812,11 +812,11 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold"
                 >
                   Cancel
                 </button>
@@ -849,3 +849,4 @@ export const TenantDirectory: React.FC<TenantDirectoryProps> = ({
     </div>
   );
 };
+

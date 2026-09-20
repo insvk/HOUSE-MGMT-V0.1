@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { NotificationLog, UserRole, MaintenanceRecord, House, User, Expense } from '../types';
 import { 
   Mail, 
@@ -124,15 +124,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   );
 
   const handleCopyWhatsApp = () => {
-    const text = `📢 *MADURA HOUSE MAINTENANCE NOTICE - ${monthName.toUpperCase()} ${activeRecord.year}*
+    const text = `ðŸ“¢ *MADURA HOUSE MAINTENANCE NOTICE - ${monthName.toUpperCase()} ${activeRecord.year}*
 
 Dear Residents,
 The monthly maintenance statement for *${house?.name || 'Madura House Maintenance'}* has been generated:
 
-💰 *Total Month Expenditure:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}
-👥 *Active Flats:* ${payingUnits} Units
-🏷️ *Per-Flat Share Due:* ₹${calculatedContribution.toFixed(2)}
-🗓️ *Payment Due Date:* 10th ${monthName} ${activeRecord.year}
+ðŸ’° *Total Month Expenditure:* â‚¹${calculatedGrandTotal.toLocaleString('en-IN')}
+ðŸ‘¥ *Active Flats:* ${payingUnits} Units
+ðŸ·ï¸ *Per-Flat Share Due:* â‚¹${calculatedContribution.toFixed(2)}
+ðŸ—“ï¸ *Payment Due Date:* 10th ${monthName} ${activeRecord.year}
 
 Please remit your share via UPI / Bank Transfer to the Property Account. For audited breakdown, view the resident portal or contact *Sampath Kumar (Property Admin)*.`;
 
@@ -171,22 +171,22 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
     try {
       const res = await sendSingleResendEmail({
         to: RESEND_OWNER_EMAIL,
-        subject: `[Madura House] Live Resend API Key Test • ${new Date().toLocaleTimeString('en-IN')}`,
+        subject: `[Madura House] Live Resend API Key Test â€¢ ${new Date().toLocaleTimeString('en-IN')}`,
         html: `<h3>Resend API Key Verified Successfully</h3><p>Your Resend API key is connected and working directly with the Madura House Management Platform.</p><p>Timestamp: ${new Date().toISOString()}</p>`,
         apiKey: resendKeyInput,
         fromEmail: resendFromInput,
       });
 
       if (res.success) {
-        setTestingStatus(`✅ Success! Resend delivered test email to ${RESEND_OWNER_EMAIL} (ID: ${res.messageId})`);
+        setTestingStatus(`âœ… Success! Resend delivered test email to ${RESEND_OWNER_EMAIL} (ID: ${res.messageId})`);
         playSuccessChime();
         if (showToast) showToast(`Verified Resend API! Test email delivered to ${RESEND_OWNER_EMAIL}`);
       } else {
-        setTestingStatus(`❌ Resend Error: ${res.error}`);
+        setTestingStatus(`âŒ Resend Error: ${res.error}`);
         playWarningChime();
       }
     } catch (err: any) {
-      setTestingStatus(`❌ Connection Error: ${err?.message || 'Failed to reach Resend API'}`);
+      setTestingStatus(`âŒ Connection Error: ${err?.message || 'Failed to reach Resend API'}`);
       playWarningChime();
     }
   };
@@ -195,13 +195,13 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
   const handleSendTestToOwner = async () => {
     setIsTestingOwner(true);
     try {
-      const subject = `[Madura House] ${monthName} ${activeRecord.year} Verified Statement Test - ₹${calculatedContribution.toFixed(2)} Due`;
+      const subject = `[Madura House] ${monthName} ${activeRecord.year} Verified Statement Test - â‚¹${calculatedContribution.toFixed(2)} Due`;
       const html = `<div style="font-family:sans-serif;padding:20px;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;">
         <h2 style="color:#1e1b4b;margin-top:0;">Madura House Maintenance Statement (Live Test)</h2>
         <p>This is a live transactional email dispatched via Resend API Key <code>${getResendApiKey().slice(0, 10)}...</code></p>
         <div style="background:#f1f5f9;padding:15px;border-radius:8px;margin:15px 0;">
-          <div><strong>Total Expenses:</strong> ₹${calculatedGrandTotal.toLocaleString('en-IN')}</div>
-          <div><strong>Individual Flat Due:</strong> ₹${calculatedContribution.toFixed(2)}</div>
+          <div><strong>Total Expenses:</strong> â‚¹${calculatedGrandTotal.toLocaleString('en-IN')}</div>
+          <div><strong>Individual Flat Due:</strong> â‚¹${calculatedContribution.toFixed(2)}</div>
           <div><strong>Billing Period:</strong> ${monthName} ${activeRecord.year}</div>
         </div>
         <p style="color:#64748b;font-size:12px;">Sent to verified Resend account: ${RESEND_OWNER_EMAIL}</p>
@@ -237,7 +237,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
         playSuccessChime();
         if (showToast) {
-          showToast(`⚡ Live email delivered to ${RESEND_OWNER_EMAIL}! Check your Gmail inbox.`);
+          showToast(`âš¡ Live email delivered to ${RESEND_OWNER_EMAIL}! Check your Gmail inbox.`);
         }
       }
     } catch (err: any) {
@@ -297,7 +297,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         maintenanceRecordId: activeRecord.id,
         recipientEmail: d.recipientEmail,
         type: 'maintenance_added',
-        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
+        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - â‚¹${calculatedContribution.toFixed(2)} Due`,
         status: 'sent',
         sentAt: d.timestamp,
       }));
@@ -310,7 +310,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
       playSuccessChime();
       if (showToast) {
-        showToast(`⚡ Successfully delivered Resend emails to all ${summary.sentCount} tenants! (Check ${RESEND_OWNER_EMAIL})`);
+        showToast(`âš¡ Successfully delivered Resend emails to all ${summary.sentCount} tenants! (Check ${RESEND_OWNER_EMAIL})`);
       }
 
       if (openModalAfter) {
@@ -365,7 +365,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
         maintenanceRecordId: activeRecord.id,
         recipientEmail: d.recipientEmail,
         type: 'maintenance_added',
-        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - ₹${calculatedContribution.toFixed(2)} Due`,
+        subject: `[Madura House] ${monthName} ${activeRecord.year} Maintenance Notice - â‚¹${calculatedContribution.toFixed(2)} Due`,
         status: 'sent',
         sentAt: d.timestamp,
       }));
@@ -376,7 +376,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
       playSuccessChime();
       if (showToast) {
-        showToast(`⚡ Dispatched maintenance statement for ${tenant.fullName} (${tenant.email})! Delivered to inbox.`);
+        showToast(`âš¡ Dispatched maintenance statement for ${tenant.fullName} (${tenant.email})! Delivered to inbox.`);
       }
     } catch (err) {
       console.error('Single tenant dispatch error:', err);
@@ -393,7 +393,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       <div className="velzon-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
               <Mail className="w-5 h-5 text-[#405189]" /> Resend Email Notifications & Multi-Tenant Dispatch
             </h1>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
@@ -401,8 +401,8 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               Resend Live Gateway Active
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Madura House • Official itemized statements dispatched live via Resend Cloud Engine. Direct replies route to <strong>{RESEND_OWNER_EMAIL}</strong>.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Madura House â€¢ Official itemized statements dispatched live via Resend Cloud Engine. Direct replies route to <strong>{RESEND_OWNER_EMAIL}</strong>.
           </p>
         </div>
 
@@ -422,7 +422,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             ) : (
               <>
                 <Send className="w-4 h-4 animate-pulse" />
-                🚀 SEND MAILS TO ALL TENANTS ({activeTenantRecipients.length})
+                ðŸš€ SEND MAILS TO ALL TENANTS ({activeTenantRecipients.length})
               </>
             )}
           </button>
@@ -442,7 +442,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                🧪 Test My Inbox
+                ðŸ§ª Test My Inbox
               </>
             )}
           </button>
@@ -453,18 +453,18 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               setShowDispatchModal(true);
               playNotificationChime();
             }}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Review recipient list & send in modal"
           >
-            <Settings2 className="w-3.5 h-3.5 text-slate-600" /> Review & Send...
+            <Settings2 className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" /> Review & Send...
           </button>
 
           <button
             onClick={() => setShowConfigModal(true)}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Configure Resend API Key and Sender Address"
           >
-            <Key className="w-3.5 h-3.5 text-slate-600" /> API Settings
+            <Key className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" /> API Settings
           </button>
 
           <button
@@ -487,12 +487,12 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
       {/* 2. Target Tenant Recipients Directory */}
       <div className="velzon-card p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100 dark:border-slate-700">
           <div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
               <Users className="w-4 h-4 text-[#405189]" /> Target Tenant Recipients ({activeTenantRecipients.length} Active in System)
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Email addresses retrieved in real-time from the Tenant Management registry. All recipients receive the audited statement in a single click.
             </p>
           </div>
@@ -521,7 +521,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             return (
               <div 
                 key={tenant.id} 
-                className="p-3 bg-slate-50 hover:bg-slate-100/90 border border-slate-200 rounded-xl transition-colors flex flex-col justify-between gap-2.5 shadow-2xs"
+                className="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors flex flex-col justify-between gap-2.5 shadow-2xs"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-[#405189] text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
@@ -529,12 +529,12 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-bold text-slate-800 truncate">{tenant.fullName}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-semibold shrink-0">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{tenant.fullName}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold shrink-0">
                         {tenant.flatNumber}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-500 font-mono truncate flex items-center gap-1 mt-0.5">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate flex items-center gap-1 mt-0.5">
                       <Mail className="w-3 h-3 text-slate-400 shrink-0" />
                       {tenant.email}
                     </div>
@@ -542,14 +542,14 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                 </div>
 
                 {/* Direct 1-Click Send Button per Individual Tenant */}
-                <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-500">
-                    Share Due: <strong className="text-[#0ab39c] font-mono">₹{calculatedContribution.toFixed(2)}</strong>
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Share Due: <strong className="text-[#0ab39c] font-mono">â‚¹{calculatedContribution.toFixed(2)}</strong>
                   </span>
                   <button
                     onClick={() => handleDispatchSingleTenant(tenant)}
                     disabled={isSendingThis || isDispatching}
-                    className="px-3 py-1 bg-white hover:bg-[#405189] border border-slate-300 hover:border-[#405189] text-slate-700 hover:text-white text-[11px] font-bold rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+                    className="px-3 py-1 bg-white dark:bg-slate-900 hover:bg-[#405189] border border-slate-300 dark:border-slate-600 hover:border-[#405189] text-slate-700 dark:text-slate-200 hover:text-white text-[11px] font-bold rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
                     title={`Send instant statement to ${tenant.fullName} (${tenant.email})`}
                   >
                     {isSendingThis ? (
@@ -571,12 +571,12 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
       {/* 3. Transactional Email Template Preview Box & INSTANT DISPATCH ACTION BAR */}
       <div className="velzon-card p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
           <div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
               <Mail className="w-4 h-4 text-[#0ab39c]" /> Transactional Email Template Preview (Live Statement)
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Subject Line & Dynamic HTML Structure rendered in real-time
             </p>
           </div>
@@ -594,11 +594,11 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           </div>
         </div>
 
-        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-3 font-sans">
+        <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 space-y-3 font-sans">
           {/* Simulated Email Envelope Header */}
-          <div className="border-b border-slate-200 pb-2.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 text-slate-500">
+          <div className="border-b border-slate-200 dark:border-slate-700 pb-2.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 text-slate-500 dark:text-slate-400">
             <div>
-              <strong>From:</strong> {getResendFromEmail()} • <span className="text-blue-700 font-semibold">Replies directly to: {RESEND_OWNER_EMAIL}</span>
+              <strong>From:</strong> {getResendFromEmail()} â€¢ <span className="text-blue-700 font-semibold">Replies directly to: {RESEND_OWNER_EMAIL}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold">
@@ -608,33 +608,33 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           </div>
 
           <div>
-            <strong>Subject:</strong> <span className="font-semibold text-slate-900">[Madura House] {monthName} {activeRecord.year} Maintenance Notice - ₹{calculatedContribution.toFixed(2)} Due</span>
+            <strong>Subject:</strong> <span className="font-semibold text-slate-900 dark:text-white">[Madura House] {monthName} {activeRecord.year} Maintenance Notice - â‚¹{calculatedContribution.toFixed(2)} Due</span>
           </div>
 
-          <div className="pt-1 text-slate-800 leading-relaxed space-y-3">
+          <div className="pt-1 text-slate-800 dark:text-slate-100 leading-relaxed space-y-3">
             <p>Dear Resident,</p>
             <p>
               The monthly maintenance summary for <strong>{house?.name || 'Madura House Maintenance'}</strong> has been audited and finalized for <strong>{monthName} {activeRecord.year}</strong>.
             </p>
             
             {/* Financial Highlights Box */}
-            <div className="p-3.5 rounded-lg bg-white border border-slate-200 my-2 shadow-xs space-y-2">
+            <div className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 my-2 shadow-xs space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600">Total Monthly Cost:</span>
-                <strong className="font-mono text-slate-900 text-sm">₹{calculatedGrandTotal.toLocaleString('en-IN')}</strong>
+                <span className="text-slate-600 dark:text-slate-300">Total Monthly Cost:</span>
+                <strong className="font-mono text-slate-900 dark:text-white text-sm">â‚¹{calculatedGrandTotal.toLocaleString('en-IN')}</strong>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600">Active Contributing Flats:</span>
-                <strong className="font-mono text-slate-800">{payingUnits} Units</strong>
+                <span className="text-slate-600 dark:text-slate-300">Active Contributing Flats:</span>
+                <strong className="font-mono text-slate-800 dark:text-slate-100">{payingUnits} Units</strong>
               </div>
-              <div className="border-t border-dashed border-slate-200 my-1"></div>
+              <div className="border-t border-dashed border-slate-200 dark:border-slate-700 my-1"></div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-slate-800">Individual Contribution per Flat:</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100">Individual Contribution per Flat:</span>
                 <span className="text-[#0ab39c] font-bold text-base font-mono bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  ₹{calculatedContribution.toFixed(2)}
+                  â‚¹{calculatedContribution.toFixed(2)}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 pt-1 flex justify-between">
                 <span>Property: <strong>{house?.address || 'No. 42, Bypass Road, Ellis Nagar'}, {house?.city || 'Maduravoyal'}</strong></span>
                 <span>Due Date: <strong>10th {monthName} {activeRecord.year}</strong></span>
               </div>
@@ -642,13 +642,13 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
             {/* Realtime Expense Breakdown Table */}
             <div className="mt-3">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5 flex items-center justify-between">
                 <span>Audited Itemized Expenses ({expensesList.length} Line Items)</span>
                 <span className="font-mono text-[#405189]">Live DB Sync</span>
               </div>
-              <div className="overflow-x-auto rounded border border-slate-200 bg-white">
+              <div className="overflow-x-auto rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <table className="w-full text-left text-[11px]">
-                  <thead className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="py-1.5 px-3">#</th>
                       <th className="py-1.5 px-3">Particulars</th>
@@ -660,15 +660,15 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                     {expensesList.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="py-6 text-center text-slate-400 font-sans">
-                          No expense line items added yet for {monthName} {activeRecord.year}. Total due is ₹0.00.
+                          No expense line items added yet for {monthName} {activeRecord.year}. Total due is â‚¹0.00.
                         </td>
                       </tr>
                     ) : (
                       expensesList.map((exp, idx) => (
-                        <tr key={exp.id || idx} className="hover:bg-slate-50">
+                        <tr key={exp.id || idx} className="hover:bg-slate-50 dark:bg-slate-800">
                           <td className="py-2 px-3 text-slate-400 font-mono align-top">#{idx + 1}</td>
-                          <td className="py-2 px-3 font-medium text-slate-800 align-top">
-                            <div className="font-semibold text-slate-900">{exp.particular}</div>
+                          <td className="py-2 px-3 font-medium text-slate-800 dark:text-slate-100 align-top">
+                            <div className="font-semibold text-slate-900 dark:text-white">{exp.particular}</div>
                             {exp.notes && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{exp.notes}</div>}
                             <InvoiceAttachmentPill
                               expense={exp}
@@ -677,24 +677,24 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                             />
                           </td>
                           <td className="py-2 px-3 uppercase text-[10px] font-bold text-[#405189] align-top">{exp.category}</td>
-                          <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 align-top">
-                            ₹{exp.amount.toLocaleString('en-IN')}
+                          <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white align-top">
+                            â‚¹{exp.amount.toLocaleString('en-IN')}
                           </td>
                         </tr>
                       ))
                     )}
                   </tbody>
-                  <tfoot className="bg-slate-50 border-t border-slate-200 font-bold">
+                  <tfoot className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 font-bold">
                     <tr>
-                      <td colSpan={3} className="py-2 px-3 text-slate-700 text-right">Grand Total:</td>
-                      <td className="py-2 px-3 text-right font-mono text-slate-900">₹{calculatedGrandTotal.toLocaleString('en-IN')}</td>
+                      <td colSpan={3} className="py-2 px-3 text-slate-700 dark:text-slate-200 text-right">Grand Total:</td>
+                      <td className="py-2 px-3 text-right font-mono text-slate-900 dark:text-white">â‚¹{calculatedGrandTotal.toLocaleString('en-IN')}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 pt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-300 pt-1">
               Thank you,<br />
               Property Administrator: <strong>{currentUser?.fullName || 'Sampath Kumar'}</strong>
             </p>
@@ -706,14 +706,14 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           <div className="space-y-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
-              <h4 className="text-sm sm:text-base font-extrabold text-slate-800">
+              <h4 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100">
                 Ready to Dispatch {monthName} {activeRecord.year} Maintenance Statement
               </h4>
               <span className="text-[10px] font-bold px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
                 1-Click Live
               </span>
             </div>
-            <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
               Clicking the button below instantly dispatches the official audited notice to all <strong>{activeTenantRecipients.length} tenants</strong> ({activeTenantRecipients.map(t => t.email).join(', ')}) and records delivery receipts in the audit log.
             </p>
           </div>
@@ -731,7 +731,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             ) : (
               <>
                 <Send className="w-5 h-5 animate-pulse" />
-                <span>🚀 SEND MAILS TO ALL TENANTS INSTANTLY ({activeTenantRecipients.length})</span>
+                <span>ðŸš€ SEND MAILS TO ALL TENANTS INSTANTLY ({activeTenantRecipients.length})</span>
               </>
             )}
           </button>
@@ -756,10 +756,10 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono pt-1">
               {lastSummary.deliveries.map((del, idx) => (
-                <div key={idx} className="p-2 bg-white rounded border border-emerald-200 flex justify-between items-center text-[11px]">
-                  <span className="font-bold text-slate-800">{del.flatNumber}: {del.recipientEmail}</span>
+                <div key={idx} className="p-2 bg-white dark:bg-slate-900 rounded border border-emerald-200 flex justify-between items-center text-[11px]">
+                  <span className="font-bold text-slate-800 dark:text-slate-100">{del.flatNumber}: {del.recipientEmail}</span>
                   <span className="font-semibold text-[10px] px-1.5 py-0.5 rounded text-emerald-700 bg-emerald-50">
-                    HTTP 200 • ID: {del.messageId.slice(0, 14)}...
+                    HTTP 200 â€¢ ID: {del.messageId.slice(0, 14)}...
                   </span>
                 </div>
               ))}
@@ -770,17 +770,17 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
       {/* 4. Sent Notification Delivery Logs */}
       <div className="velzon-card overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold text-slate-800">Sent Notification Delivery Logs</h2>
-            <p className="text-[11px] text-slate-500">Live transaction history of all dispatched emails with RFC message identifiers</p>
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Sent Notification Delivery Logs</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Live transaction history of all dispatched emails with RFC message identifiers</p>
           </div>
           <span className="text-xs text-slate-400 font-mono">Gateway: Resend API</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-700">
               <tr>
                 <th className="py-2.5 px-4">Recipient</th>
                 <th className="py-2.5 px-4">Type</th>
@@ -793,25 +793,25 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               {logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-slate-400 font-sans">
-                    No notification dispatch logs recorded yet. Click "🚀 Send Mails to All Tenants" above to send the first batch.
+                    No notification dispatch logs recorded yet. Click "ðŸš€ Send Mails to All Tenants" above to send the first batch.
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-800 font-mono">{log.recipientEmail}</td>
+                  <tr key={log.id} className="hover:bg-slate-50 dark:bg-slate-800/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100 font-mono">{log.recipientEmail}</td>
                     <td className="py-3 px-4">
                       <span className="text-[10px] px-2 py-0.5 rounded bg-[#405189]/10 text-[#405189] font-semibold">
                         {log.type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-700">{log.subject}</td>
+                    <td className="py-3 px-4 text-slate-700 dark:text-slate-200">{log.subject}</td>
                     <td className="py-3 px-4 text-center">
                       <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" /> DELIVERED
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-500 font-mono">
+                    <td className="py-3 px-4 text-right text-slate-500 dark:text-slate-400 font-mono">
                       {new Date(log.sentAt).toLocaleString('en-IN')}
                     </td>
                   </tr>
@@ -837,7 +837,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
           ) : (
             <>
               <Send className="w-4 h-4 animate-pulse" />
-              <span>⚡ 1-Click Send All ({activeTenantRecipients.length})</span>
+              <span>âš¡ 1-Click Send All ({activeTenantRecipients.length})</span>
             </>
           )}
         </button>
@@ -846,9 +846,9 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       {/* 6. Resend Settings Modal */}
       {showConfigModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Key className="w-5 h-5 text-[#405189]" /> Resend Email Gateway Setup
               </h3>
               <button
@@ -856,7 +856,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   setShowConfigModal(false);
                   setTestingStatus(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-300 p-1 rounded-md cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -864,7 +864,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
             <form onSubmit={handleSaveResendSettings} className="mt-4 space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                   Resend API Key <span className="text-slate-400 font-normal">(starts with re_...)</span>
                 </label>
                 <input
@@ -872,15 +872,15 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   value={resendKeyInput}
                   onChange={(e) => setResendKeyInput(e.target.value)}
                   placeholder="re_xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                   Connected key: <code>re_Lw2RgDC1...</code> (Authenticated).
                 </p>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                   From Address
                 </label>
                 <input
@@ -888,17 +888,17 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   value={resendFromInput}
                   onChange={(e) => setResendFromInput(e.target.value)}
                   placeholder="Madura House Maintenance <onboarding@resend.dev>"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#405189] font-mono text-xs"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Sender: <code>onboarding@resend.dev</code> • Direct Replies: <code>production.chemadura26@gmail.com</code>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  Sender: <code>onboarding@resend.dev</code> â€¢ Direct Replies: <code>production.chemadura26@gmail.com</code>
                 </p>
               </div>
 
               {/* Live Connection Test Button */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-700">Test Resend API Connection</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200">Test Resend API Connection</span>
                   <button
                     type="button"
                     onClick={handleTestConnectionPing}
@@ -908,20 +908,20 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                   </button>
                 </div>
                 {testingStatus && (
-                  <p className="text-[11px] font-mono text-slate-700 pt-1 leading-relaxed">
+                  <p className="text-[11px] font-mono text-slate-700 dark:text-slate-200 pt-1 leading-relaxed">
                     {testingStatus}
                   </p>
                 )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
                     setShowConfigModal(false);
                     setTestingStatus(null);
                   }}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-50 dark:bg-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -940,17 +940,17 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
       {/* 7. One-Click Bulk Email Dispatch Review Modal */}
       {showDispatchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 animate-in fade-in zoom-in duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-lg bg-[#405189]/10 text-[#405189] flex items-center justify-center">
                   <Send className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Dispatch Resend Maintenance Statements
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Send verified statements to all {activeTenantRecipients.length} tenants simultaneously
                   </p>
                 </div>
@@ -958,7 +958,7 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               {!isDispatching && (
                 <button
                   onClick={() => setShowDispatchModal(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 dark:text-slate-300 p-1 rounded-md cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -968,22 +968,22 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
             {/* Content Body */}
             <div className="mt-4 space-y-4 text-xs">
               {/* Financial Snapshot */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg grid grid-cols-3 gap-2 text-center">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-slate-500 text-[10px] uppercase font-bold">Total Expenses</div>
-                  <div className="font-bold text-slate-900 text-sm font-mono mt-0.5">
-                    ₹{calculatedGrandTotal.toLocaleString('en-IN')}
+                  <div className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Total Expenses</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm font-mono mt-0.5">
+                    â‚¹{calculatedGrandTotal.toLocaleString('en-IN')}
                   </div>
                 </div>
                 <div>
-                  <div className="text-slate-500 text-[10px] uppercase font-bold">Per Flat Share</div>
+                  <div className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Per Flat Share</div>
                   <div className="font-bold text-[#0ab39c] text-sm font-mono mt-0.5">
-                    ₹{calculatedContribution.toFixed(2)}
+                    â‚¹{calculatedContribution.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-slate-500 text-[10px] uppercase font-bold">Billing Period</div>
-                  <div className="font-bold text-slate-800 text-sm mt-0.5">
+                  <div className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Billing Period</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-0.5">
                     {monthName} {activeRecord.year}
                   </div>
                 </div>
@@ -991,23 +991,23 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
 
               {/* Recipient Tenant List from Tenant Management */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center justify-between">
                   <span>Recipients List ({activeTenantRecipients.length} Verified Tenants)</span>
                   <span className="text-[10px] text-[#405189] font-mono">From Tenant Management DB</span>
                 </label>
-                <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100 bg-white">
+                <div className="max-h-48 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg divide-y divide-slate-100 bg-white dark:bg-slate-900">
                   {activeTenantRecipients.map((recipient, i) => (
                     <div key={recipient.id} className="p-2.5 flex items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] flex items-center justify-center font-bold">
+                        <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono text-[10px] flex items-center justify-center font-bold">
                           {i + 1}
                         </span>
                         <div className="truncate">
-                          <span className="font-bold text-slate-800">{recipient.fullName}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-100">{recipient.fullName}</span>
                           <span className="ml-2 text-slate-400 font-mono text-[11px]">{recipient.email}</span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-100 rounded text-slate-700 shrink-0">
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-700 dark:text-slate-200 shrink-0">
                         {recipient.flatNumber}
                       </span>
                     </div>
@@ -1038,12 +1038,12 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                     Statements Dispatched via Resend Gateway!
                   </div>
-                  <div className="max-h-36 overflow-y-auto bg-white rounded border border-emerald-200 p-2 text-[10px] font-mono space-y-1">
+                  <div className="max-h-36 overflow-y-auto bg-white dark:bg-slate-900 rounded border border-emerald-200 p-2 text-[10px] font-mono space-y-1">
                     {lastSummary.deliveries.map((del, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-slate-700 border-b border-slate-100 pb-1">
+                      <div key={idx} className="flex justify-between items-center text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700 pb-1">
                         <span className="font-bold">{del.flatNumber}: {del.recipientEmail}</span>
                         <span className="px-1.5 py-0.5 rounded font-bold text-emerald-700 bg-emerald-100">
-                          HTTP 200 • ID: {del.messageId.slice(0, 15)}...
+                          HTTP 200 â€¢ ID: {del.messageId.slice(0, 15)}...
                         </span>
                       </div>
                     ))}
@@ -1052,14 +1052,14 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                 {!lastSummary ? (
                   <>
                     <button
                       type="button"
                       disabled={isDispatching}
                       onClick={() => setShowDispatchModal(false)}
-                      className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
+                      className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-50 dark:bg-slate-800 cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -1103,3 +1103,4 @@ Please remit your share via UPI / Bank Transfer to the Property Account. For aud
     </div>
   );
 };
+

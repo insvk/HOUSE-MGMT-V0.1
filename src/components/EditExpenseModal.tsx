@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Expense, ExpenseCategory } from '../types';
 import { Edit3, Save, X, IndianRupee, Tag, UploadCloud, Paperclip, Eye, FileText, Trash2 } from 'lucide-react';
 import { processInvoiceFile } from '../utils/imageUtils';
@@ -86,23 +86,23 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded bg-[#405189]/10 text-[#405189] flex items-center justify-center">
               <Edit3 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800">Edit Maintenance Expense</h3>
-              <p className="text-[11px] text-slate-500">ID: {expense.id}</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Edit Maintenance Expense</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">ID: {expense.id}</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600 cursor-pointer"
+            className="p-1 rounded hover:bg-slate-200 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:text-slate-300 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -111,7 +111,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Particulars / Item Description *</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Particulars / Item Description *</label>
             <input
               type="text"
               required
@@ -124,7 +124,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Amount (₹) *</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Amount (â‚¹) *</label>
               <input
                 type="number"
                 required
@@ -137,7 +137,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
@@ -160,12 +160,12 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
               onChange={(e) => setGstApplicable(e.target.checked)}
               className="rounded accent-[#405189] w-4 h-4 cursor-pointer"
             />
-            <label htmlFor="gstEditToggle" className="text-xs text-slate-700 font-medium cursor-pointer">GST Applicable?</label>
+            <label htmlFor="gstEditToggle" className="text-xs text-slate-700 dark:text-slate-200 font-medium cursor-pointer">GST Applicable?</label>
           </div>
 
           {gstApplicable && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">GST Amount (₹)</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">GST Amount (â‚¹)</label>
               <input
                 type="number"
                 value={gstAmount}
@@ -176,7 +176,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Notes / Bill Reference</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">Notes / Bill Reference</label>
             <textarea
               rows={2}
               value={notes}
@@ -188,14 +188,14 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
 
           {/* Attached Invoice File Section */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase mb-1">
               Attached Invoice (PDF / JPG / PNG)
             </label>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <UploadCloud className="w-3.5 h-3.5 text-[#405189]" />
                 {invoiceFileName ? 'Replace Invoice File' : 'Upload Invoice PDF / JPG'}
@@ -236,7 +236,7 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
                     className="text-rose-500 hover:text-rose-700 font-bold ml-1 cursor-pointer"
                     title="Remove attached file"
                   >
-                    ✕
+                    âœ•
                   </button>
                 </div>
               )}
@@ -244,11 +244,11 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+              className="px-3.5 py-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold cursor-pointer"
             >
               Cancel
             </button>
@@ -271,3 +271,4 @@ export const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onS
     </div>
   );
 };
+

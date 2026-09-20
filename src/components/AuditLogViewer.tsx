@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AuditLog } from '../types';
 import { ShieldCheck, Lock, Activity, Clock, Search, Download, Filter, CheckCircle2, AlertTriangle, UserCheck } from 'lucide-react';
 import { exportAuditLogsToCSV } from '../utils/exportUtils';
@@ -35,7 +35,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
     if (act.includes('CREATE') || act.includes('ADD')) return 'bg-blue-50 text-blue-700 border-blue-200';
     if (act.includes('UPDATE') || act.includes('SET')) return 'bg-amber-50 text-amber-700 border-amber-200';
     if (act.includes('DELETE') || act.includes('REMOVE')) return 'bg-red-50 text-red-700 border-red-200';
-    return 'bg-slate-50 text-slate-700 border-slate-200';
+    return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700';
   };
 
   return (
@@ -43,11 +43,11 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
       {/* Header */}
       <div className="velzon-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#405189]" /> Security Audit Trail & Immutable Log
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Madura House • Row-Level Security telemetry, user mutation actions & access timestamps
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Madura House â€¢ Row-Level Security telemetry, user mutation actions & access timestamps
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
             exportAuditLogsToCSV(filteredLogs);
             playSuccessChime();
           }}
-          className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          className="px-3.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           title="Export audit records to CSV for compliance reporting"
         >
           <Download className="w-3.5 h-3.5 text-[#405189]" /> Export Audit Log (CSV)
@@ -66,13 +66,13 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
       {/* Filter and Search Bar */}
       <div className="velzon-card p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Action Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-md text-xs">
+        <div className="flex flex-wrap items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-md text-xs">
           {(['ALL', 'AUTH', 'CREATE', 'UPDATE', 'DELETE'] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedFilter(cat)}
               className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
-                selectedFilter === cat ? 'bg-[#405189] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                selectedFilter === cat ? 'bg-[#405189] text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white'
               }`}
             >
               {cat}
@@ -88,15 +88,15 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
             placeholder="Search email, action, resource..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 w-full sm:w-64"
+            className="velzon-input pl-8 pr-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 w-full sm:w-64"
           />
         </div>
       </div>
 
       {/* Logs Table */}
       <div className="velzon-card overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-800">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">
             System Activity & Mutation Logs ({filteredLogs.length} Records)
           </h2>
           <span className="text-xs text-emerald-600 font-mono font-bold flex items-center gap-1">
@@ -105,8 +105,8 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-700">
               <tr>
                 <th className="py-2.5 px-4">Operator / User</th>
                 <th className="py-2.5 px-4">Action</th>
@@ -124,8 +124,8 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-sans font-bold text-slate-800 flex items-center gap-1.5">
+                  <tr key={log.id} className="hover:bg-slate-50 dark:bg-slate-800/80 transition-colors">
+                    <td className="py-3 px-4 font-sans font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                       <UserCheck className="w-3.5 h-3.5 text-slate-400" /> {log.userEmail}
                     </td>
                     <td className="py-3 px-4">
@@ -133,11 +133,11 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
                         {log.action}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600 font-sans">
-                      <span className="font-semibold text-slate-800">{log.resourceType}</span>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300 font-sans">
+                      <span className="font-semibold text-slate-800 dark:text-slate-100">{log.resourceType}</span>
                       {log.resourceId && <span className="text-slate-400 text-[11px] ml-1">({log.resourceId})</span>}
                     </td>
-                    <td className="py-3 px-4 text-slate-500">{log.ipAddress}</td>
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400">{log.ipAddress}</td>
                     <td className="py-3 px-4 text-right text-slate-400">
                       {new Date(log.timestamp).toLocaleString('en-IN')}
                     </td>
@@ -151,3 +151,4 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ logs }) => {
     </div>
   );
 };
+

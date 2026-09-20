@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   LayoutDashboard, 
@@ -206,7 +206,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           id: `tenant-${u.id}`,
           category: 'Tenants',
           title: `${u.flatNumber}: ${u.fullName}`,
-          subtitle: `${u.phone} • ${u.email} • Status: ${u.paymentStatus?.toUpperCase() || 'PAID'}`,
+          subtitle: `${u.phone} â€¢ ${u.email} â€¢ Status: ${u.paymentStatus?.toUpperCase() || 'PAID'}`,
           icon: <Users className="w-4 h-4 text-[#405189]" />,
           action: () => { onNavigate('tenants'); onClose(); },
         });
@@ -223,8 +223,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         items.push({
           id: `exp-${e.id}`,
           category: 'Expenses',
-          title: `${e.particular} (₹${e.amount.toLocaleString('en-IN')})`,
-          subtitle: `Category: ${e.category.toUpperCase()} • Added By: ${e.addedBy}`,
+          title: `${e.particular} (â‚¹${e.amount.toLocaleString('en-IN')})`,
+          subtitle: `Category: ${e.category.toUpperCase()} â€¢ Added By: ${e.addedBy}`,
           icon: <Calendar className="w-4 h-4 text-[#0ab39c]" />,
           action: () => { onNavigate('maintenance'); onClose(); },
         });
@@ -267,11 +267,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center pt-10 sm:pt-20 p-3 sm:p-4 animate-in fade-in duration-150">
       <div 
-        className="bg-white rounded-xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[80vh]"
+        className="bg-white dark:bg-slate-900 rounded-xl max-w-xl w-full border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="p-3.5 border-b border-slate-100 flex items-center gap-3 bg-slate-50/70">
+        <div className="p-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 bg-slate-50 dark:bg-slate-800/70">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
           <input
             ref={inputRef}
@@ -283,14 +283,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             }}
             onKeyDown={handleKeyDown}
             placeholder="Type a command, flat number, resident, or expense..."
-            className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none font-medium"
+            className="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none font-medium"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-600">
+            <button onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-600 dark:text-slate-300">
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-200/80 rounded border border-slate-300">
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-200 dark:bg-slate-700/80 rounded border border-slate-300 dark:border-slate-600">
             ESC
           </kbd>
         </div>
@@ -300,7 +300,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <Sparkles className="w-6 h-6 mx-auto mb-2 text-slate-300" />
-              <p className="font-semibold text-slate-600">No matching commands or records found</p>
+              <p className="font-semibold text-slate-600 dark:text-slate-300">No matching commands or records found</p>
               <p className="text-[11px] mt-0.5">Try searching for a flat (e.g. "F01 - FRONT" or "GF"), an expense category, or "export".</p>
             </div>
           ) : (
@@ -312,19 +312,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onClick={item.action}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg cursor-pointer transition-all ${
-                    isSelected ? 'bg-[#405189]/10 text-[#405189]' : 'hover:bg-slate-50 text-slate-700'
+                    isSelected ? 'bg-[#405189]/10 text-[#405189]' : 'hover:bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-white shadow-xs' : 'bg-slate-100'
+                      isSelected ? 'bg-white dark:bg-slate-900 shadow-xs' : 'bg-slate-100 dark:bg-slate-800'
                     }`}>
                       {item.icon}
                     </div>
                     <div className="truncate">
                       <div className="text-xs font-bold truncate flex items-center gap-2">
                         {item.title}
-                        <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-mono">
+                        <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono">
                           {item.category}
                         </span>
                       </div>
@@ -346,10 +346,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer Shortcut Legend */}
-        <div className="p-2.5 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="p-2.5 px-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400">
           <div className="hidden sm:flex items-center gap-3">
-            <span><kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↑</kbd> <kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↓</kbd> to navigate</span>
-            <span><kbd className="font-mono bg-slate-200 px-1 rounded text-[10px]">↵</kbd> to select</span>
+            <span><kbd className="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded text-[10px]">â†‘</kbd> <kbd className="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded text-[10px]">â†“</kbd> to navigate</span>
+            <span><kbd className="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded text-[10px]">â†µ</kbd> to select</span>
           </div>
           <div className="sm:hidden text-[10px]">
             Tap any result to execute
@@ -362,3 +362,4 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     </div>
   );
 };
+

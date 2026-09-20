@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Download, 
@@ -144,7 +144,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="bg-white rounded-2xl w-full max-w-4xl h-[92vh] max-h-[850px] shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-150"
+        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-4xl h-[92vh] max-h-[850px] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Bar */}
@@ -166,11 +166,11 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
               </div>
               <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5 truncate">
                 <span>{invoice.particular || 'Maintenance Line Expense'}</span>
-                <span>•</span>
-                <span className="font-semibold text-emerald-400">₹{invoice.amount?.toLocaleString('en-IN') || '0'}</span>
-                <span>•</span>
+                <span>â€¢</span>
+                <span className="font-semibold text-emerald-400">â‚¹{invoice.amount?.toLocaleString('en-IN') || '0'}</span>
+                <span>â€¢</span>
                 <span>{formattedFileSize}</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span className="uppercase">{isPdf ? 'PDF Document' : 'Image File'}</span>
               </div>
             </div>
@@ -225,30 +225,30 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
 
         {/* Toolbar Bar for Visual Canvas */}
         {activeTab === 'visual' && (
-          <div className="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs shrink-0">
+          <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 font-semibold text-[11px]">View Mode:</span>
-              <span className="px-2 py-0.5 bg-white border border-slate-200 rounded font-mono text-[11px] font-bold text-slate-700">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">View Mode:</span>
+              <span className="px-2 py-0.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-mono text-[11px] font-bold text-slate-700 dark:text-slate-200">
                 {isPdf ? 'A4 Document Canvas' : 'High-Res Raster Preview'}
               </span>
             </div>
 
             {/* Zoom / Rotate Controls */}
             <div className="flex items-center gap-1.5">
-              <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+              <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-0.5 shadow-xs">
                 <button
                   type="button"
                   onClick={() => setZoomLevel(Math.max(50, zoomLevel - 15))}
-                  className="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100 cursor-pointer"
+                  className="p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white rounded hover:bg-slate-100 dark:bg-slate-800 cursor-pointer"
                   title="Zoom Out"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[11px] font-mono font-bold px-2 text-slate-700 select-none">{zoomLevel}%</span>
+                <span className="text-[11px] font-mono font-bold px-2 text-slate-700 dark:text-slate-200 select-none">{zoomLevel}%</span>
                 <button
                   type="button"
                   onClick={() => setZoomLevel(Math.min(175, zoomLevel + 15))}
-                  className="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100 cursor-pointer"
+                  className="p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white rounded hover:bg-slate-100 dark:bg-slate-800 cursor-pointer"
                   title="Zoom In"
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
@@ -267,8 +267,8 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                 <button
                   type="button"
                   onClick={() => setRotation((prev) => (prev + 90) % 360)}
-                  className="p-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-lg shadow-xs cursor-pointer"
-                  title="Rotate 90°"
+                  className="p-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs cursor-pointer"
+                  title="Rotate 90Â°"
                 >
                   <RotateCw className="w-3.5 h-3.5" />
                 </button>
@@ -277,7 +277,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
               <button
                 type="button"
                 onClick={handlePrint}
-                className="p-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-lg shadow-xs cursor-pointer"
+                className="p-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs cursor-pointer"
                 title="Print Document"
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -287,7 +287,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
         )}
 
         {/* Modal Main Body */}
-        <div className="flex-1 overflow-y-auto bg-slate-200/80 p-4 sm:p-6 flex justify-center items-start">
+        <div className="flex-1 overflow-y-auto bg-slate-200 dark:bg-slate-700/80 p-4 sm:p-6 flex justify-center items-start">
           
           {/* TAB 1: VISUAL DOCUMENT CANVAS */}
           {activeTab === 'visual' && (
@@ -298,7 +298,7 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
               {/* Case A: User uploaded custom Base64 Image */}
               {isImage && invoice.fileUrl && isDataUrl ? (
                 <div 
-                  className="bg-white p-3 rounded-xl shadow-2xl border border-slate-300 max-w-2xl transition-transform"
+                  className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-2xl border border-slate-300 dark:border-slate-600 max-w-2xl transition-transform"
                   style={{ transform: `rotate(${rotation}deg)` }}
                 >
                   <img 
@@ -306,14 +306,14 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                     alt={invoice.fileName}
                     className="max-h-[600px] w-auto object-contain rounded-lg mx-auto" 
                   />
-                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                    <span>Uploaded Attachment • {invoice.fileName}</span>
-                    <span className="font-bold text-slate-700">₹{invoice.amount?.toLocaleString('en-IN')}</span>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <span>Uploaded Attachment â€¢ {invoice.fileName}</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">â‚¹{invoice.amount?.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               ) : isPdf && invoice.fileUrl && isDataUrl ? (
                 /* Case B: User uploaded custom Base64 PDF */
-                <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-slate-300 overflow-hidden h-[620px]">
+                <div className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-300 dark:border-slate-600 overflow-hidden h-[620px]">
                   <iframe 
                     src={invoice.fileUrl} 
                     title={invoice.fileName}
@@ -322,17 +322,17 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                 </div>
               ) : (
                 /* Case C: High-Fidelity Photorealistic Tax Invoice Document Canvas */
-                <div className="bg-white shadow-2xl rounded-xl border border-slate-300 w-full max-w-2xl p-6 sm:p-8 text-slate-800 text-xs select-text">
+                <div className="bg-white dark:bg-slate-900 shadow-2xl rounded-xl border border-slate-300 dark:border-slate-600 w-full max-w-2xl p-6 sm:p-8 text-slate-800 dark:text-slate-100 text-xs select-text">
                   
                   {/* Watermark & Header */}
                   <div className="border-b-2 border-slate-900 pb-4 mb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <div className="text-[10px] font-bold text-slate-500 tracking-wider uppercase flex items-center gap-1.5">
+                        <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
                           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                           OFFICIAL AUDITED INVOICE VOUCHER
                         </div>
-                        <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight mt-0.5 uppercase">
+                        <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5 uppercase">
                           {invoice.fileName.includes('TANGEDCO') || invoice.fileName.includes('EB')
                             ? 'TAMIL NADU GENERATION AND DISTRIBUTION CORP (TANGEDCO)'
                             : invoice.fileName.includes('Lift') || invoice.fileName.includes('Johnson')
@@ -345,20 +345,20 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                             ? 'SRI MURUGAN GENERAL & JANITORIAL SUPPLIES'
                             : 'MADURA HOUSE MAINTENANCE VENDOR SERVICES'}
                         </h1>
-                        <p className="text-[11px] text-slate-500 mt-1">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                           {invoice.fileName.includes('TANGEDCO')
-                            ? 'Maduravoyal Distribution Section • Consumer ID: 07-124-004-982'
+                            ? 'Maduravoyal Distribution Section â€¢ Consumer ID: 07-124-004-982'
                             : invoice.fileName.includes('Lift')
-                            ? 'GSTIN: 33AAACJ1284K1Z8 • AMC Unit, Anna Nagar, Chennai'
+                            ? 'GSTIN: 33AAACJ1284K1Z8 â€¢ AMC Unit, Anna Nagar, Chennai'
                             : invoice.fileName.includes('Motor')
-                            ? 'GSTIN: 33AALPB8841P1ZQ • No. 42 Trunk Road, Maduravoyal, Chennai - 600095'
-                            : 'Property Maintenance Administration • Madura House, Maduravoyal, Chennai - 600095'}
+                            ? 'GSTIN: 33AALPB8841P1ZQ â€¢ No. 42 Trunk Road, Maduravoyal, Chennai - 600095'
+                            : 'Property Maintenance Administration â€¢ Madura House, Maduravoyal, Chennai - 600095'}
                         </p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <div className="w-14 h-14 bg-slate-50 border border-slate-200 rounded-lg p-1 flex items-center justify-center ml-auto shadow-xs">
-                          <QrCode className="w-12 h-12 text-slate-800" />
+                        <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 flex items-center justify-center ml-auto shadow-xs">
+                          <QrCode className="w-12 h-12 text-slate-800 dark:text-slate-100" />
                         </div>
                         <div className="text-[8px] text-slate-400 font-mono mt-1 font-bold">DIGITALLY VERIFIED</div>
                       </div>
@@ -366,10 +366,10 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                   </div>
 
                   {/* Metadata Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 mb-5">
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Voucher / Bill #</span>
-                      <span className="font-mono font-bold text-slate-800">
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-100">
                         {invoice.fileName.includes('TANGEDCO') ? 'EB-2026-0982' :
                          invoice.fileName.includes('Lift') ? 'JL-AMC-892' :
                          invoice.fileName.includes('Aqua') ? 'AQ-8842' :
@@ -379,14 +379,14 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
 
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Billing Period</span>
-                      <span className="font-bold text-slate-800">
+                      <span className="font-bold text-slate-800 dark:text-slate-100">
                         {invoice.date ? new Date(invoice.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'September 2026'}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Property / Site</span>
-                      <span className="font-bold text-slate-800">Madura House (6 Flats)</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100">Madura House (6 Flats)</span>
                     </div>
 
                     <div>
@@ -407,40 +407,40 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
                         <th className="py-2.5 px-3 text-right rounded-r-lg">Net Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 border-b border-slate-200">
+                    <tbody className="divide-y divide-slate-200 border-b border-slate-200 dark:border-slate-700">
                       <tr>
                         <td className="py-3 px-3 font-mono text-slate-400">01</td>
-                        <td className="py-3 px-3 font-semibold text-slate-900">
+                        <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white">
                           <div>{invoice.particular || 'Maintenance Service Work'}</div>
                           {invoice.notes && (
-                            <div className="text-[11px] text-slate-500 font-normal mt-0.5">{invoice.notes}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">{invoice.notes}</div>
                           )}
                         </td>
                         <td className="py-3 px-3 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
                             {invoice.category || 'Maintenance'}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 text-sm">
-                          ₹{invoice.amount?.toLocaleString('en-IN') || '0.00'}
+                        <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white text-sm">
+                          â‚¹{invoice.amount?.toLocaleString('en-IN') || '0.00'}
                         </td>
                       </tr>
                     </tbody>
-                    <tfoot className="bg-slate-50 font-bold">
+                    <tfoot className="bg-slate-50 dark:bg-slate-800 font-bold">
                       <tr>
-                        <td colSpan={3} className="py-3 px-3 text-right text-slate-700">Total Invoice Amount:</td>
+                        <td colSpan={3} className="py-3 px-3 text-right text-slate-700 dark:text-slate-200">Total Invoice Amount:</td>
                         <td className="py-3 px-3 text-right font-mono font-extrabold text-indigo-950 text-base">
-                          ₹{invoice.amount?.toLocaleString('en-IN') || '0.00'}
+                          â‚¹{invoice.amount?.toLocaleString('en-IN') || '0.00'}
                         </td>
                       </tr>
                     </tfoot>
                   </table>
 
                   {/* Bottom Verification Seal & Signature */}
-                  <div className="pt-4 border-t border-slate-200 flex items-end justify-between">
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-end justify-between">
                     <div>
                       <div className="text-[10px] text-slate-400 uppercase font-bold">Audit Verification Note:</div>
-                      <p className="text-[11px] text-slate-600 max-w-sm mt-0.5">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 max-w-sm mt-0.5">
                         {invoice.ocrText || 'Audited and passed for equal split among registered tenants of Madura House.'}
                       </p>
                     </div>
@@ -461,16 +461,16 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
 
           {/* TAB 2: OCR TEXT & METADATA ANALYSIS */}
           {activeTab === 'ocr' && (
-            <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-indigo-600" />
-                  <h3 className="font-bold text-xs text-slate-800">Extracted Document Data & OCR Metadata</h3>
+                  <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100">Extracted Document Data & OCR Metadata</h3>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyOcr}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   {copiedOcr ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                   {copiedOcr ? 'Copied!' : 'Copy OCR'}
@@ -478,36 +478,36 @@ ${invoice.ocrText || 'Official verified bill under Tamil Nadu Building Maintenan
               </div>
 
               {/* Key Attributes */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-50 dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 font-mono">
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">File Name</span>
-                  <span className="font-bold text-slate-800 truncate block">{invoice.fileName}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 truncate block">{invoice.fileName}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">File Size</span>
-                  <span className="text-slate-800">{formattedFileSize}</span>
+                  <span className="text-slate-800 dark:text-slate-100">{formattedFileSize}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">MIME Type</span>
-                  <span className="text-slate-800">{invoice.fileType || (isPdf ? 'application/pdf' : 'image/jpeg')}</span>
+                  <span className="text-slate-800 dark:text-slate-100">{invoice.fileType || (isPdf ? 'application/pdf' : 'image/jpeg')}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">Associated Amount</span>
-                  <span className="font-bold text-emerald-700">₹{invoice.amount?.toLocaleString('en-IN') || '0'}</span>
+                  <span className="font-bold text-emerald-700">â‚¹{invoice.amount?.toLocaleString('en-IN') || '0'}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">Category</span>
-                  <span className="text-slate-800 capitalize">{invoice.category || 'maintenance'}</span>
+                  <span className="text-slate-800 dark:text-slate-100 capitalize">{invoice.category || 'maintenance'}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block font-sans font-bold uppercase">Audited By</span>
-                  <span className="text-slate-800 truncate block">{invoice.addedBy || 'Property Owner'}</span>
+                  <span className="text-slate-800 dark:text-slate-100 truncate block">{invoice.addedBy || 'Property Owner'}</span>
                 </div>
               </div>
 
               {/* OCR Text Area */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                   Extracted Raw OCR Text / Machine Transcription:
                 </label>
                 <div className="p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
@@ -521,8 +521,8 @@ NOTES: ${invoice.notes || 'No remarks provided.'}`}
               </div>
 
               {/* Download Action */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
                   Document is encrypted and synced with Supabase Cloud & Local Vault.
                 </span>
                 <button
@@ -539,9 +539,9 @@ NOTES: ${invoice.notes || 'No remarks provided.'}`}
         </div>
 
         {/* Footer info bar */}
-        <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 text-slate-500 text-[11px] flex items-center justify-between shrink-0">
+        <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-[11px] flex items-center justify-between shrink-0">
           <span className="flex items-center gap-1">
-            <Building2 className="w-3.5 h-3.5 text-indigo-600" /> Madura House Maintenance Management • Digital Document Vault
+            <Building2 className="w-3.5 h-3.5 text-indigo-600" /> Madura House Maintenance Management â€¢ Digital Document Vault
           </span>
           <span className="font-mono text-[10px] text-slate-400">
             Press ESC to close
@@ -552,3 +552,4 @@ NOTES: ${invoice.notes || 'No remarks provided.'}`}
     </div>
   );
 };
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MaintenanceRecord, User, UserRole, Expense, House, Invoice, NotificationLog } from '../types';
 import { GodModeMasterModal, GodModeTab } from './GodModeMasterModal';
 import { InvoicePreviewModal, InvoicePreviewData } from './InvoicePreviewModal';
@@ -189,24 +189,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
       
       {/* 1. DASHBOARD HEADER & TABS (CosmoLex Style) */}
       <div className="flex flex-col mb-4">
-        <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
           {greeting}, {firstName}!
         </h1>
         
-        <div className="flex items-center gap-6 mt-4 border-b border-slate-200">
+        <div className="flex items-center gap-6 mt-4 border-b border-slate-200 dark:border-slate-700">
           <button 
             onClick={() => setActiveDashboardTab('property')}
-            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'property' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'property' ? 'font-semibold text-slate-900 dark:text-white border-b-2 border-slate-900' : 'font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 cursor-pointer'}`}>
             Property dashboard
           </button>
           <button 
             onClick={() => setActiveDashboardTab('personal')}
-            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'personal' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'personal' ? 'font-semibold text-slate-900 dark:text-white border-b-2 border-slate-900' : 'font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 cursor-pointer'}`}>
             Personal dashboard
           </button>
           <button 
             onClick={() => setActiveDashboardTab('activities')}
-            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'activities' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700 cursor-pointer'}`}>
+            className={`pb-3 text-sm transition-colors ${activeDashboardTab === 'activities' ? 'font-semibold text-slate-900 dark:text-white border-b-2 border-slate-900' : 'font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 cursor-pointer'}`}>
             Recent activities
           </button>
         </div>
@@ -217,11 +217,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="bg-slate-900 rounded-xl p-3 text-white flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-medium">God Maxx Access Active — Master Editor</span>
+            <span className="text-xs font-medium">God Maxx Access Active â€” Master Editor</span>
           </div>
           <button
             onClick={() => openMasterTab('property')}
-            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900/10 hover:bg-white dark:bg-slate-900/20 text-xs font-semibold transition-colors"
           >
             Open Master Editor
           </button>
@@ -235,16 +235,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* KPI 1: Total Expenses */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-[104px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between h-[104px]">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-slate-600">
+            <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
               Total expenses
             </span>
             <RefreshCw className="w-4 h-4 text-slate-400" />
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">
-              ₹{currentRecord.grandTotal.toLocaleString('en-IN')}
+            <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              â‚¹{currentRecord.grandTotal.toLocaleString('en-IN')}
             </span>
             <span className="flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
               <ArrowUpRight className="w-3 h-3" /> 2.4%
@@ -253,16 +253,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* KPI 2: Total Collected */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-[104px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between h-[104px]">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-slate-600">
+            <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
               Total collected
             </span>
             <Shield className="w-4 h-4 text-slate-400" />
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">
-              ₹{totalCollections.toLocaleString('en-IN')}
+            <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              â‚¹{totalCollections.toLocaleString('en-IN')}
             </span>
             <span className="flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
               <ArrowUpRight className="w-3 h-3" /> 8.1%
@@ -271,16 +271,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* KPI 3: Pending Dues */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-[104px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between h-[104px]">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-slate-600">
+            <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
               Unpaid balance
             </span>
             <AlertCircle className="w-4 h-4 text-slate-400" />
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">
-              ₹{pendingCollections.toLocaleString('en-IN')}
+            <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              â‚¹{pendingCollections.toLocaleString('en-IN')}
             </span>
             <span className="flex items-center text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">
               <ArrowUpRight className="w-3 h-3" /> 7.5%
@@ -289,16 +289,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* KPI 4: Individual Share */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-[104px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between h-[104px]">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-slate-600">
+            <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
               Per flat share
             </span>
             <Users className="w-4 h-4 text-slate-400" />
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">
-              ₹{currentRecord.individualContribution.toLocaleString('en-IN')}
+            <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              â‚¹{currentRecord.individualContribution.toLocaleString('en-IN')}
             </span>
           </div>
         </div>
@@ -311,14 +311,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Left: Money Finder (Pending Dues Table) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col h-[320px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col h-[320px]">
           <div className="flex items-center justify-between pb-4">
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
               Money finder
             </h2>
             <button 
               onClick={() => onNavigate('tenants')}
-              className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded"
+              className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 transition-colors bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 px-3 py-1 rounded"
             >
               View all
             </button>
@@ -326,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           
           <div className="overflow-y-auto flex-1 pr-1">
             <table className="w-full text-left text-sm">
-              <thead className="text-slate-400 font-normal border-b border-slate-100 sticky top-0 bg-white">
+              <thead className="text-slate-400 font-normal border-b border-slate-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900">
                 <tr>
                   <th className="pb-2 font-medium">Tenant</th>
                   <th className="pb-2 font-medium">Rent</th>
@@ -334,7 +334,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <th className="pb-2 font-medium text-right">Dues Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-700 dark:text-slate-200">
                 {users.filter(u => u.paymentStatus !== 'paid' || u.maintenanceStatus !== 'paid').slice(0, 8).map(u => {
                   const isRentPaid = u.paymentStatus === 'paid';
                   const isRentPending = u.paymentStatus === 'pending';
@@ -348,10 +348,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   return (
                     <tr key={u.id}>
                       <td className="py-2.5">
-                        <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={u.fullName}>
+                        <div className="font-semibold text-slate-800 dark:text-slate-100 text-xs truncate max-w-[130px]" title={u.fullName}>
                           {u.fullName}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-medium">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                           {u.flatNumber}
                         </div>
                       </td>
@@ -388,7 +388,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </button>
                       </td>
                       <td className="py-2.5 text-right font-bold text-xs text-rose-600 font-mono">
-                        ₹{totalDue.toLocaleString('en-IN')}
+                        â‚¹{totalDue.toLocaleString('en-IN')}
                       </td>
                     </tr>
                   );
@@ -396,7 +396,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {users.filter(u => u.paymentStatus !== 'paid' || u.maintenanceStatus !== 'paid').length === 0 && (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-emerald-600 font-medium text-xs">
-                      🎉 All resident rent and maintenance dues are fully cleared!
+                      ðŸŽ‰ All resident rent and maintenance dues are fully cleared!
                     </td>
                   </tr>
                 )}
@@ -406,16 +406,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Right: Billing Summary (Bar Chart) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col h-[320px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col h-[320px]">
           <div className="flex items-center justify-between pb-2">
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
               Billing summary
             </h2>
             <div className="flex items-center gap-4 text-xs font-medium">
-              <div className="flex items-center gap-1.5 text-slate-600">
+              <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                 <span className="w-2.5 h-2.5 rounded bg-[#1e3a5f]" /> Billed amount
               </div>
-              <div className="flex items-center gap-1.5 text-slate-600">
+              <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                 <span className="w-2.5 h-2.5 rounded bg-[#94a3b8]" /> Unpaid amount
               </div>
             </div>
@@ -426,7 +426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <BarChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }} barGap={0}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(val) => `₹${val/1000}k`} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(val) => `â‚¹${val/1000}k`} />
                 <Tooltip
                   cursor={{fill: 'transparent'}}
                   contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '4px', fontSize: '12px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)' }}
@@ -446,12 +446,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Left: Staff Activity (Recent Expenses) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col h-[320px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col h-[320px]">
           <div className="flex items-center justify-between pb-4">
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
               Recent activity
             </h2>
-            <select className="text-sm font-semibold text-slate-600 bg-transparent border-none outline-none cursor-pointer">
+            <select className="text-sm font-semibold text-slate-600 dark:text-slate-300 bg-transparent border-none outline-none cursor-pointer">
               <option>This month</option>
               <option>Last month</option>
               <option>This year</option>
@@ -460,7 +460,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="overflow-y-auto flex-1 pr-1">
             <table className="w-full text-left text-sm">
-              <thead className="text-slate-400 font-normal border-b border-slate-100 sticky top-0 bg-white">
+              <thead className="text-slate-400 font-normal border-b border-slate-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900">
                 <tr>
                   <th className="pb-2 font-medium">Spender</th>
                   <th className="pb-2 font-medium">Category</th>
@@ -468,7 +468,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <th className="pb-2 font-medium text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-700 dark:text-slate-200">
                 {currentRecord.expenses.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-6 text-center text-slate-400">No recent activity.</td>
@@ -476,10 +476,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 ) : (
                   currentRecord.expenses.slice(0, 5).map((exp) => (
                     <tr key={exp.id}>
-                      <td className="py-3 font-medium text-slate-800">{exp.addedBy.split(' ')[0]}</td>
-                      <td className="py-3 text-slate-600 capitalize">{exp.category}</td>
-                      <td className="py-3 text-slate-600 truncate max-w-[120px]">{exp.particular}</td>
-                      <td className="py-3 text-right font-medium text-slate-900">₹{exp.amount.toLocaleString('en-IN')}</td>
+                      <td className="py-3 font-medium text-slate-800 dark:text-slate-100">{exp.addedBy.split(' ')[0]}</td>
+                      <td className="py-3 text-slate-600 dark:text-slate-300 capitalize">{exp.category}</td>
+                      <td className="py-3 text-slate-600 dark:text-slate-300 truncate max-w-[120px]">{exp.particular}</td>
+                      <td className="py-3 text-right font-medium text-slate-900 dark:text-white">â‚¹{exp.amount.toLocaleString('en-IN')}</td>
                     </tr>
                   ))
                 )}
@@ -489,12 +489,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Right: Top 5 Clients (Expense Donut) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col h-[320px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col h-[320px]">
           <div className="flex items-center justify-between pb-2">
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
               Top 5 categories
             </h2>
-            <button className="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <button className="text-slate-400 hover:text-slate-600 dark:text-slate-300 cursor-pointer">
               <MoreVertical className="w-4 h-4" />
             </button>
           </div>
@@ -532,12 +532,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     const cosmoColors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#2dd4bf'];
                     return (
                       <div key={d.name} className="flex flex-col">
-                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                        <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cosmoColors[i % cosmoColors.length] }} />
                           <span className="font-medium truncate">{d.name}</span>
                         </div>
-                        <div className="pl-4 text-xs font-semibold text-slate-500">
-                          ₹{d.value.toLocaleString('en-IN')}
+                        <div className="pl-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          â‚¹{d.value.toLocaleString('en-IN')}
                         </div>
                       </div>
                     );
@@ -568,7 +568,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return (
           <div className="space-y-6">
             {/* 1. Tenant Profile Banner */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div className="flex items-center gap-4">
                 <div className="relative group/avatar shrink-0">
                   <img
@@ -580,24 +580,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-bold text-slate-900">{currentUser.fullName}</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">{currentUser.fullName}</h2>
                     <span className="px-2.5 py-0.5 bg-[#405189]/10 text-[#405189] text-xs font-bold rounded-full uppercase">
                       {currentUser.flatNumber}
                     </span>
-                    <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full uppercase">
+                    <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-full uppercase">
                       {currentUserRole.replace('_', ' ')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-3 flex-wrap">
                     <span>{currentUser.email}</span>
-                    {currentUser.phone && <span>• {currentUser.phone}</span>}
+                    {currentUser.phone && <span>â€¢ {currentUser.phone}</span>}
                     {currentUser.username && <span className="font-mono text-[#405189]">@{currentUser.username.replace(/^@/, '')}</span>}
                   </p>
                 </div>
               </div>
 
               {/* Clearance Status Pill */}
-              <div className="flex flex-col sm:items-end gap-1.5 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+              <div className="flex flex-col sm:items-end gap-1.5 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-700">
                 <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                   {currentMonthName} {currentRecord.year} Account Status
                 </div>
@@ -615,7 +615,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     ) : (
                       <>
                         <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                        Payment Due: ₹{totalDue.toLocaleString('en-IN')}
+                        Payment Due: â‚¹{totalDue.toLocaleString('en-IN')}
                       </>
                     )}
                   </span>
@@ -627,14 +627,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               
               {/* CARD 1: Monthly Rent */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
                         <IndianRupee className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Monthly Rent</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Monthly Rent</span>
                     </div>
                     
                     {/* Status Badge */}
@@ -649,29 +649,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
 
                   <div className="mt-4">
-                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-                      ₹{rentAmount.toLocaleString('en-IN')}
+                    <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                      â‚¹{rentAmount.toLocaleString('en-IN')}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Due on 5th of each month • Verified by Administrator
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Due on 5th of each month â€¢ Verified by Administrator
                     </p>
                   </div>
                 </div>
 
                 {/* Admin Quick Status Setter or Tenant Info */}
-                <div className="mt-4 pt-3 border-t border-slate-100">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
                   {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? (
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500 font-medium">Admin toggle:</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Admin toggle:</span>
                       <button
                         onClick={() => onToggleTenantPaymentStatus && onToggleTenantPaymentStatus(currentUser.id)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
+                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
                       >
                         Cycle Rent Status
                       </button>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                       <Shield className="w-3.5 h-3.5 text-[#405189]" />
                       Official receipt auto-generated upon clearance
                     </div>
@@ -680,14 +680,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               {/* CARD 2: Monthly Maintenance Fee */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center">
                         <Receipt className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Maintenance Fee</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Maintenance Fee</span>
                     </div>
 
                     {/* Status Badge */}
@@ -702,29 +702,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
 
                   <div className="mt-4">
-                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-                      ₹{maintAmount.toLocaleString('en-IN')}
+                    <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                      â‚¹{maintAmount.toLocaleString('en-IN')}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {currentMonthName} share (₹{currentRecord.grandTotal.toLocaleString('en-IN')} / {currentRecord.activeTenantsCount || 5} flats)
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      {currentMonthName} share (â‚¹{currentRecord.grandTotal.toLocaleString('en-IN')} / {currentRecord.activeTenantsCount || 5} flats)
                     </p>
                   </div>
                 </div>
 
                 {/* Admin Quick Status Setter or Tenant Info */}
-                <div className="mt-4 pt-3 border-t border-slate-100">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
                   {(currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT') ? (
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500 font-medium">Admin toggle:</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Admin toggle:</span>
                       <button
                         onClick={() => onToggleTenantMaintenanceStatus && onToggleTenantMaintenanceStatus(currentUser.id)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
+                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-[11px] font-bold rounded cursor-pointer transition-all active:scale-95"
                       >
                         Cycle Maint Status
                       </button>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                       <Zap className="w-3.5 h-3.5 text-amber-500" />
                       Audited live across building utility & repair log
                     </div>
@@ -733,34 +733,34 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               {/* CARD 3: Combined Balance & Deposit */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
                         <Wallet className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Deposit & Escrow</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Deposit & Escrow</span>
                     </div>
-                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase">
                       Active Lease
                     </span>
                   </div>
 
                   <div className="mt-4">
-                    <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-                      ₹{depositAmount.toLocaleString('en-IN')}
+                    <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                      â‚¹{depositAmount.toLocaleString('en-IN')}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       Refundable Security Deposit held safely in Escrow
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-500 font-medium">Total Pending Due:</span>
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Total Pending Due:</span>
                   <span className={`font-mono font-bold ${totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                    ₹{totalDue.toLocaleString('en-IN')}
+                    â‚¹{totalDue.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
@@ -768,28 +768,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             {/* 3. Itemized Maintenance Cost Transparency Table */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-[#405189]" />
                     {currentMonthName} {currentRecord.year} Maintenance Ledger Breakdown
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Itemized building expenses split equally across {currentRecord.activeTenantsCount || 5} active apartment units
                   </p>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-slate-400">Total Expenditure</div>
-                  <div className="text-sm font-bold text-slate-900 font-mono">
-                    ₹{currentRecord.grandTotal.toLocaleString('en-IN')}
+                  <div className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+                    â‚¹{currentRecord.grandTotal.toLocaleString('en-IN')}
                   </div>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase">
+                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700 uppercase">
                     <tr>
                       <th className="px-4 py-3">Category</th>
                       <th className="px-4 py-3">Particulars</th>
@@ -798,7 +798,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <th className="px-4 py-3 text-right">Your Share (1/{currentRecord.activeTenantsCount || 5})</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y divide-slate-100 text-slate-700 dark:text-slate-200">
                     {currentRecord.expenses.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-8 text-center text-slate-400">
@@ -807,27 +807,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </tr>
                     ) : (
                       currentRecord.expenses.map((exp) => (
-                        <tr key={exp.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="px-4 py-3 capitalize font-medium text-slate-800 flex items-center gap-1.5">
+                        <tr key={exp.id} className="hover:bg-slate-50 dark:bg-slate-800/60 transition-colors">
+                          <td className="px-4 py-3 capitalize font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                             <Tag className="w-3 h-3 text-slate-400" />
                             {exp.category}
                           </td>
                           <td className="px-4 py-3">{exp.particular}</td>
-                          <td className="px-4 py-3 text-slate-500">{exp.addedBy}</td>
-                          <td className="px-4 py-3 text-right font-mono font-medium">₹{exp.amount.toLocaleString('en-IN')}</td>
+                          <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{exp.addedBy}</td>
+                          <td className="px-4 py-3 text-right font-mono font-medium">â‚¹{exp.amount.toLocaleString('en-IN')}</td>
                           <td className="px-4 py-3 text-right font-mono font-bold text-[#405189]">
-                            ₹{(exp.amount / (currentRecord.activeTenantsCount || 5)).toFixed(2)}
+                            â‚¹{(exp.amount / (currentRecord.activeTenantsCount || 5)).toFixed(2)}
                           </td>
                         </tr>
                       ))
                     )}
                   </tbody>
-                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-800">
+                  <tfoot className="bg-slate-50 dark:bg-slate-800 font-bold border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
                     <tr>
                       <td colSpan={3} className="px-4 py-3">Total Monthly Contribution Due</td>
-                      <td className="px-4 py-3 text-right font-mono">₹{currentRecord.grandTotal.toLocaleString('en-IN')}</td>
+                      <td className="px-4 py-3 text-right font-mono">â‚¹{currentRecord.grandTotal.toLocaleString('en-IN')}</td>
                       <td className="px-4 py-3 text-right font-mono text-emerald-700 text-sm">
-                        ₹{maintAmount.toLocaleString('en-IN')}
+                        â‚¹{maintAmount.toLocaleString('en-IN')}
                       </td>
                     </tr>
                   </tfoot>
@@ -854,7 +854,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     navigator.clipboard.writeText('sampathkumar@chemadura.com');
                     alert('UPI ID (sampathkumar@chemadura.com) copied to clipboard!');
                   }}
-                  className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 bg-white dark:bg-slate-900/10 hover:bg-white dark:bg-slate-900/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5 text-sky-400" />
                   Copy UPI ID
@@ -867,19 +867,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
       })()}
 
       {activeDashboardTab === 'activities' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm min-h-[400px]">
-          <h2 className="text-lg font-bold text-slate-900 mb-6">Recent Platform Activities</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm min-h-[400px]">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Recent Platform Activities</h2>
           {notificationLogs.length > 0 ? (
             <div className="space-y-4">
               {notificationLogs.slice(0, 10).map((log, i) => (
-                <div key={i} className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                   <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
                     <Bell className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 text-sm">{log.subject}</h4>
-                    <p className="text-slate-600 text-xs mt-1 capitalize">
-                      {log.type.replace(/_/g, ' ')} • To: {log.recipientEmail}
+                    <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{log.subject}</h4>
+                    <p className="text-slate-600 dark:text-slate-300 text-xs mt-1 capitalize">
+                      {log.type.replace(/_/g, ' ')} â€¢ To: {log.recipientEmail}
                     </p>
                     <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mt-2 block">
                       {new Date(log.sentAt).toLocaleString('en-IN')}
@@ -889,7 +889,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+            <div className="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
               <AlertCircle className="w-12 h-12 text-slate-300 mb-3" />
               <p className="text-sm font-medium">No recent activities found.</p>
             </div>
@@ -948,9 +948,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCmdModal(false)}
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white dark:bg-slate-900/10 hover:bg-white dark:bg-slate-900/20 text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
               >
-                ✕
+                âœ•
               </button>
             </div>
 
@@ -1008,7 +1008,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowCmdModal(false)}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900/10 hover:bg-white dark:bg-slate-900/20 text-white font-bold text-xs transition-colors cursor-pointer"
                 >
                   Close
                 </button>
@@ -1026,3 +1026,4 @@ export const Dashboard: React.FC<DashboardProps> = ({
     </div>
   );
 };
+

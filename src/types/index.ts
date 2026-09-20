@@ -31,6 +31,7 @@ export interface User {
   preferences?: {
     audioEnabled?: boolean;
     clock24h?: boolean;
+    theme?: 'light' | 'dark';
   };
 }
 

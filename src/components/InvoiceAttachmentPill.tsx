@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { FileText, Image as ImageIcon, Eye, Download, Paperclip, Plus } from 'lucide-react';
 import { Expense } from '../types';
 import { InvoicePreviewData } from './InvoicePreviewModal';
@@ -58,7 +58,7 @@ export const InvoiceAttachmentPill: React.FC<InvoiceAttachmentPillProps> = ({
             e.stopPropagation();
             onQuickAttach(expense);
           }}
-          className={`inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50/60 border border-dashed border-slate-300 hover:border-indigo-400 px-2 py-0.5 rounded-md transition-all cursor-pointer mt-1 ${className}`}
+          className={`inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-indigo-600 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50/60 border border-dashed border-slate-300 dark:border-slate-600 hover:border-indigo-400 px-2 py-0.5 rounded-md transition-all cursor-pointer mt-1 ${className}`}
           title="Click to attach an invoice PDF or JPG to this expense"
         >
           <Plus className="w-2.5 h-2.5 text-indigo-500" />
@@ -96,7 +96,7 @@ export const InvoiceAttachmentPill: React.FC<InvoiceAttachmentPillProps> = ({
         <span className={`text-[9px] font-mono px-1 rounded font-bold ${
           isPdf ? 'bg-rose-200/50 text-rose-700' : 'bg-indigo-200/50 text-indigo-700'
         }`}>
-          {isPdf ? 'PDF' : 'JPG'} • {formattedSize}
+          {isPdf ? 'PDF' : 'JPG'} â€¢ {formattedSize}
         </span>
 
         <span className="opacity-70 group-hover:opacity-100 flex items-center gap-0.5 text-[10px] font-bold underline decoration-dotted ml-0.5">
@@ -107,3 +107,4 @@ export const InvoiceAttachmentPill: React.FC<InvoiceAttachmentPillProps> = ({
     </div>
   );
 };
+
