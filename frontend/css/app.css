@@ -1,0 +1,49 @@
+/* Additional Vanilla CSS overrides */
+.hidden {
+  display: none !important;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Theme variables and dark mode support */
+:root {
+  --bg-primary: #f3f3f9;
+  --text-primary: #495057;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+}
+
+html.dark, body.dark, .theme-dark {
+  color-scheme: dark;
+  --bg-primary: #0f172a;
+  --text-primary: #f8fafc;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.dark .text-slate-900, .dark .text-gray-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-600, .dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .border-slate-200, .dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+

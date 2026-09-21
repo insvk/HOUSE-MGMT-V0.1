@@ -6,11 +6,9 @@
   "author": "CHE-MADURA HS-1 MGMT",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "build:desktop": "tsc && vite build && electron-builder",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
+    "dev": "cd backend && uvicorn main:app --reload",
+    "build": "node scripts/build.cjs",
+    "build:desktop": "node scripts/build.cjs && electron-builder --win",
     "db:sync": "node scripts/sync-db.cjs",
     "db:seed": "node scripts/sync-db.cjs"
   },
@@ -20,11 +18,21 @@
     "directories": {
       "output": "release"
     },
+    "compression": "store",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "dir"
       ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "differentialPackage": false
     },
     "mac": {
       "target": "dmg"
@@ -34,31 +42,14 @@
     }
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.115.0",
-    "clsx": "^2.1.1",
+    "@supabase/supabase-js": "^2.116.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
-    "lucide-react": "^0.474.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.15.0",
-    "tailwind-merge": "^2.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
     "electron": "^44.3.0",
     "electron-builder": "^26.15.3",
-    "electron-updater": "^6.8.9",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.7",
-    "vite-plugin-electron": "^1.1.2",
-    "vite-plugin-electron-renderer": "^1.0.0"
+    "electron-updater": "^6.8.9"
   }
 }
