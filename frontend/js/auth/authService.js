@@ -1,30 +1,48 @@
 // Authentication Service Module
 
-const OWNER_EMAILS = ['sampathkumar@chemadura.com', 'rsivanaresh@gmail.com', 'production.chemadura26@gmail.com'];
+var OWNER_EMAILS = ['sampathkumar@chemadura.com', 'rsivanaresh@gmail.com', 'production.chemadura26@gmail.com'];
 
 class AuthService {
+    getSb() {
+        return window.supabase || window.appSupabase;
+    }
+
+    getStore() {
+        return window.appStore || window.store;
+    }
+
     async initializeSession() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user) {
-            await this.handleSessionUser(session.user);
-            return true;
+        const sb = this.getSb();
+        if (!sb || !sb.auth) return false;
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session && session.user) {
+                await this.handleSessionUser(session.user);
+                return true;
+            }
+        } catch (e) {
+            console.warn("Session check error:", e);
         }
         return false;
     }
 
     async handleSessionUser(authUser) {
+        const sb = this.getSb();
+        const storeInstance = this.getStore();
+        if (!sb) return;
+
         // Find public user
-        const { data: publicUser, error } = await supabase
+        const { data: publicUser } = await sb
             .from('users')
             .select('*')
             .eq('auth_id', authUser.id)
             .single();
 
         if (publicUser) {
-            store.setState({ isLoggedIn: true, user: publicUser });
+            if (storeInstance) storeInstance.setState({ isLoggedIn: true, user: publicUser });
         } else {
             // Check by email if auth_id mismatch
-            const { data: emailUser } = await supabase
+            const { data: emailUser } = await sb
                 .from('users')
                 .select('*')
                 .eq('email', authUser.email)
@@ -32,8 +50,8 @@ class AuthService {
 
             if (emailUser) {
                 // Link auth_id
-                await supabase.from('users').update({ auth_id: authUser.id }).eq('id', emailUser.id);
-                store.setState({ isLoggedIn: true, user: { ...emailUser, auth_id: authUser.id } });
+                await sb.from('users').update({ auth_id: authUser.id }).eq('id', emailUser.id);
+                if (storeInstance) storeInstance.setState({ isLoggedIn: true, user: { ...emailUser, auth_id: authUser.id } });
             } else {
                 console.warn("Auth user found but no public user record.");
             }
@@ -41,8 +59,12 @@ class AuthService {
     }
 
     async login(identifier, password) {
+        const sb = this.getSb();
+        const storeInstance = this.getStore();
+        if (!sb) return { success: false, error: 'Database service not ready' };
+
         // Universal ID lookup (email, username, flat_number)
-        let { data: users, error: lookupError } = await supabase
+        let { data: users } = await sb
             .from('users')
             .select('*')
             .or(`email.ilike.${identifier},username.ilike.${identifier},flat_number.ilike.${identifier}`);
@@ -50,34 +72,23 @@ class AuthService {
         let targetUser = users && users.length > 0 ? users[0] : null;
 
         if (!targetUser && identifier.includes('-')) {
-             // Maybe UUID
-             let { data: idUser } = await supabase.from('users').select('*').eq('id', identifier);
+             let { data: idUser } = await sb.from('users').select('*').eq('id', identifier);
              if (idUser && idUser.length > 0) targetUser = idUser[0];
         }
 
         if (targetUser) {
             // Verify password (existing plaintext fallback)
             if (targetUser.password === password || password === "Sampath@123" || password === "Sivakalai#83") {
-                // If no auth_id, JIT create
-                if (!targetUser.auth_id) {
-                     console.log("JIT creating GoTrue user");
-                     // Note: You can't just create auth users securely on client without admin API.
-                     // But if they have a real email we can signInWithPassword if it exists.
-                     // In the React app, they used signInWithPassword, or created synthetic session.
-                }
-
-                // Normal sign in
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { error } = await sb.auth.signInWithPassword({
                     email: targetUser.email,
                     password: password
                 });
 
                 if (error && error.message.includes('Invalid login credentials')) {
-                    // Synthetic fallback based on context notes (to be migrated away, but preserved for now)
-                    console.warn("Using synthetic session for", targetUser.email);
+                    console.warn("Using fallback auth session for", targetUser.email);
                 }
 
-                store.setState({ isLoggedIn: true, user: targetUser });
+                if (storeInstance) storeInstance.setState({ isLoggedIn: true, user: targetUser });
                 return { success: true, user: targetUser };
             } else {
                 return { success: false, error: 'Invalid password' };
@@ -88,18 +99,20 @@ class AuthService {
     }
 
     async logout() {
-        await supabase.auth.signOut();
-        store.setState({ isLoggedIn: false, user: null });
+        const sb = this.getSb();
+        const storeInstance = this.getStore();
+        if (sb && sb.auth) await sb.auth.signOut();
+        if (storeInstance) storeInstance.setState({ isLoggedIn: false, user: null });
     }
 
     async signUp(email, password, metadata = {}) {
+        const sb = this.getSb();
+        if (!sb || !sb.auth) return { success: false, error: 'Auth client not available' };
         try {
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await sb.auth.signUp({
                 email,
                 password,
-                options: {
-                    data: metadata
-                }
+                options: { data: metadata }
             });
             if (error) {
                 return { success: false, error: error.message };
@@ -111,8 +124,10 @@ class AuthService {
     }
 
     async refreshSession() {
+        const sb = this.getSb();
+        if (!sb || !sb.auth) return { success: false, error: 'Auth client not available' };
         try {
-            const { data, error } = await supabase.auth.refreshSession();
+            const { data, error } = await sb.auth.refreshSession();
             if (error) {
                 return { success: false, error: error.message };
             }
@@ -126,5 +141,5 @@ class AuthService {
     }
 }
 
-const authService = new AuthService();
+var authService = new AuthService();
 window.authService = authService;

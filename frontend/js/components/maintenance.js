@@ -110,7 +110,9 @@ function renderMaintenance() {
             </main>
         </div>
     `;
-    lucide.createIcons();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { console.warn('Lucide icon error:', e); }
+    }
 
     // Event Listeners
     const addBtn = document.getElementById('add-expense-btn');

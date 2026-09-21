@@ -71,7 +71,9 @@ function renderTenants() {
             </main>
         </div>
     `;
-    lucide.createIcons();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { console.warn('Lucide icon error:', e); }
+    }
 
     // Event Listeners for Tenant interactions
     document.querySelectorAll('.delete-usr-btn').forEach(btn => {

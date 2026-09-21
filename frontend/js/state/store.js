@@ -1,11 +1,12 @@
 // Global State Store for Vanilla JS
 
-const initialState = {
+var initialAppState = {
     user: null,
     users: [], // Tenant directory
     records: [], // Maintenance records
     house: null,
     invoices: [],
+    notifications: [],
     notificationLogs: [],
     auditLogs: [],
     isLoggedIn: false,
@@ -36,7 +37,11 @@ class Store {
 
     notify() {
         for (const listener of this.listeners) {
-            listener(this.state);
+            try {
+                listener(this.state);
+            } catch (err) {
+                console.error("Store listener error:", err);
+            }
         }
     }
 
@@ -65,12 +70,13 @@ class Store {
 
     setTheme(theme) {
         const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        document.body.classList.toggle('dark', isDark);
+        if (document.documentElement) document.documentElement.classList.toggle('dark', isDark);
+        if (document.body) document.body.classList.toggle('dark', isDark);
         localStorage.setItem('madura_theme', theme);
         this.setState({ theme });
     }
 }
 
-const store = new Store(initialState);
+var store = new Store(initialAppState);
 window.appStore = store;
+window.store = store;

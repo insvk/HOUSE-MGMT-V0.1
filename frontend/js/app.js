@@ -133,7 +133,13 @@ function renderLogin() {
         </div>
     `;
 
-    lucide.createIcons();
+    function safeRefreshIcons() {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            try { window.lucide.createIcons(); } catch (e) { console.warn('Lucide icon error:', e); }
+        }
+    }
+
+    safeRefreshIcons();
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -144,7 +150,7 @@ function renderLogin() {
         
         errDiv.classList.add('hidden');
         btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Authenticating...</span>';
-        lucide.createIcons();
+        safeRefreshIcons();
         btn.disabled = true;
         
         const res = await window.authService.login(id, pass);
@@ -155,69 +161,9 @@ function renderLogin() {
             errDiv.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 inline mr-1"></i>${res.error}`;
             errDiv.classList.remove('hidden');
             btn.innerHTML = '<span>Sign In</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
-            lucide.createIcons();
+            safeRefreshIcons();
             btn.disabled = false;
         }
     });
 }
 
-function renderMaintenance() {
-    const root = document.getElementById('app-root');
-    root.innerHTML = \`<div class="flex h-screen w-full bg-gray-50">
-        <!-- Add Sidebar via JS template injection if building a real SPA, but for now duplicate or wrap -->
-        <div class="p-8 w-full">
-            <div class="flex items-center gap-4 mb-6">
-                <button onclick="window.location.hash='#/'" class="p-2 hover:bg-gray-200 rounded-full bg-gray-100 transition-colors">
-                    <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
-                </button>
-                <h1 class="text-2xl font-bold">Maintenance Module</h1>
-            </div>
-            <div class="bg-white p-12 rounded-xl border border-gray-200 text-center text-gray-500 shadow-sm">
-                <i data-lucide="hammer" class="w-12 h-12 mx-auto text-gray-300 mb-4"></i>
-                <h2 class="text-xl font-medium mb-2">Under Construction</h2>
-                <p>The Maintenance Ledger is currently being ported to Vanilla JS.</p>
-            </div>
-        </div>
-    </div>\`;
-    lucide.createIcons();
-}
-
-function renderTenants() {
-    const root = document.getElementById('app-root');
-    root.innerHTML = \`<div class="flex h-screen w-full bg-gray-50">
-        <div class="p-8 w-full">
-            <div class="flex items-center gap-4 mb-6">
-                <button onclick="window.location.hash='#/'" class="p-2 hover:bg-gray-200 rounded-full bg-gray-100 transition-colors">
-                    <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
-                </button>
-                <h1 class="text-2xl font-bold">Tenant Directory</h1>
-            </div>
-            <div class="bg-white p-12 rounded-xl border border-gray-200 text-center text-gray-500 shadow-sm">
-                <i data-lucide="users" class="w-12 h-12 mx-auto text-gray-300 mb-4"></i>
-                <h2 class="text-xl font-medium mb-2">Under Construction</h2>
-                <p>The Tenant Directory is currently being ported to Vanilla JS.</p>
-            </div>
-        </div>
-    </div>\`;
-    lucide.createIcons();
-}
-
-function renderInvoices() {
-    const root = document.getElementById('app-root');
-    root.innerHTML = \`<div class="flex h-screen w-full bg-gray-50">
-        <div class="p-8 w-full">
-            <div class="flex items-center gap-4 mb-6">
-                <button onclick="window.location.hash='#/'" class="p-2 hover:bg-gray-200 rounded-full bg-gray-100 transition-colors">
-                    <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
-                </button>
-                <h1 class="text-2xl font-bold">Invoice Gallery</h1>
-            </div>
-            <div class="bg-white p-12 rounded-xl border border-gray-200 text-center text-gray-500 shadow-sm">
-                <i data-lucide="file-text" class="w-12 h-12 mx-auto text-gray-300 mb-4"></i>
-                <h2 class="text-xl font-medium mb-2">Under Construction</h2>
-                <p>The Invoice Gallery is currently being ported to Vanilla JS.</p>
-            </div>
-        </div>
-    </div>\`;
-    lucide.createIcons();
-}

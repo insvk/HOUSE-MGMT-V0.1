@@ -73,7 +73,7 @@ function renderDashboard() {
                     <div class="flex items-center gap-4">
                         <div class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-blue-200">
                             <i data-lucide="calendar" class="w-4 h-4"></i>
-                            ${currentRecord ? \`\${getMonthName(currentRecord.month)} \${currentRecord.year}\` : 'No Active Month'}
+                            ${currentRecord ? (getMonthName(currentRecord.month) + ' ' + currentRecord.year) : 'No Active Month'}
                         </div>
                         <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
                             <i data-lucide="settings" class="w-5 h-5 text-gray-600"></i>
@@ -225,7 +225,9 @@ function renderDashboard() {
     `;
 
     // Re-initialize icons in newly injected HTML
-    lucide.createIcons();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { console.warn('Lucide icon error:', e); }
+    }
 
     // Attach event listeners
     document.getElementById('logout-btn').addEventListener('click', async () => {

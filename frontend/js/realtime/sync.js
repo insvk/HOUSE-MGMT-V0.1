@@ -5,15 +5,19 @@ class RealtimeSyncService {
         this.channel = null;
     }
 
+    getSb() {
+        return window.supabase || window.appSupabase;
+    }
+
     init() {
-        if (!supabase) {
-            console.error('Supabase client not initialized');
+        const sb = this.getSb();
+        if (!sb || typeof sb.channel !== 'function') {
+            console.warn('Supabase client not initialized for Realtime');
             return;
         }
 
         console.log('Initializing realtime subscriptions...');
-
-        this.channel = supabase.channel('realtime:madura_house_platform_sync');
+        this.channel = sb.channel('realtime:madura_house_platform_sync');
 
         // Users
         this.channel.on(
@@ -67,51 +71,61 @@ class RealtimeSyncService {
     // Handlers
     handleUserChange(payload) {
         console.log('Realtime User Change:', payload);
-        // We can just trigger a full data reload to be safe, or do optimistic merge.
-        // For migration safety, we reload data.
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     handleHouseChange(payload) {
         console.log('Realtime House Change:', payload);
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     handleRecordChange(payload) {
         console.log('Realtime Record Change:', payload);
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     handleExpenseChange(payload) {
         console.log('Realtime Expense Change:', payload);
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     handleInvoiceChange(payload) {
         console.log('Realtime Invoice Change:', payload);
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     handleNotificationChange(payload) {
         console.log('Realtime Notification Change:', payload);
-        if (window.loadGlobalData) window.loadGlobalData();
+        if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 
     unsubscribe() {
-        if (this.channel) {
-            supabase.removeChannel(this.channel);
+        const sb = this.getSb();
+        if (this.channel && sb && typeof sb.removeChannel === 'function') {
+            sb.removeChannel(this.channel);
         }
     }
 }
 
 window.realtimeSyncService = new RealtimeSyncService();
 
-// Auto-initialize if logged in
-window.appStore.subscribe((state) => {
-    if (state.isLoggedIn && !window.realtimeSyncService.channel) {
-        window.realtimeSyncService.init();
-    } else if (!state.isLoggedIn && window.realtimeSyncService.channel) {
-        window.realtimeSyncService.unsubscribe();
-        window.realtimeSyncService.channel = null;
+// Safe Auto-initialize helper
+function setupRealtimeSubscriber() {
+    const storeInstance = window.appStore || window.store;
+    if (storeInstance && typeof storeInstance.subscribe === 'function') {
+        storeInstance.subscribe((state) => {
+            if (state.isLoggedIn && !window.realtimeSyncService.channel) {
+                window.realtimeSyncService.init();
+            } else if (!state.isLoggedIn && window.realtimeSyncService.channel) {
+                window.realtimeSyncService.unsubscribe();
+                window.realtimeSyncService.channel = null;
+            }
+        });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupRealtimeSubscriber);
+} else {
+    setupRealtimeSubscriber();
+}

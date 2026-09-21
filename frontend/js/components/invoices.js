@@ -43,7 +43,7 @@ function renderInvoices() {
                             ${inv.file_type === 'application/pdf' ? `
                             <i data-lucide="file-text" class="w-16 h-16 text-red-500"></i>
                             ` : `
-                            <img src="${inv.file_url}" class="max-h-full object-contain" alt="Invoice Preview" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'24\\' height=\\'24\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'2\\' ry=\\'2\\'/><circle cx=\\'9\\' cy=\\'9\\' r=\\'2\\'/><path d=\\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\\'/></svg>'">
+                            <img src="${inv.file_url}" class="max-h-full object-contain" alt="Invoice Preview" onerror="this.style.display='none'">
                             `}
                             <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center gap-2 transition-opacity">
                                 <a href="${inv.file_url}" target="_blank" class="bg-white text-gray-900 p-2 rounded-full hover:bg-blue-50 transition-colors">
@@ -64,7 +64,9 @@ function renderInvoices() {
             </main>
         </div>
     `;
-    lucide.createIcons();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { console.warn('Lucide icon error:', e); }
+    }
 }
 
 window.renderInvoices = renderInvoices;
