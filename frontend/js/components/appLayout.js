@@ -241,6 +241,15 @@
             sidebar?.classList.add('-translate-x-full');
             backdrop?.classList.add('hidden');
         });
+        // Auto-close sidebar on mobile when navigating
+        sidebar?.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop?.classList.add('hidden');
+                }
+            });
+        });
 
         // Attach Command Palette
         document.getElementById('header-cmd-search-btn')?.addEventListener('click', () => {
@@ -269,7 +278,11 @@
                         await window.supabase.from('users').update({ avatar_url: newUrl }).eq('id', user.id);
                     }
                     if (window.appStore) window.appStore.setState({ user: updated });
-                    if (window.location.hash) window.location.reload();
+                    if (typeof window.refreshCurrentView === 'function') {
+                        window.refreshCurrentView();
+                    } else {
+                        window.location.reload();
+                    }
                 });
             }
         };
@@ -281,7 +294,11 @@
             if (window.modals && window.modals.openEditProfileModal) {
                 window.modals.openEditProfileModal(user, (updated) => {
                     if (window.appStore) window.appStore.setState({ user: updated });
-                    window.location.reload();
+                    if (typeof window.refreshCurrentView === 'function') {
+                        window.refreshCurrentView();
+                    } else {
+                        window.location.reload();
+                    }
                 });
             }
         });
@@ -315,8 +332,11 @@
             const role = e.target.value;
             const updated = { ...user, role };
             if (window.appStore) window.appStore.setState({ user: updated });
-            if (window.audioUtils) window.audioUtils.playSuccessChime();
-            window.location.reload();
+            if (typeof window.refreshCurrentView === 'function') {
+                window.refreshCurrentView();
+            } else {
+                window.location.reload();
+            }
         });
     }
 

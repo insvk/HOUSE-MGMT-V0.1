@@ -39,3 +39,11 @@ class Router {
 }
 
 window.appRouter = null; // Instantiated in app.js
+
+window.navigateTo = function(path) {
+    if (!path) path = '#/';
+    if (!path.startsWith('#/')) {
+        path = '#/' + (path === 'dashboard' ? '' : path);
+    }
+    window.location.hash = path;
+};

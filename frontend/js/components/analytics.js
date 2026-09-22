@@ -98,11 +98,15 @@ function renderAnalytics() {
         bodyHtml
     });
 
-    // Initialize Chart.js
+    // Initialize Chart.js safely with instance destruction
     setTimeout(() => {
         const trendCanvas = document.getElementById('trendChart');
         if (trendCanvas && window.Chart) {
-            new window.Chart(trendCanvas, {
+            if (window._trendChartInstance) {
+                window._trendChartInstance.destroy();
+                window._trendChartInstance = null;
+            }
+            window._trendChartInstance = new window.Chart(trendCanvas, {
                 type: 'bar',
                 data: {
                     labels: trendLabels.length > 0 ? trendLabels : ['Sep 2026'],
@@ -127,7 +131,11 @@ function renderAnalytics() {
 
         const categoryCanvas = document.getElementById('categoryChart');
         if (categoryCanvas && window.Chart && categoryValues.length > 0) {
-            new window.Chart(categoryCanvas, {
+            if (window._categoryChartInstance) {
+                window._categoryChartInstance.destroy();
+                window._categoryChartInstance = null;
+            }
+            window._categoryChartInstance = new window.Chart(categoryCanvas, {
                 type: 'doughnut',
                 data: {
                     labels: categoryLabels,
