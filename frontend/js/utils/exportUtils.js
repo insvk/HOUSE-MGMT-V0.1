@@ -368,7 +368,7 @@
             [`Property Address: ${propAddress}`],
             [`Generated On: ${new Date().toLocaleString('en-IN')}`],
             [],
-            ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Payment Status', `Monthly Rent (${currency})`, `Security Deposit (${currency})`, 'Move-In Date', 'Emergency Contact']
+            ['S.No', 'Flat / Unit', 'Resident Name', 'Phone', 'Email', 'Role Privilege', 'Occupancy Status', 'Rent Status', 'Maintenance Status', `Monthly Rent (${currency})`, `Security Deposit (${currency})`, 'Move-In Date', 'Emergency Contact']
         ];
 
         userList.forEach((user, idx) => {
@@ -380,7 +380,8 @@
                 user.email || '',
                 user.role || 'TENANT',
                 (user.occupancy_status || user.occupancyStatus || 'active').toUpperCase(),
-                (user.payment_status || user.paymentStatus || 'paid').toUpperCase(),
+                (user.payment_status || user.paymentStatus || 'unpaid').toUpperCase(),
+                (user.maintenance_status || user.maintenanceStatus || 'unpaid').toUpperCase(),
                 user.rent_amount || user.rentAmount || 0,
                 user.deposit_amount || user.depositAmount || 0,
                 user.move_in_date || user.moveInDate || '-',
@@ -448,7 +449,7 @@
             u.email || '',
             u.role || 'TENANT',
             (u.occupancy_status || u.occupancyStatus || 'active').toUpperCase(),
-            (u.payment_status || u.paymentStatus || 'paid').toUpperCase(),
+            `Rent: ${(u.payment_status || u.paymentStatus || 'unpaid').toUpperCase()} | Maint: ${(u.maintenance_status || u.maintenanceStatus || 'unpaid').toUpperCase()}`,
             `${pdfCurrency} ${(u.rent_amount || u.rentAmount || 0).toLocaleString('en-IN')}`,
             `${pdfCurrency} ${(u.deposit_amount || u.depositAmount || 0).toLocaleString('en-IN')}`,
             u.emergency_contact || u.emergencyContact || '-'
@@ -456,7 +457,7 @@
 
         doc.autoTable({
             startY: 28,
-            head: [['#', 'Flat', 'Resident Name', 'Phone', 'Email', 'Role', 'Status', 'Payment', 'Rent (mo)', 'Deposit', 'Emergency']],
+            head: [['#', 'Flat', 'Resident Name', 'Phone', 'Email', 'Role', 'Status', 'Payment Dues', 'Rent (mo)', 'Deposit', 'Emergency']],
             body: tableData,
             theme: 'striped',
             headStyles: {

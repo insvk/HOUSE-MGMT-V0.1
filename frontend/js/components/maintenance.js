@@ -50,7 +50,10 @@
         const residentList = Array.from(residentMap.values());
 
         // Collection Calculations
-        const paidResidentsCount = residentList.filter(u => (u.payment_status === 'paid' || u.paymentStatus === 'paid')).length;
+        const paidResidentsCount = residentList.filter(u => {
+            const st = (u.maintenance_status || u.payment_status || u.paymentStatus || '').toLowerCase();
+            return st === 'paid';
+        }).length;
         const totalDue = parseFloat(individualContribution) * residentList.length;
         const totalCollected = parseFloat(individualContribution) * paidResidentsCount;
         const pendingDues = Math.max(0, totalDue - totalCollected);
@@ -178,7 +181,7 @@
                 <div class="p-4 sm:p-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                         ${residentList.map(u => {
-                            const status = (u.payment_status || u.paymentStatus || 'unpaid').toLowerCase();
+                            const status = (u.maintenance_status || u.payment_status || u.paymentStatus || 'unpaid').toLowerCase();
                             const isCurrentUser = (state.user?.id === u.id) || (state.user?.email === u.email);
                             const badgeStyle = status === 'paid'
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
@@ -463,23 +466,61 @@
 
         // 3. Resident Status Toggle (Paid -> Pending -> Unpaid -> Paid)
         document.querySelectorAll('.resident-status-toggle-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 const userId = btn.dataset.userId;
-                const currentStatus = btn.dataset.currentStatus;
+                const currentStatus = (btn.dataset.currentStatus || 'unpaid').toLowerCase();
                 const nextStatus = currentStatus === 'paid' ? 'pending' : currentStatus === 'pending' ? 'unpaid' : 'paid';
 
                 btn.textContent = 'Updating...';
+
+                // Immediate store update
+                const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                const updatedUsers = storeUsers.map(x => x.id === userId ? {
+                    ...x,
+                    maintenance_status: nextStatus,
+                    maintenanceStatus: nextStatus,
+                    payment_status: nextStatus,
+                    paymentStatus: nextStatus
+                } : x);
+                if (window.appStore) window.appStore.setState({ users: updatedUsers });
+
+                // Update local storage cache
+                try {
+                    const cached = localStorage.getItem('madura_house_users_v2');
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        const updatedCache = parsed.map(x => x.id === userId ? {
+                            ...x,
+                            maintenance_status: nextStatus,
+                            maintenanceStatus: nextStatus,
+                            payment_status: nextStatus,
+                            paymentStatus: nextStatus
+                        } : x);
+                        localStorage.setItem('madura_house_users_v2', JSON.stringify(updatedCache));
+                    }
+                } catch (err) {}
+
+                if (window.audioUtils && typeof window.audioUtils.playToggleChime === 'function') {
+                    window.audioUtils.playToggleChime();
+                } else if (window.audioUtils) {
+                    window.audioUtils.playSuccessChime();
+                }
+
+                // Supabase permanent sync (update maintenance_status, payment_status, paymentStatus)
                 const { error } = await supabase.from('users').update({
+                    maintenance_status: nextStatus,
                     payment_status: nextStatus,
                     paymentStatus: nextStatus
                 }).eq('id', userId);
 
                 if (!error) {
-                    if (window.audioUtils) window.audioUtils.playSuccessChime();
-                    if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderMaintenance();
                 } else {
+                    console.error("Failed to update resident status:", error);
                     alert("Failed to update resident payment status: " + error.message);
+                    if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderMaintenance();
                 }
             });

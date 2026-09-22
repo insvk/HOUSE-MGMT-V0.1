@@ -162,6 +162,13 @@ async function loadGlobalData() {
             auditLogs: auditLogs,
             announcements: announcements
         });
+
+        // Automatically update active view to reflect synced Supabase changes
+        const hasOpenModal = document.querySelector('#tenant-form-modal:not(.hidden), #add-modal:not(.hidden), #god-mode-modal:not(.hidden), #avatar-upload-modal:not(.hidden)');
+        const isTyping = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+        if (!hasOpenModal && !isTyping && typeof refreshCurrentView === 'function') {
+            refreshCurrentView();
+        }
         
     } catch (e) {
         console.error("Failed to load global data", e);

@@ -15,13 +15,18 @@
         const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0);
         const activeTenants = users.filter(u => (u.occupancy_status === 'active' || u.occupancyStatus === 'active')).length || 5;
         const individualContribution = (totalExpenses / (activeTenants || 1)).toFixed(2);
-        const paidTenantsCount = users.filter(u => (u.payment_status === 'paid' || u.paymentStatus === 'paid')).length;
+        const paidTenantsCount = users.filter(u => {
+            const st = (u.maintenance_status || u.payment_status || u.paymentStatus || '').toLowerCase();
+            return st === 'paid';
+        }).length;
         const totalCollections = (paidTenantsCount * parseFloat(individualContribution)).toFixed(2);
         const unpaidBalance = Math.max(0, totalExpenses - parseFloat(totalCollections)).toFixed(2);
 
         const isGodMode = user.email.toLowerCase() === 'sampathkumar@chemadura.com' || user.role === 'OWNER';
         const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
         const firstName = (user.full_name || user.fullName || 'User').split(' ')[0];
+
+        const myMaintStatus = (user.maintenance_status || user.payment_status || user.paymentStatus || 'paid').toLowerCase();
 
         const actionsHtml = `
             <button id="dash-export-pdf-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
@@ -197,7 +202,7 @@
                         </div>
                         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
                             <span class="text-xs text-slate-500 font-semibold">Payment Status</span>
-                            <p class="text-2xl font-bold text-emerald-600 mt-1">${(user.payment_status || user.paymentStatus || 'paid').toUpperCase()}</p>
+                            <p class="text-2xl font-bold mt-1 ${myMaintStatus === 'paid' ? 'text-emerald-600' : myMaintStatus === 'pending' ? 'text-amber-600' : 'text-rose-600'}">${myMaintStatus.toUpperCase()}</p>
                         </div>
                     </div>
                 </div>

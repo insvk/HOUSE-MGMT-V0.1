@@ -259,9 +259,22 @@
                                                     <div class="text-[11px] text-slate-400 truncate">${u.flat_number || u.flatNumber || 'Unit'} • ${u.email}</div>
                                                 </div>
                                             </div>
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ${(u.payment_status || u.paymentStatus) === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
-                                                ${(u.payment_status || u.paymentStatus || 'paid').toUpperCase()}
-                                            </span>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <span class="text-[9px] px-1 py-0.5 rounded font-bold uppercase ${
+                                                    (u.payment_status || u.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                                    (u.payment_status || u.paymentStatus || '').toLowerCase() === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                    'bg-rose-50 text-rose-700 border border-rose-200'
+                                                }" title="Rent Status">
+                                                    R: ${(u.payment_status || u.paymentStatus || 'unpaid').toUpperCase()}
+                                                </span>
+                                                <span class="text-[9px] px-1 py-0.5 rounded font-bold uppercase ${
+                                                    (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                                    (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                    'bg-rose-50 text-rose-700 border border-rose-200'
+                                                }" title="Maintenance Status">
+                                                    M: ${(u.maintenance_status || u.maintenanceStatus || 'unpaid').toUpperCase()}
+                                                </span>
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>

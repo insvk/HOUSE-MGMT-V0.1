@@ -92,9 +92,9 @@
             return matchesSearch && matchesStatus;
         });
 
-        const activeCount = uniqueUsers.filter(u => (u.occupancy_status || u.occupancyStatus) === 'active').length;
-        const paidRentCount = uniqueUsers.filter(u => (u.payment_status || u.paymentStatus) === 'paid').length;
-        const paidMaintCount = uniqueUsers.filter(u => (u.maintenance_status || u.maintenanceStatus) === 'paid').length;
+        const activeCount = uniqueUsers.filter(u => (u.occupancy_status || u.occupancyStatus || '').toLowerCase() === 'active').length;
+        const paidRentCount = uniqueUsers.filter(u => (u.payment_status || u.paymentStatus || '').toLowerCase() === 'paid').length;
+        const paidMaintCount = uniqueUsers.filter(u => (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'paid').length;
 
         const actionsHtml = `
             <div class="flex items-center gap-2">
@@ -213,11 +213,13 @@
                 ` : ''}
 
                 ${filteredUsers.map(user => {
-                    const isPaid = (user.payment_status || user.paymentStatus) === 'paid';
-                    const isPending = (user.payment_status || user.paymentStatus) === 'pending';
-                    const isMaintPaid = (user.maintenance_status || user.maintenanceStatus) === 'paid';
-                    const isMaintPending = (user.maintenance_status || user.maintenanceStatus) === 'pending';
-                    const isOccupantActive = (user.occupancy_status || user.occupancyStatus) === 'active';
+                    const rentStatus = (user.payment_status || user.paymentStatus || 'unpaid').toLowerCase();
+                    const isPaid = rentStatus === 'paid';
+                    const isPending = rentStatus === 'pending';
+                    const maintStatus = (user.maintenance_status || user.maintenanceStatus || 'unpaid').toLowerCase();
+                    const isMaintPaid = maintStatus === 'paid';
+                    const isMaintPending = maintStatus === 'pending';
+                    const isOccupantActive = (user.occupancy_status || user.occupancyStatus || 'active').toLowerCase() === 'active';
                     const avatar = user.avatar_url || user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
                     const isPwdVisible = !!showPasswordMap[user.id];
                     const pwd = user.password || 'Tenant@123';
@@ -280,10 +282,11 @@
                                                     'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100'
                                                 }"
                                                 data-id="${user.id}"
+                                                data-curr="${rentStatus}"
                                                 title="Click to toggle Rent status (Paid → Pending → Unpaid)"
                                             >
                                                 <span class="font-semibold opacity-70">Rent:</span>
-                                                <span>${(user.payment_status || user.paymentStatus || 'unpaid')}</span>
+                                                <span class="status-val">${rentStatus}</span>
                                             </button>
 
                                             <!-- Maintenance Status Toggle -->
@@ -295,10 +298,11 @@
                                                     'bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100'
                                                 }"
                                                 data-id="${user.id}"
+                                                data-curr="${maintStatus}"
                                                 title="Click to toggle Maintenance status (Paid → Pending → Unpaid)"
                                             >
                                                 <span class="font-semibold opacity-70">Maint:</span>
-                                                <span>${(user.maintenance_status || user.maintenanceStatus || 'unpaid')}</span>
+                                                <span class="status-val">${maintStatus}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -663,44 +667,104 @@ Please keep your login credentials secure.`;
 
         // Toggle Rent Status
         document.querySelectorAll('.toggle-rent-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 const userId = btn.dataset.id;
-                const u = users.find(x => x.id === userId);
+                const currentStoreUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                const u = currentStoreUsers.find(x => x.id === userId) || users.find(x => x.id === userId);
                 if (!u) return;
-                const curr = (u.payment_status || u.paymentStatus || 'unpaid').toLowerCase();
+
+                const curr = (btn.dataset.curr || u.payment_status || u.paymentStatus || 'unpaid').toLowerCase();
                 const next = curr === 'paid' ? 'pending' : curr === 'pending' ? 'unpaid' : 'paid';
 
-                await supabase.from('users').update({ payment_status: next, paymentStatus: next }).eq('id', userId);
-                
+                // Optimistic button update
+                btn.dataset.curr = next;
+                const valSpan = btn.querySelector('.status-val');
+                if (valSpan) valSpan.textContent = next;
+                btn.className = `toggle-rent-btn text-[9px] px-2 py-0.5 rounded font-bold uppercase transition-all flex items-center gap-1 cursor-pointer hover:shadow-2xs active:scale-95 ${
+                    next === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100' :
+                    next === 'pending' ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100' :
+                    'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100'
+                }`;
+
                 // Immediate store update
-                const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
-                const updatedUsers = storeUsers.map(x => x.id === userId ? { ...x, payment_status: next, paymentStatus: next } : x);
+                const updatedUsers = currentStoreUsers.map(x => x.id === userId ? { ...x, payment_status: next, paymentStatus: next } : x);
                 if (window.appStore) window.appStore.setState({ users: updatedUsers });
 
-                if (window.audioUtils) window.audioUtils.playToggleChime();
-                if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
+                // Update local storage cache
+                try {
+                    const cached = localStorage.getItem('madura_house_users_v2');
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        const updatedCache = parsed.map(x => x.id === userId ? { ...x, payment_status: next, paymentStatus: next } : x);
+                        localStorage.setItem('madura_house_users_v2', JSON.stringify(updatedCache));
+                    }
+                } catch (err) {}
+
+                if (window.audioUtils && typeof window.audioUtils.playToggleChime === 'function') {
+                    window.audioUtils.playToggleChime();
+                }
+
+                // Supabase permanent sync
+                const { error } = await supabase.from('users').update({ payment_status: next, paymentStatus: next }).eq('id', userId);
+                if (error) {
+                    console.error('Failed to sync rent status to Supabase:', error);
+                    alert('Failed to update rent status in database: ' + error.message);
+                    if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
+                }
                 renderTenants();
             });
         });
 
         // Toggle Maintenance Status
         document.querySelectorAll('.toggle-maint-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 const userId = btn.dataset.id;
-                const u = users.find(x => x.id === userId);
+                const currentStoreUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                const u = currentStoreUsers.find(x => x.id === userId) || users.find(x => x.id === userId);
                 if (!u) return;
-                const curr = (u.maintenance_status || u.maintenanceStatus || 'unpaid').toLowerCase();
+
+                const curr = (btn.dataset.curr || u.maintenance_status || u.maintenanceStatus || 'unpaid').toLowerCase();
                 const next = curr === 'paid' ? 'pending' : curr === 'pending' ? 'unpaid' : 'paid';
 
-                await supabase.from('users').update({ maintenance_status: next, maintenanceStatus: next }).eq('id', userId);
+                // Optimistic button update
+                btn.dataset.curr = next;
+                const valSpan = btn.querySelector('.status-val');
+                if (valSpan) valSpan.textContent = next;
+                btn.className = `toggle-maint-btn text-[9px] px-2 py-0.5 rounded font-bold uppercase transition-all flex items-center gap-1 cursor-pointer hover:shadow-2xs active:scale-95 ${
+                    next === 'paid' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' :
+                    next === 'pending' ? 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100' :
+                    'bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100'
+                }`;
 
                 // Immediate store update
-                const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
-                const updatedUsers = storeUsers.map(x => x.id === userId ? { ...x, maintenance_status: next, maintenanceStatus: next } : x);
+                const updatedUsers = currentStoreUsers.map(x => x.id === userId ? { ...x, maintenance_status: next, maintenanceStatus: next } : x);
                 if (window.appStore) window.appStore.setState({ users: updatedUsers });
 
-                if (window.audioUtils) window.audioUtils.playToggleChime();
-                if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
+                // Update local storage cache
+                try {
+                    const cached = localStorage.getItem('madura_house_users_v2');
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        const updatedCache = parsed.map(x => x.id === userId ? { ...x, maintenance_status: next, maintenanceStatus: next } : x);
+                        localStorage.setItem('madura_house_users_v2', JSON.stringify(updatedCache));
+                    }
+                } catch (err) {}
+
+                if (window.audioUtils && typeof window.audioUtils.playToggleChime === 'function') {
+                    window.audioUtils.playToggleChime();
+                }
+
+                // Supabase permanent sync (DO NOT send maintenanceStatus column)
+                const { error } = await supabase.from('users').update({ maintenance_status: next }).eq('id', userId);
+                if (error) {
+                    console.error('Failed to sync maintenance status to Supabase:', error);
+                    alert('Failed to update maintenance status in database: ' + error.message);
+                    if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
+                }
                 renderTenants();
             });
         });
@@ -874,12 +938,28 @@ Please keep your login credentials secure.`;
                         payment_status: pay,
                         paymentStatus: pay,
                         maintenance_status: maint,
-                        maintenanceStatus: maint,
                         notes: notes,
                         avatar_url: avatar,
                         avatarUrl: avatar
                     };
-                    const { error } = await supabase.from('users').update(updatedPayload).eq('id', editingUser.id);
+                    const { error } = await supabase.from('users').update({
+                        full_name: name,
+                        email: email,
+                        username: username,
+                        password: password,
+                        flat_number: flat,
+                        role: role,
+                        phone: phone,
+                        emergency_contact: emergency,
+                        rent_amount: rent,
+                        deposit_amount: deposit,
+                        occupancy_status: occ,
+                        payment_status: pay,
+                        paymentStatus: pay,
+                        maintenance_status: maint,
+                        notes: notes,
+                        avatar_url: avatar
+                    }).eq('id', editingUser.id);
                     if (error) {
                         alert('Update failed: ' + error.message);
                         return;
@@ -912,12 +992,29 @@ Please keep your login credentials secure.`;
                         payment_status: pay,
                         paymentStatus: pay,
                         maintenance_status: maint,
-                        maintenanceStatus: maint,
                         notes: notes,
                         avatar_url: avatar,
                         avatarUrl: avatar
                     };
-                    const { error } = await supabase.from('users').insert(newPayload);
+                    const { error } = await supabase.from('users').insert({
+                        id: newPayload.id,
+                        full_name: name,
+                        email: email,
+                        username: username,
+                        password: password || 'Tenant@123',
+                        flat_number: flat,
+                        role: role,
+                        phone: phone || '+91 98421 00000',
+                        emergency_contact: emergency,
+                        rent_amount: rent,
+                        deposit_amount: deposit,
+                        occupancy_status: occ,
+                        payment_status: pay,
+                        paymentStatus: pay,
+                        maintenance_status: maint,
+                        notes: notes,
+                        avatar_url: avatar
+                    });
                     if (error) {
                         alert('Create failed: ' + error.message);
                         return;
