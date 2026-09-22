@@ -586,11 +586,21 @@
         });
 
         // =====================================================================
-        // TAB 1: PROPERTY MASTER SUBMIT
+        // TAB 1: PROPERTY MASTER SUBMIT (Superadmin Guard)
         // =====================================================================
         document.getElementById('god-property-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const state = window.appStore ? window.appStore.getState() : {};
+            const user = state.user || {};
+            const isOwner = (user.email || '').toLowerCase() === 'sampathkumar@chemadura.com' || user.role === 'OWNER';
             const saveBtn = document.getElementById('save-prop-btn');
+
+            if (!isOwner) {
+                showGodToast('Access Denied: Superadmin / Owner privilege required.', true);
+                if (window.audioUtils) window.audioUtils.playWarningChime();
+                return;
+            }
+
             if (saveBtn) saveBtn.disabled = true;
 
             const houseId = house.id || '11111111-2222-3333-4444-555555555555';
@@ -602,6 +612,7 @@
                 city: document.getElementById('god-prop-city').value.trim(),
                 postal_code: document.getElementById('god-prop-postal').value.trim(),
                 settings: {
+                    ...(house.settings || {}),
                     currency: document.getElementById('god-prop-currency').value.trim() || 'INR',
                     upiId: document.getElementById('god-prop-upi').value.trim(),
                     upiName: document.getElementById('god-prop-upiname').value.trim()
@@ -620,10 +631,12 @@
 
                 // 3. Update Store & Refresh Views Everywhere
                 if (window.appStore) window.appStore.setState({ house: updatedPayload });
+                // Broadcast instant real-time event to all open modals and views
+                window.dispatchEvent(new CustomEvent('house-settings-updated', { detail: updatedPayload }));
                 await syncAndRefresh();
                 
                 if (window.audioUtils) window.audioUtils.playSuccessChime();
-                showGodToast('Property master rules saved to Supabase & refreshed!');
+                showGodToast('Property master rules & UPI ID saved to Supabase & refreshed!');
             } catch (err) {
                 console.error('Save house error:', err);
                 showGodToast('Save error: ' + err.message, true);

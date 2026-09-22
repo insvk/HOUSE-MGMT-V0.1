@@ -10,6 +10,18 @@
         }
     }
 
+    function getHouseUpiConfig(h) {
+        if (!h) return { upiId: '7338716690@ybl', payeeName: 'CHE-MADURA HS-1 MGMT' };
+        let settings = h.settings;
+        if (typeof settings === 'string') {
+            try { settings = JSON.parse(settings); } catch (e) { settings = {}; }
+        }
+        settings = settings || {};
+        const upiId = settings.upiId || settings.upi_id || h.upi_id || h.upiId || '7338716690@ybl';
+        const payeeName = settings.upiName || settings.upi_name || h.upiName || h.name || 'CHE-MADURA HS-1 MGMT';
+        return { upiId, payeeName };
+    }
+
     function openSmartPaymentModal(opts = {}) {
         let { residentId, name, flat, phone, rentAmount, maintAmount, amount, status } = opts;
         let existing = document.getElementById('smart-payment-modal-overlay');
@@ -31,10 +43,12 @@
         const rent = parseFloat(rentAmount) || 0;
         const maint = parseFloat(maintAmount) || 0;
         const totalDues = (rent + maint).toFixed(2);
-        const upiId = 'sampathkumar@chemadura';
-        const payeeName = 'CHE-MADURA HS-1 MGMT';
+        
+        let upiCfg = getHouseUpiConfig(house);
+        let upiId = upiCfg.upiId;
+        let payeeName = upiCfg.payeeName;
         const note = `Flat ${flat} ${billingCycle} Dues`;
-        const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${totalDues}&cu=INR&tn=${encodeURIComponent(note)}`;
+        let upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${totalDues}&cu=INR&tn=${encodeURIComponent(note)}`;
         const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
         const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
@@ -83,8 +97,8 @@
                     <!-- Dynamic QR Code Container -->
                     <div class="flex flex-col items-center justify-center p-3 sm:p-4 bg-white border border-slate-200 rounded-xl shadow-2xs">
                         <div id="smart-qr-target" class="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center bg-white p-2 rounded-lg border border-slate-100 shadow-inner">
-                            <!-- QR image fallback -->
                             <img 
+                                id="smart-qr-image"
                                 src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}" 
                                 alt="UPI QR Code" 
                                 class="w-full h-full object-contain rounded"
@@ -94,9 +108,11 @@
                             <i data-lucide="scan-line" class="w-3.5 h-3.5 text-emerald-600"></i>
                             <span>Scan with GPay, PhonePe, Paytm, Cred or BHIM</span>
                         </p>
-                        <div class="flex items-center gap-1.5 mt-1 text-[10px] font-mono text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                        <div class="flex flex-wrap items-center justify-center gap-1.5 mt-2 text-[10px] font-mono text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-100">
                             <span>UPI ID:</span>
-                            <span class="text-slate-800 font-bold">${upiId}</span>
+                            <span id="smart-qr-upi-display" class="text-slate-900 font-bold">${upiId}</span>
+                            <span class="text-slate-300">•</span>
+                            <span id="smart-qr-payee-display" class="text-slate-600 font-semibold">${payeeName}</span>
                         </div>
                     </div>
                 </div>
@@ -144,8 +160,30 @@
             try { window.lucide.createIcons(); } catch (e) {}
         }
 
+        // Live Real-Time Property Settings Listener:
+        // If an admin updates UPI ID in Property Management, update this open modal instantly!
+        const handleHouseUpdate = (e) => {
+            const updatedHouse = e?.detail || (window.appStore ? window.appStore.getState().house : null);
+            if (!updatedHouse) return;
+            const updatedCfg = getHouseUpiConfig(updatedHouse);
+            upiId = updatedCfg.upiId;
+            payeeName = updatedCfg.payeeName;
+            upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${totalDues}&cu=INR&tn=${encodeURIComponent(note)}`;
+
+            const qrImg = document.getElementById('smart-qr-image');
+            if (qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+            }
+            const upiDisplay = document.getElementById('smart-qr-upi-display');
+            if (upiDisplay) upiDisplay.textContent = upiId;
+            const payeeDisplay = document.getElementById('smart-qr-payee-display');
+            if (payeeDisplay) payeeDisplay.textContent = payeeName;
+        };
+        window.addEventListener('house-settings-updated', handleHouseUpdate);
+
         // Close
         const close = () => {
+            window.removeEventListener('house-settings-updated', handleHouseUpdate);
             overlay.classList.add('fade-out');
             setTimeout(() => overlay.remove(), 100);
         };
@@ -154,7 +192,7 @@
             if (e.target === overlay) close();
         });
 
-        // WhatsApp Reminder Click
+        // WhatsApp Reminder Click (Uses active dynamic upiId and payeeName)
         document.getElementById('smart-whatsapp-remind-btn')?.addEventListener('click', () => {
             const waMsg = encodeURIComponent(
                 `*CHE-MADURA HS-1 MGMT PAYMENT NOTICE*\n\n` +
@@ -163,7 +201,7 @@
                 `• *Maintenance Split:* ₹${maint.toLocaleString('en-IN')}\n` +
                 `• *Monthly Rent:* ₹${rent.toLocaleString('en-IN')}\n` +
                 `• *Total Due:* *₹${parseFloat(totalDues).toLocaleString('en-IN', { minimumFractionDigits: 2 })}*\n\n` +
-                `Please pay via UPI to: *${upiId}*\n` +
+                `Please pay via UPI to: *${upiId}* (${payeeName})\n` +
                 `Or scan the QR code via your mobile banking app.\n\n` +
                 `Thank you!\n_Madura House Management_`
             );
@@ -172,7 +210,7 @@
             if (window.audioUtils) window.audioUtils.playSuccessChime();
         });
 
-        // Copy UPI Info Click
+        // Copy UPI Info Click (Uses active dynamic upiId and payeeName)
         document.getElementById('smart-copy-upi-btn')?.addEventListener('click', (e) => {
             const copyText = `CHE-MADURA HS-1 MGMT Payment Details:
 UPI ID: ${upiId}

@@ -76,6 +76,26 @@ class RealtimeSyncService {
 
     handleHouseChange(payload) {
         console.log('Realtime House Change:', payload);
+        if (payload && payload.new) {
+            try {
+                const currentHouse = window.appStore ? window.appStore.getState().house : {};
+                let newSettings = payload.new.settings;
+                if (typeof newSettings === 'string') {
+                    try { newSettings = JSON.parse(newSettings); } catch(e) {}
+                }
+                const updatedHouse = {
+                    ...(currentHouse || {}),
+                    ...payload.new,
+                    settings: (typeof newSettings === 'object' && newSettings !== null) ? newSettings : (currentHouse?.settings || {})
+                };
+                if (window.appStore) {
+                    window.appStore.setState({ house: updatedHouse });
+                }
+                window.dispatchEvent(new CustomEvent('house-settings-updated', { detail: updatedHouse }));
+            } catch (err) {
+                console.warn('Realtime house parse warning:', err);
+            }
+        }
         if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
     }
 

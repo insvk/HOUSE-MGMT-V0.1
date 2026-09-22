@@ -98,6 +98,16 @@
         const userMaintStatus = (user.maintenance_status || user.maintenanceStatus || 'pending').toLowerCase();
         const userPaid = (userMaintStatus === 'paid');
 
+        // Active Property UPI configuration
+        const house = state.house || {};
+        let houseSettings = house.settings;
+        if (typeof houseSettings === 'string') {
+            try { houseSettings = JSON.parse(houseSettings); } catch (e) { houseSettings = {}; }
+        }
+        houseSettings = houseSettings || {};
+        const upiId = houseSettings.upiId || houseSettings.upi_id || house.upi_id || '7338716690@ybl';
+        const upiName = houseSettings.upiName || houseSettings.upi_name || house.name || 'Sampath Kumar';
+
         return {
             state,
             user,
@@ -117,7 +127,10 @@
             userMaint,
             userTotalDues,
             userPaid,
-            userMaintStatus
+            userMaintStatus,
+            house,
+            upiId,
+            upiName
         };
     }
 
@@ -569,7 +582,7 @@ Tenant Specific Financials:
 - Maintenance Equal Split: ₹${ctx.userMaint}
 - Total Dues: ₹${ctx.userTotalDues}
 - Status: ${(ctx.userMaintStatus || 'PAID').toUpperCase()}
-- Payment UPI ID: sampathkumar@chemadura
+- Payment UPI ID: ${ctx.upiId} (${ctx.upiName})
 - Due Date: 5th of every month
 STRICT PRIVACY POLICY: You must never disclose other flats' personal information, rents, phone numbers, or administrative ledger controls to this resident.
 Be polite, warm, concise, and helpful. Guide them regarding payments, maintenance requests, and building schedules.`;
@@ -1165,13 +1178,13 @@ Please be informed of the equal-split maintenance allocation for ${ctx.billingCy
 • Payment Due Date: 5th of this month
 
 Payment Mode:
-Direct UPI to: sampathkumar@chemadura
+Direct UPI to: ${ctx.upiId} (${ctx.upiName})
 Or scan the dynamic QR code on your Resident Portal statement.
 
 We appreciate your timely cooperation in maintaining our building facilities.
 
 Regards,
-Sampath Kumar
+${ctx.upiName}
 CHE-MADURA HS-1 Management`;
 
             appendBotResponse(`
@@ -1722,12 +1735,13 @@ CHE-MADURA HS-1 Management`;
                 const { name, flat, phone, total } = btn.dataset;
                 const cleanPhone = (phone || '').replace(/[^0-9]/g, '');
                 const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+                const activeCtx = getCopilotContext();
                 const msg = encodeURIComponent(
                     `*CHE-MADURA HS-1 MGMT PAYMENT NOTICE*\n\n` +
                     `Hello *${name}*,\n` +
                     `This is a friendly reminder regarding pending dues for *Flat ${flat}*.\n` +
                     `Total Due: *₹${parseFloat(total).toLocaleString('en-IN')}*\n\n` +
-                    `Please pay via UPI to: *sampathkumar@chemadura*\n` +
+                    `Please pay via UPI to: *${activeCtx.upiId}* (${activeCtx.upiName})\n` +
                     `Thank you!\n_Madura House Management_`
                 );
                 const url = targetPhone ? `https://wa.me/${targetPhone}?text=${msg}` : `https://wa.me/?text=${msg}`;

@@ -9,14 +9,19 @@
         if (existing) existing.remove();
 
         const state = window.appStore ? window.appStore.getState() : {};
+        const user = state.user || {};
+        const isOwner = (user.email || '').toLowerCase() === 'sampathkumar@chemadura.com' || user.role === 'OWNER';
         const house = state.house || {
             name: 'CHE-MADURA HS-1 MGMT',
             address: '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal',
             city: 'Chennai',
             postalCode: '600095',
             totalUnits: 5,
-            settings: { currency: 'INR', upiId: '', upiName: 'Sampath Kumar' }
+            settings: { currency: 'INR', upiId: '7338716690@ybl', upiName: 'Sampath Kumar' }
         };
+        const houseSettings = typeof house.settings === 'object' && house.settings !== null ? house.settings : {};
+        const currentUpiId = houseSettings.upiId || houseSettings.upi_id || house.upi_id || '7338716690@ybl';
+        const currentUpiName = houseSettings.upiName || houseSettings.upi_name || house.name || 'Sampath Kumar';
         const audioOn = window.audioUtils ? window.audioUtils.isAudioEnabled() : true;
 
         const overlay = document.createElement('div');
@@ -57,42 +62,56 @@
                 <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5 text-sm">
                     ${activeTab === 'general' ? `
                         <form id="settings-general-form" class="space-y-4">
+                            ${!isOwner ? `
+                                <div class="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl flex items-center gap-2.5 text-xs text-amber-900 font-medium">
+                                    <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                                    <span>Read-Only Mode: Property settings and UPI collection IDs can only be modified by Property Administrator / Owner.</span>
+                                </div>
+                            ` : ''}
+
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Property Name</label>
-                                <input id="set-name" required value="${house.name || 'CHE-MADURA HS-1 MGMT'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                <input id="set-name" required value="${house.name || 'CHE-MADURA HS-1 MGMT'}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Street Address</label>
-                                <input id="set-address" required value="${house.address || '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                <input id="set-address" required value="${house.address || '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal'}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">City</label>
-                                    <input id="set-city" required value="${house.city || 'Chennai'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <input id="set-city" required value="${house.city || 'Chennai'}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Postal Code</label>
-                                    <input id="set-postal" required value="${house.postalCode || '600095'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <input id="set-postal" required value="${house.postalCode || house.postal_code || '600095'}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Total Units / Flats</label>
-                                    <input id="set-units" required type="number" value="${house.totalUnits || 5}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <input id="set-units" required type="number" value="${house.totalUnits || house.total_units || 5}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Currency Code</label>
-                                    <input id="set-currency" required value="${house.settings?.currency || 'INR'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <input id="set-currency" required value="${houseSettings.currency || 'INR'}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">UPI ID for Collections</label>
-                                    <input id="set-upi-id" placeholder="e.g. 7338716690@ybl" value="${house.settings?.upiId || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">UPI ID for Collections</label>
+                                        ${!isOwner ? `<span class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> Admin Only</span>` : ''}
+                                    </div>
+                                    <input id="set-upi-id" placeholder="e.g. 7338716690@ybl" value="${currentUpiId}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500 font-mono' : 'font-mono'}" />
+                                    ${!isOwner ? `<p class="text-[10px] text-slate-400 mt-1">Direct NPCI QR will route payments to this verified account.</p>` : ''}
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">UPI Payee Name</label>
-                                    <input id="set-upi-name" placeholder="e.g. Sampath Kumar" value="${house.settings?.upiName || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">UPI Payee Name</label>
+                                        ${!isOwner ? `<span class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> Admin Only</span>` : ''}
+                                    </div>
+                                    <input id="set-upi-name" placeholder="e.g. Sampath Kumar" value="${currentUpiName}" ${!isOwner ? 'disabled readonly' : ''} class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black ${!isOwner ? 'bg-slate-100/80 cursor-not-allowed text-slate-500' : ''}" />
                                 </div>
                             </div>
                             <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
@@ -104,8 +123,17 @@
                                     ${audioOn ? 'Sound Active' : 'Muted'}
                                 </button>
                             </div>
-                            <div class="flex justify-end pt-3">
-                                <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-xl cursor-pointer shadow-sm transition-all">Save Changes</button>
+                            <div class="flex items-center justify-between pt-3">
+                                ${!isOwner ? `
+                                    <div class="text-[11px] text-amber-700 flex items-center gap-1.5 font-medium">
+                                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+                                        <span>Settings locked to administrator account.</span>
+                                    </div>
+                                ` : `<div></div>`}
+                                <button type="submit" ${!isOwner ? 'disabled' : ''} class="px-5 py-2.5 ${isOwner ? 'bg-slate-900 hover:bg-black text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+                                    <i data-lucide="${isOwner ? 'save' : 'lock'}" class="w-3.5 h-3.5"></i>
+                                    <span>${isOwner ? 'Save Changes' : 'Admin Only'}</span>
+                                </button>
                             </div>
                         </form>
                     ` : activeTab === 'cloud' ? `
@@ -184,42 +212,60 @@
             });
         }
 
-        // Save General Form
+        // Save General Form (Admin Only Guard)
         const generalForm = document.getElementById('settings-general-form');
         if (generalForm) {
             generalForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                if (!isOwner) {
+                    alert('Access Denied: Only property administrator/owner can modify settings.');
+                    if (window.audioUtils) window.audioUtils.playWarningChime();
+                    return;
+                }
+
                 const updatedHouse = {
                     ...house,
                     name: document.getElementById('set-name').value.trim(),
                     address: document.getElementById('set-address').value.trim(),
                     city: document.getElementById('set-city').value.trim(),
                     postalCode: document.getElementById('set-postal').value.trim(),
+                    postal_code: document.getElementById('set-postal').value.trim(),
                     totalUnits: parseInt(document.getElementById('set-units').value) || 5,
+                    total_units: parseInt(document.getElementById('set-units').value) || 5,
                     settings: {
+                        ...(house.settings || {}),
                         currency: document.getElementById('set-currency').value.trim() || 'INR',
                         upiId: document.getElementById('set-upi-id').value.trim(),
                         upiName: document.getElementById('set-upi-name').value.trim()
                     }
                 };
 
+                const houseId = house.id || '11111111-2222-3333-4444-555555555555';
+                updatedHouse.id = houseId;
+
+                // 1. Optimistic Local Store & Event Broadcast
+                if (window.appStore) window.appStore.setState({ house: updatedHouse });
+                localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedHouse));
+                window.dispatchEvent(new CustomEvent('house-settings-updated', { detail: updatedHouse }));
+
+                // 2. Supabase Cloud Sync
                 try {
-                    localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedHouse));
                     if (window.supabase) {
-                        await window.supabase.from('houses').update({
+                        await window.supabase.from('houses').upsert({
+                            id: houseId,
                             name: updatedHouse.name,
                             address: updatedHouse.address,
                             city: updatedHouse.city,
-                            postal_code: updatedHouse.postalCode,
-                            total_units: updatedHouse.totalUnits,
+                            postal_code: updatedHouse.postal_code,
+                            total_units: updatedHouse.total_units,
                             settings: updatedHouse.settings
-                        }).eq('id', house.id);
+                        }, { onConflict: 'id' });
                     }
                 } catch (err) {
                     console.error('Update house error:', err);
                 }
 
-                if (window.appStore) window.appStore.setState({ house: updatedHouse });
+                if (typeof window.refreshCurrentView === 'function') window.refreshCurrentView();
                 if (window.audioUtils) window.audioUtils.playSuccessChime();
                 closeSettingsModal();
             });
