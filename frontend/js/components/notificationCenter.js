@@ -5,13 +5,20 @@ function renderNotificationCenter() {
     const state = window.appStore ? window.appStore.getState() : {};
     const house = state.house || { name: 'CHE-MADURA HS-1 MGMT' };
     const users = state.users || [];
-    const activeResidents = users.filter(u => (u.occupancy_status === 'active' || u.occupancyStatus === 'active') && u.email);
+    const isOwnerUser = (u) => {
+        if (!u) return false;
+        const role = (u.role || '').toUpperCase();
+        const email = (u.email || '').toLowerCase();
+        const flat = (u.flat_number || u.flatNumber || '').toLowerCase();
+        return role === 'OWNER' || email === 'sampathkumar@chemadura.com' || flat === 'owner suite' || flat === 'hs-1';
+    };
+    const activeResidents = users.filter(u => (u.occupancy_status === 'active' || u.occupancyStatus === 'active') && u.email && !isOwnerUser(u));
     const records = state.records || [];
     const currentRecord = records.length > 0 ? records[0] : { month: 9, year: 2026, grand_total: 0, active_tenants_count: 5 };
     const expenses = currentRecord.expenses || [];
     const grandTotal = currentRecord.grand_total != null ? parseFloat(currentRecord.grand_total) : (currentRecord.grandTotal != null ? parseFloat(currentRecord.grandTotal) : expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0));
-    const activeTenants = currentRecord.active_tenants_count || currentRecord.activeTenantsCount || 5;
-    const share = (grandTotal / (activeTenants || 1)).toFixed(2);
+    const activeTenants = 5;
+    const share = (grandTotal / (activeTenants || 5)).toFixed(2);
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthName = monthNames[(currentRecord.month || 9) - 1] || 'Current Month';
 

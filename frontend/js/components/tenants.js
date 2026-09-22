@@ -92,15 +92,24 @@
             return matchesSearch && matchesStatus;
         });
 
-        const activeCount = uniqueUsers.filter(u => (u.occupancy_status || u.occupancyStatus || '').toLowerCase() === 'active').length;
-        const paidRentCount = uniqueUsers.filter(u => (u.payment_status || u.paymentStatus || '').toLowerCase() === 'paid').length;
-        const paidMaintCount = uniqueUsers.filter(u => (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'paid').length;
+        const isOwnerUser = (u) => {
+            if (!u) return false;
+            const role = (u.role || '').toUpperCase();
+            const email = (u.email || '').toLowerCase();
+            const flat = (u.flat_number || u.flatNumber || '').toLowerCase();
+            return role === 'OWNER' || email === 'sampathkumar@chemadura.com' || flat === 'owner suite' || flat === 'hs-1';
+        };
+
+        const tenantUsers = uniqueUsers.filter(u => !isOwnerUser(u));
+        const activeCount = tenantUsers.filter(u => (u.occupancy_status || u.occupancyStatus || '').toLowerCase() === 'active').length;
+        const paidRentCount = tenantUsers.filter(u => (u.payment_status || u.paymentStatus || '').toLowerCase() === 'paid').length;
+        const paidMaintCount = tenantUsers.filter(u => (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'paid').length;
 
         const records = (window.appStore ? window.appStore.getState().records : []) || [];
         const activeRecord = records.length > 0 ? records[0] : null;
         const expenses = activeRecord ? (activeRecord.expenses || []) : [];
         const totalExpenses = expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0);
-        const maintSharePerFlat = uniqueUsers.length > 0 ? (totalExpenses / uniqueUsers.length).toFixed(2) : '2000.00';
+        const maintSharePerFlat = activeCount > 0 ? (totalExpenses / activeCount).toFixed(2) : '2000.00';
 
         const actionsHtml = `
             <div class="flex items-center gap-2">
@@ -127,7 +136,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
                     <div>
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Residents</span>
-                        <p class="text-xl font-bold text-slate-900 mt-0.5">${uniqueUsers.length} Occupants</p>
+                        <p class="text-xl font-bold text-slate-900 mt-0.5">${tenantUsers.length} Occupants</p>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#405189] flex items-center justify-center">
                         <i data-lucide="users" class="w-5 h-5"></i>
@@ -145,7 +154,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
                     <div>
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Rent Cleared</span>
-                        <p class="text-xl font-bold text-emerald-600 mt-0.5">${paidRentCount} / ${uniqueUsers.length} Paid</p>
+                        <p class="text-xl font-bold text-emerald-600 mt-0.5">${paidRentCount} / ${tenantUsers.length} Paid</p>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                         <i data-lucide="indian-rupee" class="w-5 h-5"></i>
@@ -154,7 +163,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
                     <div>
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Maintenance Cleared</span>
-                        <p class="text-xl font-bold text-purple-600 mt-0.5">${paidMaintCount} / ${uniqueUsers.length} Paid</p>
+                        <p class="text-xl font-bold text-purple-600 mt-0.5">${paidMaintCount} / ${tenantUsers.length} Paid</p>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
                         <i data-lucide="shield-check" class="w-5 h-5"></i>

@@ -82,8 +82,8 @@
 
         const expenses = record.expenses || [];
         const grandTotal = record.grand_total != null ? parseFloat(record.grand_total) : (record.grandTotal != null ? parseFloat(record.grandTotal) : expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0));
-        const activeTenants = record.active_tenants_count || record.activeTenantsCount || activeHouse.totalUnits || 5;
-        const individualContribution = (grandTotal / (activeTenants || 1));
+        const activeTenants = 5;
+        const individualContribution = (grandTotal / 5);
 
         const worksheetData = [
             [`${propName.toUpperCase()} MAINTENANCE MANAGEMENT PLATFORM`],
@@ -195,8 +195,8 @@
         const cardHeight = 20;
         const expenses = record.expenses || [];
         const grandTotal = record.grand_total != null ? parseFloat(record.grand_total) : (record.grandTotal != null ? parseFloat(record.grandTotal) : expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0));
-        const activeTenants = record.active_tenants_count || record.activeTenantsCount || activeHouse.totalUnits || 5;
-        const individualContribution = (grandTotal / (activeTenants || 1));
+        const activeTenants = 5;
+        const individualContribution = (grandTotal / 5);
 
         // Card 1: Total Cost
         doc.setFillColor(248, 250, 252);

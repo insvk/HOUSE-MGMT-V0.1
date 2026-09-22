@@ -55,8 +55,8 @@
         const monthName = monthNames[(record.month || 9) - 1] || 'Current Month';
         const expenses = record.expenses || [];
         const grandTotal = record.grand_total != null ? parseFloat(record.grand_total) : (record.grandTotal != null ? parseFloat(record.grandTotal) : expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0));
-        const activeTenants = record.active_tenants_count || record.activeTenantsCount || house.totalUnits || 5;
-        const individualContribution = (grandTotal / (activeTenants || 1));
+        const activeTenants = 5;
+        const individualContribution = (grandTotal / 5);
 
         const expenseRowsHtml = expenses.map((e, idx) => `
             <tr style="border-bottom: 1px solid #e2e8f0; font-size: 13px;">

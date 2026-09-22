@@ -43,10 +43,21 @@
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const currentMonthName = activeRecord ? `${monthNames[activeRecord.month - 1]} ${activeRecord.year}` : 'September 2026';
 
-        // Calculation variables
-        const activeResidents = users.filter(u => (u.occupancy_status || u.occupancyStatus || '').toLowerCase() === 'active');
+        const isOwnerUser = (u) => {
+            if (!u) return false;
+            const role = (u.role || '').toUpperCase();
+            const email = (u.email || '').toLowerCase();
+            const flat = (u.flat_number || u.flatNumber || '').toLowerCase();
+            return role === 'OWNER' || email === 'sampathkumar@chemadura.com' || flat === 'owner suite' || flat === 'hs-1';
+        };
+
+        // Calculation variables (5 active residential tenant units, excluding owner)
+        const activeResidents = users.filter(u => {
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            return occ === 'active' && !isOwnerUser(u);
+        });
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-        const splitPerUnit = activeResidents.length > 0 ? (totalExpenses / activeResidents.length).toFixed(2) : '0.00';
+        const splitPerUnit = activeResidents.length > 0 ? (totalExpenses / activeResidents.length).toFixed(2) : (totalExpenses / 5).toFixed(2);
         
         const unpaidResidents = activeResidents.filter(u => {
             const m = (u.maintenance_status || u.maintenanceStatus || '').toLowerCase();
@@ -263,9 +274,20 @@
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const billingCycle = activeRecord ? `${monthNames[activeRecord.month - 1]} ${activeRecord.year}` : 'Current Month';
 
-        const activeResidents = users.filter(u => (u.occupancy_status || u.occupancyStatus || '').toLowerCase() === 'active');
+        const isOwnerUser = (u) => {
+            if (!u) return false;
+            const role = (u.role || '').toUpperCase();
+            const email = (u.email || '').toLowerCase();
+            const flat = (u.flat_number || u.flatNumber || '').toLowerCase();
+            return role === 'OWNER' || email === 'sampathkumar@chemadura.com' || flat === 'owner suite' || flat === 'hs-1';
+        };
+
+        const activeResidents = users.filter(u => {
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            return occ === 'active' && !isOwnerUser(u);
+        });
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-        const splitPerUnit = activeResidents.length > 0 ? (totalExpenses / activeResidents.length).toFixed(2) : '0.00';
+        const splitPerUnit = activeResidents.length > 0 ? (totalExpenses / activeResidents.length).toFixed(2) : (totalExpenses / 5).toFixed(2);
 
         const q = query.toLowerCase().trim();
 

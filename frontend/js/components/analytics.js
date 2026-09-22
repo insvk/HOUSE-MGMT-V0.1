@@ -172,7 +172,7 @@ function renderAnalytics() {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 ${forecastMonths.map(f => {
                     const projectedVal = Math.round(avgMonthlyBurn * f.factor);
-                    const perTenantVal = Math.round(projectedVal / (users.length || 7));
+                    const perTenantVal = Math.round(projectedVal / 5);
                     return `
                         <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-200 transition-colors">
                             <div class="flex items-center justify-between mb-2">

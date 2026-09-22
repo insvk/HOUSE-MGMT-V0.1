@@ -27,15 +27,27 @@
 
         const expenses = currentRecord ? (currentRecord.expenses || []) : [];
         const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0);
-        const users = state.users || [];
-        const activeTenants = users.filter(u => (u.occupancy_status === 'active' || u.occupancyStatus === 'active')).length || 5;
-        const individualContribution = (totalExpenses / (activeTenants || 1)).toFixed(2);
+        const isOwnerUser = (u) => {
+            if (!u) return false;
+            const role = (u.role || '').toUpperCase();
+            const email = (u.email || '').toLowerCase();
+            const flat = (u.flat_number || u.flatNumber || '').toLowerCase();
+            return role === 'OWNER' || email === 'sampathkumar@chemadura.com' || flat === 'owner suite' || flat === 'hs-1';
+        };
 
-        // Deduplicate residents - filter out evicted, soft-deleted, Rajesh Kumar, and test_resident_ accounts
+        const users = state.users || [];
+        const activeTenants = users.filter(u => {
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            return occ === 'active' && !isOwnerUser(u);
+        }).length || 5;
+        const individualContribution = (totalExpenses / (activeTenants || 5)).toFixed(2);
+
+        // Deduplicate residents - filter out evicted, soft-deleted, Rajesh Kumar, test_resident_, and owner
         const residentMap = new Map();
         users.forEach(u => {
             if (!u) return;
             if (u.deleted_at || u.is_active === false) return;
+            if (isOwnerUser(u)) return; // Exclude owner from resident maintenance list
             const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
             if (occ === 'evicted') return;
             const name = (u.full_name || u.fullName || '').trim();
@@ -43,7 +55,7 @@
             const email = (u.email || '').toLowerCase().trim();
             if (email.includes('test_resident_') || email.includes('@chemadura.deleted') || email.includes('admin.tenant@madurahouse.local')) return;
 
-            if (!residentMap.has(email) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+            if (!residentMap.has(email)) {
                 residentMap.set(email, u);
             }
         });
