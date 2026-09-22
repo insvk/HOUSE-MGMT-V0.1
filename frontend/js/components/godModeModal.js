@@ -88,25 +88,25 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'god-mode-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[94vh]">
+            <div class="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[94dvh]">
                 <!-- Header Banner -->
-                <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shadow-sm shrink-0">
+                <div class="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-900 text-white flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shadow-sm shrink-0">
                             <i data-lucide="sparkles" class="w-5 h-5"></i>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <div class="flex items-center gap-2">
-                                <h2 class="text-base font-bold text-white tracking-tight">God Maxx Master Property Editor</h2>
-                                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">Direct Supabase Sync</span>
+                                <h2 class="text-sm sm:text-base font-bold text-white tracking-tight truncate">God Maxx Master Property Editor</h2>
+                                <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">Direct Supabase Sync</span>
                             </div>
-                            <p class="text-xs text-slate-400">Authoritative direct editor for database records, rules, and property configurations</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 truncate">Authoritative direct editor for database records, rules, and property configurations</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" id="god-sync-now-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors" title="Force refresh from Supabase">
+                    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <button type="button" id="god-sync-now-btn" class="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors" title="Force refresh from Supabase">
                             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                             <span class="hidden sm:inline">Sync Cloud</span>
                         </button>
@@ -117,7 +117,7 @@
                 </div>
 
                 <!-- Tabs Navigation -->
-                <div class="flex border-b border-slate-200 px-6 gap-5 text-xs font-semibold overflow-x-auto bg-[#fafbfc]">
+                <div class="flex border-b border-slate-200 px-3 sm:px-6 gap-2 sm:gap-4 text-xs font-semibold overflow-x-auto no-scrollbar bg-[#fafbfc]">
                     ${[
                         { id: 'property', label: '1. Property Master', icon: 'building-2' },
                         { id: 'ledger', label: '2. Billing & Split Rules', icon: 'sliders-horizontal' },
@@ -127,15 +127,15 @@
                         { id: 'announcements', label: '6. Email Broadcast', icon: 'mail' },
                         { id: 'raw', label: '7. Raw JSON & Push', icon: 'code' }
                     ].map(t => `
-                        <button type="button" class="py-3 border-b-2 flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${activeGodTab === t.id ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'}" data-tab="${t.id}">
+                        <button type="button" class="py-2.5 sm:py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 shrink-0 transition-colors cursor-pointer ${activeGodTab === t.id ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'}" data-tab="${t.id}">
                             <i data-lucide="${t.icon}" class="w-3.5 h-3.5"></i>
-                            <span>${t.label}</span>
+                            <span class="whitespace-nowrap">${t.label}</span>
                         </button>
                     `).join('')}
                 </div>
 
                 <!-- Tab Content Body -->
-                <div class="p-6 overflow-y-auto flex-1 text-sm bg-white">
+                <div class="p-4 sm:p-6 overflow-y-auto flex-1 text-sm bg-white">
                     ${activeGodTab === 'property' ? `
                         <!-- TAB 1: PROPERTY MASTER -->
                         <form id="god-property-form" class="space-y-4">
@@ -281,7 +281,7 @@
                             </div>
 
                             <!-- Right Side: Edit / Add Form -->
-                            <div class="lg:col-span-8 border border-slate-200 rounded-2xl p-5">
+                            <div class="lg:col-span-8 border border-slate-200 rounded-2xl p-3.5 sm:p-5">
                                 <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
                                     <div>
                                         <h3 class="text-sm font-bold text-slate-900">
@@ -554,11 +554,16 @@
         if (window.lucide) window.lucide.createIcons();
 
         // Close handlers
+        const onEsc = (e) => {
+            if (e.key === 'Escape') close();
+        };
         const close = () => {
+            document.removeEventListener('keydown', onEsc);
             overlay.remove();
             isAddingResident = false;
             isAddingExpense = false;
         };
+        document.addEventListener('keydown', onEsc);
         document.getElementById('close-god-btn')?.addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
@@ -754,7 +759,8 @@
             const target = users.find(u => u.id === id);
             if (!target) return;
             if (id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' || target.email === 'sampathkumar@chemadura.com') {
-                alert('Protected Account: Superadmin account cannot be removed.');
+                showGodToast('Protected Account: Superadmin account cannot be removed.', true);
+                if (window.audioUtils) window.audioUtils.playWarningChime();
                 return;
             }
             if (confirm(`Permanently delete resident ${target.full_name || target.fullName} (${target.email}) from Supabase?`)) {

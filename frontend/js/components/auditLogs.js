@@ -89,10 +89,10 @@ function renderAuditLogs() {
     const bodyHtml = `
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             <!-- Filter & Search Controls -->
-            <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto no-scrollbar w-full sm:w-auto max-w-full">
                     ${['ALL', 'AUTH', 'CREATE', 'UPDATE', 'DELETE'].map(f => `
-                        <button type="button" class="audit-filter-btn px-3 py-1 rounded-lg transition-all cursor-pointer ${activeFilter === f ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'}" data-filter="${f}">
+                        <button type="button" class="audit-filter-btn px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 ${activeFilter === f ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'}" data-filter="${f}">
                             ${f}
                         </button>
                     `).join('')}
@@ -104,7 +104,7 @@ function renderAuditLogs() {
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto">
+            <div class="table-responsive">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-[#fafbfc] border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <tr>

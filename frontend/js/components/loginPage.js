@@ -46,8 +46,8 @@ function renderLogin() {
       </header>
 
       <!-- Main Center Form Card -->
-      <main class="w-full flex-1 flex items-center justify-center z-10 p-4 relative">
-        <div class="w-full max-w-[400px] bg-white rounded-2xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative">
+      <main class="w-full flex-1 flex items-center justify-center z-10 p-3 sm:p-4 relative">
+        <div class="w-full max-w-[400px] bg-white rounded-2xl p-5 sm:p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative">
           
           ${currentAuthMode === 'login' ? renderSignInCard() : renderSignUpCard()}
 
@@ -229,7 +229,12 @@ function renderSignUpCard() {
         <span id="signup-error-text"></span>
       </div>
 
-      <form id="sign-up-form" class="space-y-4 max-h-[55vh] overflow-y-auto pr-1">
+      <div id="signup-success-box" class="hidden mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 flex items-center gap-2">
+        <i data-lucide="check-circle-2" class="w-4 h-4 shrink-0"></i>
+        <span id="signup-success-text"></span>
+      </div>
+
+      <form id="sign-up-form" class="space-y-4 max-h-[60dvh] sm:max-h-[65dvh] overflow-y-auto pr-1">
         <!-- Profile Photo Selection -->
         <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3">
           <div class="flex items-center gap-3">
@@ -446,7 +451,13 @@ function attachSignInEvents() {
     const googleBtn = document.getElementById('google-sign-in-btn');
     if (googleBtn) {
         googleBtn.addEventListener('click', () => {
-            alert('Google authentication integration is active for chemadura domain accounts.');
+            const errBox = document.getElementById('login-error-box');
+            const errText = document.getElementById('login-error-text');
+            if (errBox && errText) {
+                errText.textContent = 'Google SSO domain integration is active for @chemadura.com accounts.';
+                errBox.className = 'mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-700 flex items-center gap-2';
+                errBox.classList.remove('hidden');
+            }
         });
     }
 }
@@ -543,7 +554,12 @@ function attachSignUpEvents() {
                     console.warn("User profile insert warning:", dbError.message);
                 }
 
-                alert('Account created successfully! Signing you in...');
+                const successBox = document.getElementById('signup-success-box');
+                const successText = document.getElementById('signup-success-text');
+                if (successBox && successText) {
+                    successText.textContent = 'Account created successfully! Signing you in...';
+                    successBox.classList.remove('hidden');
+                }
                 await window.authService.login(email, password);
                 if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 window.location.hash = '#/';

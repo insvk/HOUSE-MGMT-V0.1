@@ -16,24 +16,24 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'command-palette-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-start justify-center pt-20 p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-start justify-center pt-4 sm:pt-16 p-2 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+            <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in zoom-in-95 duration-150" style="max-height: 75vh; max-height: 75dvh;">
                 <!-- Search Input Header -->
-                <div class="p-4 border-b border-slate-100 flex items-center gap-3">
-                    <i data-lucide="search" class="w-5 h-5 text-slate-400 shrink-0"></i>
+                <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center gap-2.5 sm:gap-3 shrink-0">
+                    <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 shrink-0"></i>
                     <input
                         id="cmd-input"
                         type="text"
                         placeholder="Type a command or search residents, bills, settings..."
-                        class="w-full text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
+                        class="w-full text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
                         autofocus
                     />
-                    <kbd class="text-[10px] font-mono px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">ESC</kbd>
+                    <kbd class="text-[10px] font-mono px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">ESC</kbd>
                 </div>
 
                 <!-- Results List -->
-                <div id="cmd-results" class="max-h-96 overflow-y-auto p-2 divide-y divide-slate-100 text-xs">
+                <div id="cmd-results" class="flex-1 min-h-0 overflow-y-auto p-2 divide-y divide-slate-100 text-xs">
                     <!-- Actions Section -->
                     <div class="p-2">
                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">AI Copilot & Smart Actions</div>
@@ -129,9 +129,9 @@
                 </div>
 
                 <!-- Footer Hint -->
-                <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <div class="p-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-400">
                     <span>Press <kbd class="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px]">Ctrl+K</kbd> to toggle anytime</span>
-                    <span>CHE-MADURA HS-1 MGMT</span>
+                    <span class="hidden sm:inline">CHE-MADURA HS-1 MGMT</span>
                 </div>
             </div>
         `;

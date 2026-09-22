@@ -44,6 +44,7 @@ wheels/
 src_backup/
 supabase/.temp/
 .supabase/
+scratch/
 
 # Editor directories and files
 .vscode/*

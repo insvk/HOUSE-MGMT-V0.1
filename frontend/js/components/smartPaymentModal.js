@@ -40,18 +40,18 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'smart-payment-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2.5 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div id="smart-payment-modal" class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-6 animate-in zoom-in-95 duration-150">
+            <div id="smart-payment-modal" class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-6 max-h-[92dvh] overflow-y-auto animate-in zoom-in-95 duration-150">
                 <!-- Header -->
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
                             <i data-lucide="qr-code" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h2 class="text-base font-bold text-slate-900">Smart UPI Collection & QR</h2>
-                            <p class="text-xs text-slate-500">${name} • Flat ${flat}</p>
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900">Smart UPI Collection & QR</h2>
+                            <p class="text-[11px] sm:text-xs text-slate-500">${name} • Flat ${flat}</p>
                         </div>
                     </div>
                     <button type="button" id="close-smart-pay-modal" class="smart-qr-close-btn p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
@@ -60,29 +60,29 @@
                 </div>
 
                 <!-- Breakdown Cards -->
-                <div class="my-4 space-y-3">
+                <div class="my-3 sm:my-4 space-y-3">
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                             <span class="text-[10px] uppercase font-bold text-slate-400">Maintenance Split</span>
-                            <p class="text-sm font-bold text-slate-800 mt-0.5">₹${maint.toLocaleString('en-IN')}</p>
+                            <p class="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">₹${maint.toLocaleString('en-IN')}</p>
                         </div>
                         <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                             <span class="text-[10px] uppercase font-bold text-slate-400">Monthly Rent</span>
-                            <p class="text-sm font-bold text-slate-800 mt-0.5">₹${rent.toLocaleString('en-IN')}</p>
+                            <p class="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">₹${rent.toLocaleString('en-IN')}</p>
                         </div>
                     </div>
 
                     <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
                         <div>
                             <span class="text-[10px] uppercase font-extrabold text-emerald-700 tracking-wider">Total Payable Amount</span>
-                            <p class="text-xl font-extrabold text-emerald-900 font-mono">₹${parseFloat(totalDues).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                            <p class="text-lg sm:text-xl font-extrabold text-emerald-900 font-mono">₹${parseFloat(totalDues).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                         </div>
                         <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-bold text-[10px] uppercase tracking-wider">Dynamic UPI</span>
                     </div>
 
                     <!-- Dynamic QR Code Container -->
-                    <div class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-xl shadow-2xs">
-                        <div id="smart-qr-target" class="w-48 h-48 flex items-center justify-center bg-white p-2 rounded-lg border border-slate-100 shadow-inner">
+                    <div class="flex flex-col items-center justify-center p-3 sm:p-4 bg-white border border-slate-200 rounded-xl shadow-2xs">
+                        <div id="smart-qr-target" class="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center bg-white p-2 rounded-lg border border-slate-100 shadow-inner">
                             <!-- QR image fallback -->
                             <img 
                                 src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}" 

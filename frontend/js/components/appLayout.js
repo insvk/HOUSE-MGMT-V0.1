@@ -109,6 +109,16 @@
                             <span class="text-[10px] text-slate-400 truncate">${user.role || 'TENANT'} • ${user.flat_number || user.flatNumber || 'Unit'}</span>
                         </div>
                     </div>
+                    ${isOwner ? `
+                    <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">View Role:</span>
+                        <select id="sidebar-role-select" class="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs font-bold text-[#405189] cursor-pointer focus:outline-none">
+                            <option value="OWNER" ${user.role === 'OWNER' ? 'selected' : ''}>Owner</option>
+                            <option value="ADMIN_TENANT" ${user.role === 'ADMIN_TENANT' ? 'selected' : ''}>Admin Tenant</option>
+                            <option value="TENANT" ${user.role === 'TENANT' ? 'selected' : ''}>Tenant View</option>
+                        </select>
+                    </div>
+                    ` : ''}
                 </div>
             </aside>
 
@@ -116,19 +126,19 @@
             <div class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0">
                 
                 <!-- Top Header Bar (CosmoLex Style) -->
-                <header class="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+                <header class="h-16 bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
                     <!-- Left: Mobile Toggle, Title & Command Palette trigger -->
-                    <div class="flex items-center gap-3 sm:gap-4">
-                        <button id="mobile-sidebar-toggle-btn" class="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer" title="Menu">
+                    <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                        <button id="mobile-sidebar-toggle-btn" class="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer shrink-0" title="Menu">
                             <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
-                        <div>
-                            <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">${title}</h1>
-                            <p class="text-[11px] text-slate-400 hidden sm:block">${subtitle}</p>
+                        <div class="min-w-0">
+                            <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight truncate max-w-[120px] xs:max-w-[180px] sm:max-w-none">${title}</h1>
+                            <p class="text-[11px] text-slate-400 hidden sm:block truncate">${subtitle}</p>
                         </div>
 
                         <!-- Command Palette Search Button -->
-                        <button id="header-cmd-search-btn" class="hidden md:flex items-center gap-2.5 bg-[#f3f4f6] hover:bg-slate-200 px-3.5 py-1.5 rounded-full text-xs text-slate-500 transition-colors cursor-pointer ml-2">
+                        <button id="header-cmd-search-btn" class="hidden md:flex items-center gap-2.5 bg-[#f3f4f6] hover:bg-slate-200 px-3.5 py-1.5 rounded-full text-xs text-slate-500 transition-colors cursor-pointer ml-2 shrink-0">
                             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
                             <span class="font-medium">Search...</span>
                             <kbd class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-400 shadow-2xs">⌘K</kbd>
@@ -136,26 +146,27 @@
                     </div>
 
                     <!-- Right Controls -->
-                    <div class="flex items-center gap-2.5">
+                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                         <!-- Cloud DB Pill -->
-                        <button id="header-sync-pill" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer" title="Click to test database latency">
+                        <button id="header-sync-pill" class="hidden sm:inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs cursor-pointer shrink-0" title="Click to test database latency">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>Cloud DB Live</span>
+                            <span class="hidden sm:inline">Cloud DB Live</span>
                         </button>
 
                         <!-- God Maxx Access Pill (for Sampath Kumar / OWNER) -->
                         ${isOwner ? `
-                        <button id="header-god-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-indigo-500/15 border border-amber-400/40 text-amber-900 font-extrabold text-[11px] tracking-wide uppercase shadow-2xs cursor-pointer hover:bg-amber-100/50 transition-colors" title="Open Master Property Editor">
+                        <button id="header-god-badge" class="hidden sm:flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-indigo-500/15 border border-amber-400/40 text-amber-900 font-extrabold text-[11px] tracking-wide uppercase shadow-2xs cursor-pointer hover:bg-amber-100/50 transition-colors shrink-0" title="Open Master Property Editor">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600 animate-pulse"></i>
-                            <span class="hidden sm:inline">GOD MAXX ACCESS</span>
+                            <span class="hidden md:inline">GOD MAXX ACCESS</span>
+                            <span class="hidden sm:inline md:hidden">GOD MAXX</span>
                         </button>
                         ` : ''}
 
                         <!-- Active View Role Selector -->
                         ${isOwner ? `
-                        <div class="flex items-center gap-1 bg-[#f3f3f9] px-2 py-1 rounded border border-slate-200 text-xs">
-                            <select id="header-role-select" class="bg-transparent text-[11px] font-bold text-[#405189] cursor-pointer focus:outline-none">
-                                <option value="OWNER" ${user.role === 'OWNER' ? 'selected' : ''}>Owner (Sampath)</option>
+                        <div class="hidden sm:flex items-center gap-1 bg-[#f3f3f9] px-1.5 sm:px-2 py-1 rounded border border-slate-200 text-xs shrink-0">
+                            <select id="header-role-select" class="bg-transparent text-[11px] font-bold text-[#405189] cursor-pointer focus:outline-none max-w-[80px] sm:max-w-none truncate">
+                                <option value="OWNER" ${user.role === 'OWNER' ? 'selected' : ''}>Owner</option>
                                 <option value="ADMIN_TENANT" ${user.role === 'ADMIN_TENANT' ? 'selected' : ''}>Admin Tenant</option>
                                 <option value="TENANT" ${user.role === 'TENANT' ? 'selected' : ''}>Tenant View</option>
                             </select>
@@ -163,7 +174,7 @@
                         ` : ''}
 
                         <!-- Active Month Badge -->
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
                             <span>${currentMonthLabel}</span>
                         </div>
@@ -175,8 +186,8 @@
                         ${actionsHtml || ''}
 
                         <!-- User Profile Dropdown -->
-                        <div class="relative ml-2">
-                            <button id="header-profile-menu-btn" class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+                        <div class="relative ml-1 sm:ml-2">
+                            <button id="header-profile-menu-btn" class="flex items-center gap-1.5 sm:gap-2 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
                                 <img 
                                     src="${user.avatar_url || user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" 
                                     alt="Avatar" 
@@ -186,7 +197,7 @@
                             </button>
 
                             <!-- Dropdown Menu -->
-                            <div id="header-profile-dropdown" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 text-xs animate-in fade-in duration-100">
+                            <div id="header-profile-dropdown" class="hidden absolute right-0 mt-2 w-52 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 text-xs animate-in fade-in duration-100">
                                 <div class="px-4 py-2 border-b border-slate-100">
                                     <p class="font-bold text-slate-900 truncate">${user.full_name || 'Resident'}</p>
                                     <p class="text-[11px] text-slate-400 truncate">${user.email}</p>
@@ -327,17 +338,22 @@
             window.location.hash = '#/login';
         });
 
-        // Role Switcher
-        document.getElementById('header-role-select')?.addEventListener('change', (e) => {
+        // Role Switcher (Header & Mobile Sidebar)
+        const handleRoleChange = (e) => {
             const role = e.target.value;
             const updated = { ...user, role };
             if (window.appStore) window.appStore.setState({ user: updated });
+            if (window.smartCopilot && typeof window.smartCopilot.updateLauncher === 'function') {
+                window.smartCopilot.updateLauncher();
+            }
             if (typeof window.refreshCurrentView === 'function') {
                 window.refreshCurrentView();
             } else {
                 window.location.reload();
             }
-        });
+        };
+        document.getElementById('header-role-select')?.addEventListener('change', handleRoleChange);
+        document.getElementById('sidebar-role-select')?.addEventListener('change', handleRoleChange);
     }
 
     window.renderAppLayout = renderAppLayout;

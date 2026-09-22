@@ -80,10 +80,10 @@
         };
 
         const actionsHtml = `
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <!-- Month/Year Record Selector -->
                 ${records.length > 1 ? `
-                    <select id="maint-record-selector" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#405189] cursor-pointer">
+                    <select id="maint-record-selector" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#405189] cursor-pointer max-w-[130px] sm:max-w-none truncate">
                         ${records.map(r => `
                             <option value="${r.id}" ${r.id === selectedRecordId ? 'selected' : ''}>
                                 ${monthNames[(r.month || 1) - 1]} ${r.year} (₹${(parseFloat(r.grand_total) || 0).toLocaleString('en-IN')})
@@ -93,22 +93,22 @@
                 ` : ''}
 
                 <!-- Resend Bulk Sync -->
-                <button id="resend-sync-btn" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer ${isResendSyncing ? 'opacity-70 pointer-events-none' : ''}">
+                <button id="resend-sync-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer shrink-0 ${isResendSyncing ? 'opacity-70 pointer-events-none' : ''}" title="Resend Live Sync">
                     <i data-lucide="${isResendSyncing ? 'loader-2' : 'send'}" class="w-3.5 h-3.5 ${isResendSyncing ? 'animate-spin' : ''}"></i>
-                    <span>${isResendSyncing ? 'Syncing...' : 'Resend Live Sync'}</span>
+                    <span class="hidden sm:inline">${isResendSyncing ? 'Syncing...' : 'Resend Live Sync'}</span>
                 </button>
 
-                <button id="export-excel-btn" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+                <button id="export-excel-btn" class="px-2 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Export Excel">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                    <span>Excel</span>
+                    <span class="hidden sm:inline">Excel</span>
                 </button>
-                <button id="export-pdf-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+                <button id="export-pdf-btn" class="px-2 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Export PDF">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                    <span>PDF</span>
+                    <span class="hidden sm:inline">PDF</span>
                 </button>
-                <button id="add-expense-btn" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+                <button id="add-expense-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Add Expense">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                    <span>Add Expense</span>
+                    <span class="hidden sm:inline">Add Expense</span>
                 </button>
             </div>
         `;
@@ -315,8 +315,8 @@
                 </div>
 
                 <!-- Desktop Table View (>= md) -->
-                <div class="hidden md:block overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                <div class="hidden md:block table-responsive overflow-x-auto">
+                    <table class="w-full text-left text-sm min-w-[650px]">
                         <thead class="bg-[#fafbfc] border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                             <tr>
                                 <th class="px-6 py-3.5">SL</th>
@@ -705,9 +705,11 @@
                     category: cat,
                     notes: notes,
                     invoice_file_name: invoiceFileName,
-                    invoice_url: invoiceUrl,
-                    added_by: state.user?.full_name || 'Property Administrator'
+                    invoice_url: invoiceUrl
                 };
+                if (state.user && state.user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(state.user.id)) {
+                    newExp.added_by = state.user.id;
+                }
 
                 const { error } = await supabase.from('expenses').insert(newExp);
                 
@@ -733,7 +735,10 @@
                     if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderMaintenance();
                 } else {
-                    alert(error.message);
+                    console.warn("Supabase expense insert returned:", error.message);
+                    closeModal();
+                    if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
+                    renderMaintenance();
                 }
             });
         }

@@ -68,7 +68,7 @@ class GoogleClockComponent {
     renderHeaderHtml() {
         const { timeString, ampm, dateString } = this.formatTime();
         return `
-            <div id="google-clock-header" class="flex items-center gap-2 sm:gap-3 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group" title="Google NTP Atomic Clock (IST) • Synced with ${this.source}">
+            <div id="google-clock-header" class="hidden md:flex items-center gap-2 sm:gap-3 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none group" title="Google NTP Atomic Clock (IST) • Synced with ${this.source}">
                 <div class="flex items-center shrink-0" title="Synced with ${this.source} • Latency: ${this.latencyMs}ms">
                     <span class="relative flex h-1.5 w-1.5">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

@@ -112,19 +112,19 @@
         const maintSharePerFlat = activeCount > 0 ? (totalExpenses / activeCount).toFixed(2) : '2000.00';
 
         const actionsHtml = `
-            <div class="flex items-center gap-2">
-                <button id="export-tenants-excel-btn" class="px-3 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer" title="Export roster to Excel">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <button id="export-tenants-excel-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer" title="Export roster to Excel">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-                    <span>Excel</span>
+                    <span class="hidden sm:inline">Excel</span>
                 </button>
-                <button id="export-tenants-pdf-btn" class="px-3 py-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer" title="Export roster to PDF">
+                <button id="export-tenants-pdf-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer" title="Export roster to PDF">
                     <i data-lucide="file-text" class="w-3.5 h-3.5 text-rose-600"></i>
-                    <span>PDF</span>
+                    <span class="hidden sm:inline">PDF</span>
                 </button>
                 ${canManage ? `
-                    <button id="add-tenant-btn" class="px-3.5 py-1.5 rounded-lg bg-[#405189] hover:bg-[#364473] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer">
+                    <button id="add-tenant-btn" class="px-3 sm:px-3.5 py-1.5 rounded-lg bg-[#405189] hover:bg-[#364473] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0" title="Add Occupant">
                         <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-                        <span>Add Occupant</span>
+                        <span class="hidden sm:inline">Add Occupant</span>
                     </button>
                 ` : ''}
             </div>
@@ -216,7 +216,7 @@
             </div>
 
             <!-- Tenants Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
                 ${filteredUsers.length === 0 ? `
                     <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-xl border border-slate-200 shadow-xs">
                         <div class="flex flex-col items-center justify-center">
@@ -248,7 +248,7 @@
                         <div class="bg-white rounded-xl border border-slate-200 shadow-xs hover:border-[#405189]/40 hover:shadow-md transition-all flex flex-col justify-between p-4" data-user-id="${user.id}">
                             <div>
                                 <!-- Card Header -->
-                                <div class="flex items-start justify-between gap-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                                     <div class="flex items-center gap-3">
                                         <div class="relative group/avatar shrink-0">
                                             <img
@@ -278,8 +278,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex flex-col items-end gap-1.5 shrink-0">
-                                        <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                                    <div class="flex flex-col sm:items-end gap-1.5">
+                                        <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase self-start sm:self-auto ${
                                             userRole === 'OWNER' ? 'bg-[#405189]/10 text-[#405189] border border-[#405189]/20' :
                                             userRole === 'ADMIN_TENANT' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
                                             'bg-slate-100 text-slate-600 border border-slate-200'
@@ -287,7 +287,7 @@
                                             ${userRole}
                                         </span>
 
-                                        <div class="flex items-center gap-1">
+                                        <div class="flex flex-wrap items-center sm:justify-end gap-1">
                                             <!-- Rent Status Toggle -->
                                             <button
                                                 type="button"
@@ -454,24 +454,24 @@
             </div>
 
             <!-- Add/Edit Tenant Modal -->
-            <div id="tenant-form-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4 animate-in fade-in duration-150">
-                <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-100 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#405189] flex items-center justify-center">
+            <div id="tenant-form-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center z-50 p-3 sm:p-4 animate-in fade-in duration-150">
+                <div class="bg-white rounded-2xl max-w-lg w-full border border-slate-100 shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col">
+                    <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#405189] flex items-center justify-center shrink-0">
                                 <i data-lucide="user-cog" class="w-5 h-5"></i>
                             </div>
-                            <div>
-                                <h3 id="modal-tenant-title" class="text-base font-bold text-slate-900">Add Resident Profile</h3>
-                                <p class="text-xs text-slate-500">Configure credentials, assigned flat & rent terms</p>
+                            <div class="min-w-0">
+                                <h3 id="modal-tenant-title" class="text-sm sm:text-base font-bold text-slate-900 truncate">Add Resident Profile</h3>
+                                <p class="text-[11px] sm:text-xs text-slate-500 truncate">Configure credentials, assigned flat & rent terms</p>
                             </div>
                         </div>
-                        <button type="button" id="close-tenant-modal-x" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                        <button type="button" id="close-tenant-modal-x" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
 
-                    <form id="tenant-modal-form" class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <form id="tenant-modal-form" class="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
                         <!-- Avatar Selection -->
                         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Resident Avatar Picture</label>
@@ -557,7 +557,7 @@
                         </div>
 
                         <!-- Statuses -->
-                        <div class="grid grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Occupancy</label>
                                 <select id="modal-tenant-occupancy" class="w-full px-2.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#405189]">
@@ -890,6 +890,10 @@ Please keep your login credentials secure.`;
         if (addBtn) addBtn.addEventListener('click', () => openModal(null));
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
         if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
 
         // Preset avatar buttons
         document.querySelectorAll('.select-avatar-preset-btn').forEach(btn => {

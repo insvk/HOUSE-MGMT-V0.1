@@ -65,14 +65,14 @@ function renderAnalytics() {
     ];
 
     const actionsHtml = `
-        <div class="flex items-center gap-2">
-            <button id="ai-deep-audit-btn" class="px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <button id="ai-deep-audit-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Ask AI Financial Copilot">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
-                <span>Ask AI Financial Copilot</span>
+                <span class="hidden sm:inline">Ask AI Financial Copilot</span>
             </button>
-            <button id="export-analytics-excel-btn" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+            <button id="export-analytics-excel-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Export Analytics (Excel)">
                 <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                <span>Export Analytics (Excel)</span>
+                <span class="hidden sm:inline">Export Analytics (Excel)</span>
             </button>
         </div>
     `;

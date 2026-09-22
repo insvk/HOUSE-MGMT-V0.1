@@ -21,40 +21,40 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'settings-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh]">
                 <!-- Header -->
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+                <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
                             <i data-lucide="settings" class="w-5 h-5"></i>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-slate-900">Platform Settings & Backups</h2>
-                            <p class="text-xs text-slate-500">Property metadata, audio feedback, and database snapshots</p>
+                        <div class="min-w-0">
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Platform Settings & Backups</h2>
+                            <p class="text-[11px] sm:text-xs text-slate-500 truncate">Property metadata, audio feedback, and database snapshots</p>
                         </div>
                     </div>
-                    <button type="button" id="close-settings-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    <button type="button" id="close-settings-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex border-b border-slate-100 px-6 gap-6 text-xs font-semibold">
-                    <button type="button" class="py-3 border-b-2 transition-colors cursor-pointer ${activeTab === 'general' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="general">
+                <div class="flex border-b border-slate-100 px-3 sm:px-6 gap-3 sm:gap-6 text-xs font-semibold overflow-x-auto no-scrollbar">
+                    <button type="button" class="py-2.5 sm:py-3 border-b-2 transition-colors cursor-pointer shrink-0 whitespace-nowrap ${activeTab === 'general' ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="general">
                         General Configuration
                     </button>
-                    <button type="button" class="py-3 border-b-2 transition-colors cursor-pointer ${activeTab === 'cloud' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="cloud">
+                    <button type="button" class="py-2.5 sm:py-3 border-b-2 transition-colors cursor-pointer shrink-0 whitespace-nowrap ${activeTab === 'cloud' ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="cloud">
                         Cloud Database Status
                     </button>
-                    <button type="button" class="py-3 border-b-2 transition-colors cursor-pointer ${activeTab === 'backup' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="backup">
+                    <button type="button" class="py-2.5 sm:py-3 border-b-2 transition-colors cursor-pointer shrink-0 whitespace-nowrap ${activeTab === 'backup' ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-400 hover:text-slate-600'}" data-tab="backup">
                         System Backup & Restore
                     </button>
                 </div>
 
                 <!-- Tab Content Body -->
-                <div class="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
+                <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5 text-sm">
                     ${activeTab === 'general' ? `
                         <form id="settings-general-form" class="space-y-4">
                             <div>
@@ -65,7 +65,7 @@
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Street Address</label>
                                 <input id="set-address" required value="${house.address || '91/16, Kovilpatti Gopalakrishnan Street, Karthikeyan Nagar, Maduravoyal'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">City</label>
                                     <input id="set-city" required value="${house.city || 'Chennai'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
@@ -75,7 +75,7 @@
                                     <input id="set-postal" required value="${house.postalCode || '600095'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Total Units / Flats</label>
                                     <input id="set-units" required type="number" value="${house.totalUnits || 5}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
@@ -85,7 +85,7 @@
                                     <input id="set-currency" required value="${house.settings?.currency || 'INR'}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">UPI ID for Collections</label>
                                     <input id="set-upi-id" placeholder="e.g. 7338716690@ybl" value="${house.settings?.upiId || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 font-medium focus:ring-2 focus:ring-black" />
@@ -152,6 +152,11 @@
         if (window.lucide) window.lucide.createIcons();
 
         // Close handlers
+        const onEscSettings = (e) => {
+            if (e.key === 'Escape') closeSettingsModal();
+        };
+        document.addEventListener('keydown', onEscSettings);
+
         const closeBtn = document.getElementById('close-settings-btn');
         if (closeBtn) closeBtn.addEventListener('click', closeSettingsModal);
         overlay.addEventListener('click', (e) => {
@@ -216,7 +221,6 @@
 
                 if (window.appStore) window.appStore.setState({ house: updatedHouse });
                 if (window.audioUtils) window.audioUtils.playSuccessChime();
-                alert('Property profile settings saved successfully!');
                 closeSettingsModal();
             });
         }

@@ -27,21 +27,21 @@
             : (totalBytes / 1024).toFixed(0) + ' KB';
 
         const actionsHtml = `
-            <div class="flex items-center gap-2">
-                <div class="relative w-44 sm:w-56">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <div class="hidden xs:block relative w-24 sm:w-56">
                     <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
                     <input
                         type="text"
                         id="invoice-search-input"
                         value="${searchQuery}"
-                        placeholder="Search invoices & OCR..."
+                        placeholder="Search..."
                         class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#405189] transition-all"
                     />
                 </div>
                 ${canUpload ? `
-                    <button id="upload-invoice-btn" class="px-3.5 py-1.5 rounded-lg bg-[#405189] hover:bg-[#364473] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer">
+                    <button id="upload-invoice-btn" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-[#405189] hover:bg-[#364473] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0" title="Upload Invoice PDF">
                         <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                        <span>Upload Invoice PDF</span>
+                        <span class="hidden sm:inline">Upload Invoice PDF</span>
                     </button>
                 ` : ''}
             </div>
@@ -194,24 +194,24 @@
             </div>
 
             <!-- Upload Modal -->
-            <div id="upload-invoice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4 animate-in fade-in duration-150">
-                <div class="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md border border-slate-100">
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#405189] flex items-center justify-center">
+            <div id="upload-invoice-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center z-50 p-3 sm:p-4 animate-in fade-in duration-150">
+                <div class="bg-white rounded-2xl max-w-md w-full border border-slate-100 shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col">
+                    <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#405189] flex items-center justify-center shrink-0">
                                 <i data-lucide="upload-cloud" class="w-5 h-5"></i>
                             </div>
-                            <div>
-                                <h2 class="text-base font-bold text-slate-900">Upload Receipt / Invoice</h2>
-                                <p class="text-xs text-slate-500">Official digital document archive</p>
+                            <div class="min-w-0">
+                                <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Upload Receipt / Invoice</h2>
+                                <p class="text-[11px] sm:text-xs text-slate-500 truncate">Official digital document archive</p>
                             </div>
                         </div>
-                        <button type="button" id="close-upload-modal-x" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                        <button type="button" id="close-upload-modal-x" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
 
-                    <form id="upload-invoice-form" class="space-y-4">
+                    <form id="upload-invoice-form" class="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description / Bill Name *</label>
                             <input id="inv-desc" required placeholder="e.g. EB Bill Voucher September 2026" class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#405189]" type="text" />
@@ -222,7 +222,7 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">OCR / Note Content (Optional)</label>
-                            <textarea id="inv-ocr" rows="2" placeholder="Extracted text summary or verification note..." class="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#405189]"></textarea>
+                            <textarea id="inv-ocr" rows="2" placeholder="Extracted text summary or verification note..." class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#405189]"></textarea>
                         </div>
                         <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
                             <button type="button" id="cancel-upload-modal-btn" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer">Cancel</button>
@@ -283,6 +283,10 @@
         if (uploadBtn) uploadBtn.addEventListener('click', openModal);
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
         if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeModal();
+        });
 
         // Dropzone
         const dropzone = document.getElementById('invoice-dropzone');
@@ -373,7 +377,8 @@
                 if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 renderInvoices();
             } else {
-                alert('Upload Error: ' + error.message);
+                console.error('Invoice upload error:', error);
+                if (window.audioUtils) window.audioUtils.playWarningChime();
             }
         };
         reader.readAsDataURL(file);
@@ -411,7 +416,8 @@
                 if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 renderInvoices();
             } else {
-                alert('Upload Error: ' + error.message);
+                console.error('Invoice full upload error:', error);
+                if (window.audioUtils) window.audioUtils.playWarningChime();
             }
         };
         reader.readAsDataURL(file);

@@ -22,36 +22,36 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'edit-expense-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-6 max-h-[92dvh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4 sm:mb-5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                             <i data-lucide="edit-3" class="w-5 h-5"></i>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-slate-900">Edit Maintenance Expense</h2>
-                            <p class="text-xs text-slate-500">Update line item details and recalculate totals</p>
+                        <div class="min-w-0">
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Edit Maintenance Expense</h2>
+                            <p class="text-[11px] sm:text-xs text-slate-500 truncate">Update line item details and recalculate totals</p>
                         </div>
                     </div>
-                    <button type="button" id="close-edit-exp-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    <button type="button" id="close-edit-exp-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <form id="edit-expense-form" class="space-y-4 text-sm">
+                <form id="edit-expense-form" class="space-y-3.5 sm:space-y-4 text-sm">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Particulars / Description</label>
-                        <input id="edit-exp-particular" required value="${expense.particular || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="edit-exp-particular" required value="${expense.particular || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm" />
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Amount (₹)</label>
-                        <input id="edit-exp-amount" required type="number" step="0.01" value="${expense.amount || 0}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="edit-exp-amount" required type="number" step="0.01" value="${expense.amount || 0}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm font-mono" />
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Category</label>
-                        <select id="edit-exp-category" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black">
+                        <select id="edit-exp-category" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm">
                             <option value="utilities" ${expense.category === 'utilities' ? 'selected' : ''}>Utilities (EB, Water)</option>
                             <option value="repairs" ${expense.category === 'repairs' ? 'selected' : ''}>Repairs & Motor</option>
                             <option value="cleaning" ${expense.category === 'cleaning' ? 'selected' : ''}>Cleaning & Housekeeping</option>
@@ -60,12 +60,12 @@
                         </select>
                     </div>
                     <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" id="edit-exp-gst-check" ${(expense.gst_applicable || expense.gstApplicable) ? 'checked' : ''} class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                        <label for="edit-exp-gst-check" class="text-xs font-semibold text-slate-700">GST Applicable</label>
+                        <input type="checkbox" id="edit-exp-gst-check" ${(expense.gst_applicable || expense.gstApplicable) ? 'checked' : ''} class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                        <label for="edit-exp-gst-check" class="text-xs font-semibold text-slate-700 cursor-pointer">GST Applicable</label>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Notes / Reference</label>
-                        <input id="edit-exp-notes" value="${expense.notes || ''}" placeholder="e.g. Voucher Ref #104" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="edit-exp-notes" value="${expense.notes || ''}" placeholder="e.g. Voucher Ref #104" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm" />
                     </div>
                     <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
                         <button type="button" id="cancel-edit-exp-btn" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer">Cancel</button>
@@ -78,7 +78,12 @@
         document.body.appendChild(overlay);
         if (window.lucide) window.lucide.createIcons();
 
-        const close = () => overlay.remove();
+        const onEsc = (e) => { if (e.key === 'Escape') close(); };
+        const close = () => {
+            document.removeEventListener('keydown', onEsc);
+            overlay.remove();
+        };
+        document.addEventListener('keydown', onEsc);
         document.getElementById('close-edit-exp-btn')?.addEventListener('click', close);
         document.getElementById('cancel-edit-exp-btn')?.addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
@@ -120,36 +125,36 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'edit-profile-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-6 max-h-[92dvh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4 sm:mb-5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                             <i data-lucide="user-check" class="w-5 h-5"></i>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-slate-900">Edit Profile & Username</h2>
-                            <p class="text-xs text-slate-500">Update personal directory profile</p>
+                        <div class="min-w-0">
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Edit Profile & Username</h2>
+                            <p class="text-[11px] sm:text-xs text-slate-500 truncate">Update personal directory profile</p>
                         </div>
                     </div>
-                    <button type="button" id="close-profile-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    <button type="button" id="close-profile-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <form id="edit-profile-form" class="space-y-4 text-sm">
+                <form id="edit-profile-form" class="space-y-3.5 sm:space-y-4 text-sm">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
-                        <input id="profile-name" required value="${user.full_name || user.fullName || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="profile-name" required value="${user.full_name || user.fullName || ''}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm" />
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username (@tag)</label>
-                        <input id="profile-username" value="${user.username || ''}" placeholder="e.g. sampath_kumar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="profile-username" value="${user.username || ''}" placeholder="e.g. sampath_kumar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm" />
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Phone Number</label>
-                        <input id="profile-phone" value="${user.phone || ''}" placeholder="+91 98421 00000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black" />
+                        <input id="profile-phone" value="${user.phone || ''}" placeholder="+91 98421 00000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-black text-sm" />
                     </div>
                     <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
                         <button type="button" id="cancel-profile-btn" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer">Cancel</button>
@@ -162,7 +167,12 @@
         document.body.appendChild(overlay);
         if (window.lucide) window.lucide.createIcons();
 
-        const close = () => overlay.remove();
+        const onEsc = (e) => { if (e.key === 'Escape') close(); };
+        const close = () => {
+            document.removeEventListener('keydown', onEsc);
+            overlay.remove();
+        };
+        document.addEventListener('keydown', onEsc);
         document.getElementById('close-profile-btn')?.addEventListener('click', close);
         document.getElementById('cancel-profile-btn')?.addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
@@ -201,30 +211,30 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'avatar-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-100 backdrop-blur-xs';
+        overlay.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-100 backdrop-blur-xs';
         overlay.innerHTML = `
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-6 max-h-[92dvh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4 sm:mb-5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                             <i data-lucide="camera" class="w-5 h-5"></i>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-slate-900">Change Profile Photo</h2>
-                            <p class="text-xs text-slate-500">Pick an executive avatar or upload photo</p>
+                        <div class="min-w-0">
+                            <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Change Profile Photo</h2>
+                            <p class="text-[11px] sm:text-xs text-slate-500 truncate">Pick an executive avatar or upload photo</p>
                         </div>
                     </div>
-                    <button type="button" id="close-avatar-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    <button type="button" id="close-avatar-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
                 <div class="space-y-4">
                     <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Choose From Executive Presets</div>
-                    <div class="grid grid-cols-4 gap-3">
+                    <div class="grid grid-cols-4 gap-2 sm:gap-3">
                         ${DEFAULT_AVATARS.map(av => `
                             <button type="button" class="avatar-preset-btn p-1 rounded-2xl border-2 hover:border-black transition-all cursor-pointer ${currentUrl === av.url ? 'border-black ring-2 ring-black/10' : 'border-transparent'}" data-url="${av.url}">
-                                <img src="${av.url}" alt="${av.label}" class="w-14 h-14 rounded-xl object-cover" />
+                                <img src="${av.url}" alt="${av.label}" class="w-full aspect-square rounded-xl object-cover" />
                             </button>
                         `).join('')}
                     </div>
@@ -240,7 +250,12 @@
         document.body.appendChild(overlay);
         if (window.lucide) window.lucide.createIcons();
 
-        const close = () => overlay.remove();
+        const onEsc = (e) => { if (e.key === 'Escape') close(); };
+        const close = () => {
+            document.removeEventListener('keydown', onEsc);
+            overlay.remove();
+        };
+        document.addEventListener('keydown', onEsc);
         document.getElementById('close-avatar-btn')?.addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
@@ -276,28 +291,30 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'invoice-preview-modal-overlay';
-        overlay.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150 backdrop-blur-sm';
+        overlay.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-150 backdrop-blur-sm';
         overlay.innerHTML = `
-            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                    <div>
-                        <h2 class="text-sm font-bold text-slate-900 truncate">${invoice.file_name || invoice.fileName || 'Verified Document'}</h2>
-                        <p class="text-xs text-slate-500">${invoice.particular || 'Maintenance Receipt Voucher'}</p>
+            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[94dvh]">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50">
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-xs sm:text-sm font-bold text-slate-900 truncate">${invoice.file_name || invoice.fileName || 'Verified Document'}</h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500 truncate">${invoice.particular || 'Maintenance Receipt Voucher'}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" id="zoom-in-btn" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Zoom In">+</button>
-                        <button type="button" id="zoom-out-btn" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Zoom Out">-</button>
-                        <button type="button" id="rotate-btn" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Rotate">↻</button>
-                        <a href="${invoice.file_url || invoice.fileUrl}" download="${invoice.file_name || 'document'}" class="p-2 rounded-lg bg-slate-900 text-white hover:bg-black text-xs font-semibold cursor-pointer" title="Download Document">↓ Download</a>
-                        <button type="button" id="close-preview-btn" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">✕</button>
+                    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <button type="button" id="zoom-in-btn" class="p-1.5 sm:p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Zoom In">+</button>
+                        <button type="button" id="zoom-out-btn" class="p-1.5 sm:p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Zoom Out">-</button>
+                        <button type="button" id="rotate-btn" class="p-1.5 sm:p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer" title="Rotate">↻</button>
+                        <a href="${invoice.file_url || invoice.fileUrl}" download="${invoice.file_name || 'document'}" class="px-2.5 py-1.5 sm:p-2 rounded-lg bg-slate-900 text-white hover:bg-black text-xs font-semibold cursor-pointer flex items-center gap-1" title="Download Document">
+                            <span>↓</span><span class="hidden sm:inline"> Download</span>
+                        </a>
+                        <button type="button" id="close-preview-btn" class="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">✕</button>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-100 min-h-[400px]">
+                <div class="flex-1 overflow-auto p-3 sm:p-6 flex items-center justify-center bg-slate-100 min-h-[280px] sm:min-h-[400px]">
                     ${(invoice.file_type === 'application/pdf' || (invoice.file_name && invoice.file_name.endsWith('.pdf'))) ? `
-                        <iframe src="${invoice.file_url || invoice.fileUrl}" class="w-full h-[600px] rounded-lg border border-slate-200"></iframe>
+                        <iframe src="${invoice.file_url || invoice.fileUrl}" class="w-full h-[60dvh] sm:h-[600px] rounded-lg border border-slate-200"></iframe>
                     ` : `
-                        <img id="preview-img" src="${invoice.file_url || invoice.fileUrl}" alt="Invoice" class="max-h-[550px] max-w-full object-contain rounded-lg shadow-md transition-transform" />
+                        <img id="preview-img" src="${invoice.file_url || invoice.fileUrl}" alt="Invoice" class="max-h-[55dvh] sm:max-h-[550px] max-w-full object-contain rounded-lg shadow-md transition-transform" />
                     `}
                 </div>
             </div>
@@ -305,7 +322,12 @@
 
         document.body.appendChild(overlay);
 
-        const close = () => overlay.remove();
+        const onEsc = (e) => { if (e.key === 'Escape') close(); };
+        const close = () => {
+            document.removeEventListener('keydown', onEsc);
+            overlay.remove();
+        };
+        document.addEventListener('keydown', onEsc);
         document.getElementById('close-preview-btn')?.addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 

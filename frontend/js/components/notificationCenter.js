@@ -30,20 +30,22 @@ function renderNotificationCenter() {
     } catch (e) {}
 
     const actionsHtml = `
-        <button id="copy-whatsapp-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
-            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-            <span>Copy WhatsApp Notice</span>
-        </button>
-        <button id="dispatch-bulk-btn" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i>
-            <span>Send Email Blast (${activeResidents.length})</span>
-        </button>
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <button id="copy-whatsapp-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Copy WhatsApp Notice">
+                <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Copy WhatsApp Notice</span>
+            </button>
+            <button id="dispatch-bulk-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Send Email Blast">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Send Email Blast (${activeResidents.length})</span>
+            </button>
+        </div>
     `;
 
     const bodyHtml = `
         <!-- Stats Banner -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Eligible Resident Inboxes</span>
                     <p class="text-2xl font-bold text-slate-900 mt-1">${activeResidents.length} Residents</p>
@@ -52,7 +54,7 @@ function renderNotificationCenter() {
                     <i data-lucide="mail" class="w-5 h-5"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Statement Notice Value</span>
                     <p class="text-2xl font-bold text-slate-900 mt-1">₹${share} / Flat</p>
@@ -61,7 +63,7 @@ function renderNotificationCenter() {
                     <i data-lucide="receipt" class="w-5 h-5"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Resend Email Gateway</span>
                     <p class="text-2xl font-bold text-slate-900 mt-1">API Connected</p>
@@ -74,15 +76,15 @@ function renderNotificationCenter() {
 
         <!-- Dispatched Notifications Log -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h2 class="text-base font-bold text-slate-900">Official Communication Logs</h2>
-                    <p class="text-xs text-slate-500">Record of all automated and manual statements sent to tenants</p>
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">Official Communication Logs</h2>
+                    <p class="text-[11px] sm:text-xs text-slate-500 truncate">Record of all automated and manual statements sent to tenants</p>
                 </div>
-                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">${savedLogs.length} notifications</span>
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">${savedLogs.length} notifications</span>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="table-responsive">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-[#fafbfc] border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <tr>

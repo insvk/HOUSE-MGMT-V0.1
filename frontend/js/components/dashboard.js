@@ -42,31 +42,31 @@
         const myMaintStatus = (user.maintenance_status || user.payment_status || user.paymentStatus || 'paid').toLowerCase();
 
         const actionsHtml = `
-            <button id="dash-export-pdf-btn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+            <button id="dash-export-pdf-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Export PDF Statement">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>PDF Report</span>
+                <span class="hidden sm:inline">PDF Report</span>
             </button>
-            <button id="dash-export-excel-btn" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+            <button id="dash-export-excel-btn" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0" title="Export Excel Ledger">
                 <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                <span>Excel</span>
+                <span class="hidden sm:inline">Excel</span>
             </button>
         `;
 
         const bodyHtml = `
             <!-- Greeting & Sub-tabs (CosmoLex Style) -->
             <div class="flex flex-col mb-2">
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                     ${greeting}, ${firstName}!
                 </h1>
                 
-                <div class="flex items-center gap-6 mt-4 border-b border-slate-200">
-                    <button type="button" class="dash-tab-btn pb-3 text-sm transition-colors cursor-pointer ${activeDashboardTab === 'property' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="property">
+                <div class="flex items-center gap-4 sm:gap-6 mt-3 sm:mt-4 border-b border-slate-200 overflow-x-auto no-scrollbar whitespace-nowrap touch-pan-x">
+                    <button type="button" class="dash-tab-btn pb-3 text-xs sm:text-sm transition-colors cursor-pointer shrink-0 ${activeDashboardTab === 'property' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="property">
                         Property dashboard
                     </button>
-                    <button type="button" class="dash-tab-btn pb-3 text-sm transition-colors cursor-pointer ${activeDashboardTab === 'personal' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="personal">
+                    <button type="button" class="dash-tab-btn pb-3 text-xs sm:text-sm transition-colors cursor-pointer shrink-0 ${activeDashboardTab === 'personal' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="personal">
                         Personal dashboard
                     </button>
-                    <button type="button" class="dash-tab-btn pb-3 text-sm transition-colors cursor-pointer ${activeDashboardTab === 'activities' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="activities">
+                    <button type="button" class="dash-tab-btn pb-3 text-xs sm:text-sm transition-colors cursor-pointer shrink-0 ${activeDashboardTab === 'activities' ? 'font-semibold text-slate-900 border-b-2 border-slate-900' : 'font-medium text-slate-500 hover:text-slate-700'}" data-dash-tab="activities">
                         Recent activities
                     </button>
                 </div>
@@ -74,17 +74,17 @@
 
             <!-- God Maxx Banner -->
             ${isGodMode ? `
-            <div class="bg-slate-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-xs">
+            <div class="bg-slate-900 rounded-2xl p-3.5 sm:p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
                         <i data-lucide="sparkles" class="w-4 h-4 text-amber-950"></i>
                     </div>
                     <div>
-                        <div class="text-xs font-bold text-amber-300 uppercase tracking-wider">GOD MODE &bull; GOD MAXX ACCESS ACTIVE</div>
-                        <p class="text-xs text-slate-400">Direct superadmin master editor enabled for property configurations and raw tables.</p>
+                        <div class="text-[11px] sm:text-xs font-bold text-amber-300 uppercase tracking-wider">GOD MODE &bull; GOD MAXX ACCESS ACTIVE</div>
+                        <p class="text-[11px] sm:text-xs text-slate-400">Direct superadmin master editor enabled for property configurations and raw tables.</p>
                     </div>
                 </div>
-                <button type="button" id="dash-open-master-btn" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors cursor-pointer">
+                <button type="button" id="dash-open-master-btn" class="px-3.5 py-1.5 sm:py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors cursor-pointer shrink-0 self-start sm:self-auto">
                     Open Master Editor
                 </button>
             </div>
@@ -92,27 +92,27 @@
 
             ${activeDashboardTab === 'property' ? `
                 <!-- Smart AI Copilot Insights Banner -->
-                <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 border border-indigo-900/40">
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-purple-500 to-indigo-400 flex items-center justify-center text-white shrink-0 shadow-md">
-                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-300 animate-pulse"></i>
+                <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 border border-indigo-900/40">
+                    <div class="flex items-center gap-3 sm:gap-3.5">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-purple-500 to-indigo-400 flex items-center justify-center text-white shrink-0 shadow-md">
+                            <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 animate-pulse"></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wider text-amber-300">AI Financial & Operations Copilot</span>
-                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">ACTIVE RADAR</span>
+                                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-300">AI Financial & Operations Copilot</span>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">DEEPSEEK AI</span>
                             </div>
-                            <p class="text-xs text-slate-300 mt-0.5">
+                            <p class="text-[11px] sm:text-xs text-slate-300 mt-0.5">
                                 ${paidTenantsCount} of ${activeTenants} units cleared. ₹${unpaidBalance} pending collection. Projected next month spend: ₹${(parseFloat(totalExpenses) * 1.04).toFixed(0)}. Sump cleaning due in 38 days.
                             </p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" id="dash-open-copilot-btn" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                        <button type="button" id="dash-open-copilot-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
                             <i data-lucide="bot" class="w-3.5 h-3.5 text-indigo-600"></i>
                             <span>Ask AI Copilot</span>
                         </button>
-                        <button type="button" id="dash-wa-blast-btn" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                        <button type="button" id="dash-wa-blast-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
                             <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                             <span>WhatsApp Reminders</span>
                         </button>
@@ -120,7 +120,7 @@
                 </div>
 
                 <!-- 4 Top KPI Cards (CosmoLex Style) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
                     <!-- KPI 1: Total Expenses -->
                     <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
                         <div class="flex items-center justify-between mb-2">
@@ -200,14 +200,14 @@
                         <a href="#/maintenance" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View Full Ledger →</a>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left text-sm min-w-[500px]">
                             <thead class="bg-[#fafbfc] border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                 <tr>
-                                    <th class="px-6 py-3.5">Line Item</th>
-                                    <th class="px-6 py-3.5">Category</th>
-                                    <th class="px-6 py-3.5">Amount</th>
-                                    <th class="px-6 py-3.5 text-right">Actions</th>
+                                    <th class="px-4 sm:px-6 py-3.5">Line Item</th>
+                                    <th class="px-4 sm:px-6 py-3.5">Category</th>
+                                    <th class="px-4 sm:px-6 py-3.5">Amount</th>
+                                    <th class="px-4 sm:px-6 py-3.5 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 font-normal">
@@ -215,14 +215,14 @@
                                     <tr><td colspan="4" class="py-10 text-center text-slate-400 text-xs">No expenses entered for this billing period</td></tr>
                                 ` : expenses.slice(0, 5).map(e => `
                                     <tr class="hover:bg-slate-50/80 transition-colors">
-                                        <td class="px-6 py-4 font-semibold text-slate-900">${e.particular}</td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-slate-900">${e.particular}</td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4">
                                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                                                 ${(e.category || 'maintenance').toUpperCase()}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 font-bold text-slate-900">₹${parseFloat(e.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 font-bold text-slate-900">₹${parseFloat(e.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-right">
                                             <button class="dash-edit-exp-btn text-slate-400 hover:text-blue-600 p-1.5 cursor-pointer" data-id="${e.id}" title="Edit line item">
                                                 <i data-lucide="edit-3" class="w-4 h-4 pointer-events-none"></i>
                                             </button>
@@ -234,17 +234,45 @@
                     </div>
                 </div>
             ` : activeDashboardTab === 'personal' ? `
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                    <h2 class="text-base font-bold text-slate-900">Your Resident Statement (${user.flat_number || 'Unit'})</h2>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                            <span class="text-xs text-slate-500 font-semibold">Monthly Maintenance Share Due</span>
-                            <p class="text-2xl font-bold text-slate-900 mt-1">₹${individualContribution}</p>
+                <!-- Resident AI Concierge Banner -->
+                <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 border border-teal-800/50">
+                    <div class="flex items-center gap-3 sm:gap-3.5">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-emerald-400 via-teal-500 to-sky-400 flex items-center justify-center text-white shrink-0 shadow-md">
+                            <i data-lucide="bot" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-200 animate-pulse"></i>
                         </div>
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-300">Resident AI Concierge</span>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">UNIT ${user.flat_number || 'FLAT'}</span>
+                            </div>
+                            <p class="text-[11px] sm:text-xs text-slate-300 mt-0.5">
+                                Have questions about your equal split, need to report a repair, or check water pump timings? Ask your resident concierge.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                        <button type="button" id="dash-open-tenant-ai-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="bot" class="w-3.5 h-3.5 text-teal-700"></i>
+                            <span>Ask Resident AI</span>
+                        </button>
+                        <button type="button" id="dash-ticket-ai-btn" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+                            <span>Report Issue</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-4">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900">Your Resident Statement (${user.flat_number || 'Unit'})</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                        <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <span class="text-xs text-slate-500 font-semibold">Monthly Maintenance Share Due</span>
+                            <p class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">₹${individualContribution}</p>
+                        </div>
+                        <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col justify-between">
                             <div>
                                 <span class="text-xs text-slate-500 font-semibold">Payment Status</span>
-                                <p class="text-2xl font-bold mt-1 ${myMaintStatus === 'paid' ? 'text-emerald-600' : myMaintStatus === 'pending' ? 'text-amber-600' : 'text-rose-600'}">${myMaintStatus.toUpperCase()}</p>
+                                <p class="text-xl sm:text-2xl font-bold mt-1 ${myMaintStatus === 'paid' ? 'text-emerald-600' : myMaintStatus === 'pending' ? 'text-amber-600' : 'text-rose-600'}">${myMaintStatus.toUpperCase()}</p>
                             </div>
                             ${myMaintStatus !== 'paid' ? `
                                 <button type="button" id="dash-personal-upi-btn" class="mt-3 px-3 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all">
@@ -318,6 +346,12 @@
         });
         document.getElementById('dash-wa-blast-btn')?.addEventListener('click', () => {
             if (window.smartCopilot) window.smartCopilot.open('unpaid');
+        });
+        document.getElementById('dash-open-tenant-ai-btn')?.addEventListener('click', () => {
+            if (window.smartCopilot) window.smartCopilot.open();
+        });
+        document.getElementById('dash-ticket-ai-btn')?.addEventListener('click', () => {
+            if (window.smartCopilot) window.smartCopilot.open('report_issue');
         });
 
         // Personal UPI QR Trigger
