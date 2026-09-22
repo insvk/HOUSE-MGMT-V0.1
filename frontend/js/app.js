@@ -1,4 +1,5 @@
 // App Initialization and Routing Updates
+// Enterprise-Grade CosmoLex SPA Architecture
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Check existing session
@@ -25,22 +26,65 @@ document.addEventListener("DOMContentLoaded", async () => {
         {
             path: '#/',
             guard: () => window.appStore.getState().isLoggedIn,
-            handler: () => renderDashboard()
+            handler: () => {
+                if (typeof window.renderDashboard === 'function') {
+                    window.renderDashboard();
+                }
+            }
         },
         {
             path: '#/maintenance',
             guard: () => window.appStore.getState().isLoggedIn,
-            handler: () => renderMaintenance()
+            handler: () => {
+                if (typeof window.renderMaintenance === 'function') {
+                    window.renderMaintenance();
+                }
+            }
         },
         {
             path: '#/tenants',
             guard: () => window.appStore.getState().isLoggedIn,
-            handler: () => renderTenants()
+            handler: () => {
+                if (typeof window.renderTenants === 'function') {
+                    window.renderTenants();
+                }
+            }
         },
         {
             path: '#/invoices',
             guard: () => window.appStore.getState().isLoggedIn,
-            handler: () => renderInvoices()
+            handler: () => {
+                if (typeof window.renderInvoices === 'function') {
+                    window.renderInvoices();
+                }
+            }
+        },
+        {
+            path: '#/analytics',
+            guard: () => window.appStore.getState().isLoggedIn,
+            handler: () => {
+                if (typeof window.renderAnalytics === 'function') {
+                    window.renderAnalytics();
+                }
+            }
+        },
+        {
+            path: '#/notifications',
+            guard: () => window.appStore.getState().isLoggedIn,
+            handler: () => {
+                if (typeof window.renderNotificationCenter === 'function') {
+                    window.renderNotificationCenter();
+                }
+            }
+        },
+        {
+            path: '#/audit',
+            guard: () => window.appStore.getState().isLoggedIn,
+            handler: () => {
+                if (typeof window.renderAuditLogs === 'function') {
+                    window.renderAuditLogs();
+                }
+            }
         },
         {
             path: '*',
@@ -56,24 +100,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Subscribe to state changes to handle global updates
     window.appStore.subscribe((state) => {
-        // Optional: Re-render logic could hook in here if implementing a VDOM-like wrapper,
-        // but for now we manually trigger re-renders where necessary or rely on route changes.
+        // Reserved for reactive global state notifications
     });
 });
 
 async function loadGlobalData() {
     try {
-        // Fetch baseline data just like the React App.tsx did
-        const [usersRes, recordsRes, houseRes] = await Promise.all([
+        const [usersRes, recordsRes, houseRes, invoicesRes, auditRes, annRes] = await Promise.allSettled([
             supabase.from('users').select('*'),
             supabase.from('maintenance_records').select('*, expenses(*)').order('year', { ascending: false }).order('month', { ascending: false }),
-            supabase.from('houses').select('*').limit(1).single()
+            supabase.from('houses').select('*').limit(1).single(),
+            supabase.from('invoices').select('*').order('created_at', { ascending: false }),
+            supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100),
+            supabase.from('announcements').select('*').order('created_at', { ascending: false })
         ]);
 
+        const users = usersRes.status === 'fulfilled' && !usersRes.value.error ? (usersRes.value.data || []) : [];
+        const records = recordsRes.status === 'fulfilled' && !recordsRes.value.error ? (recordsRes.value.data || []) : [];
+        const house = houseRes.status === 'fulfilled' && !houseRes.value.error ? (houseRes.value.data || null) : null;
+        const invoices = invoicesRes.status === 'fulfilled' && !invoicesRes.value.error ? (invoicesRes.value.data || []) : [];
+        const auditLogs = auditRes.status === 'fulfilled' && !auditRes.value.error ? (auditRes.value.data || []) : [];
+        const announcements = annRes.status === 'fulfilled' && !annRes.value.error ? (annRes.value.data || []) : [];
+
         window.appStore.setState({
-            users: usersRes.data || [],
-            records: recordsRes.data || [],
-            house: houseRes.data || null
+            users: users,
+            records: records,
+            house: house,
+            invoices: invoices,
+            auditLogs: auditLogs,
+            announcements: announcements
         });
         
     } catch (e) {
@@ -81,5 +136,4 @@ async function loadGlobalData() {
     }
 }
 
-
-
+window.loadGlobalData = loadGlobalData;
