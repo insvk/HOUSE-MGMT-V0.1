@@ -61,6 +61,21 @@ class RealtimeSyncService {
             (payload) => this.handleNotificationChange(payload)
         );
 
+        // Broadcast listener for instant cross-tab / peer realtime sync
+        this.channel.on('broadcast', { event: 'platform-settings-updated' }, ({ payload }) => {
+            console.log('⚡ Realtime Broadcast received: platform-settings-updated', payload);
+            if (payload) {
+                if (window.appStore) window.appStore.setState({ house: payload });
+                window.dispatchEvent(new CustomEvent('house-settings-updated', { detail: payload }));
+                if (typeof window.refreshCurrentView === 'function') window.refreshCurrentView();
+            }
+        });
+
+        this.channel.on('broadcast', { event: 'system-backup-restored' }, ({ payload }) => {
+            console.log('⚡ Realtime Broadcast received: system-backup-restored', payload);
+            if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
+        });
+
         this.channel.subscribe((status) => {
             if (status === 'SUBSCRIBED') {
                 console.log('Successfully subscribed to Supabase Realtime');
@@ -117,6 +132,26 @@ class RealtimeSyncService {
     handleNotificationChange(payload) {
         console.log('Realtime Notification Change:', payload);
         if (typeof window.loadGlobalData === 'function') window.loadGlobalData();
+    }
+
+    broadcastSettings(housePayload) {
+        if (this.channel && typeof this.channel.send === 'function') {
+            this.channel.send({
+                type: 'broadcast',
+                event: 'platform-settings-updated',
+                payload: housePayload
+            }).catch(e => console.warn('Broadcast send notice:', e));
+        }
+    }
+
+    broadcastRestore(restoreMeta) {
+        if (this.channel && typeof this.channel.send === 'function') {
+            this.channel.send({
+                type: 'broadcast',
+                event: 'system-backup-restored',
+                payload: restoreMeta
+            }).catch(e => console.warn('Broadcast send notice:', e));
+        }
     }
 
     unsubscribe() {

@@ -623,10 +623,30 @@
                 // 1. Permanent Local Storage Backup
                 localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedPayload));
                 
-                // 2. Direct Supabase Upsert
+                // 2. Direct Supabase Update / Upsert
                 if (window.supabase) {
-                    const { error } = await window.supabase.from('houses').upsert(updatedPayload, { onConflict: 'id' });
-                    if (error) throw error;
+                    const hId = updatedPayload.id || '11111111-2222-3333-4444-555555555555';
+                    const { data: upData, error: upError } = await window.supabase
+                        .from('houses')
+                        .update({
+                            name: updatedPayload.name,
+                            address: updatedPayload.address,
+                            city: updatedPayload.city,
+                            postal_code: updatedPayload.postal_code,
+                            total_units: updatedPayload.total_units,
+                            settings: updatedPayload.settings,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', hId)
+                        .select();
+
+                    if (upError || !upData || upData.length === 0) {
+                        const { error: upsertErr } = await window.supabase.from('houses').upsert({
+                            ...updatedPayload,
+                            owner_id: house.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+                        }, { onConflict: 'id' });
+                        if (upsertErr) throw upsertErr;
+                    }
                 }
 
                 // 3. Update Store & Refresh Views Everywhere
@@ -986,6 +1006,7 @@
                 // 1. Push House
                 const housePayload = {
                     id: house.id || '11111111-2222-3333-4444-555555555555',
+                    owner_id: house.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
                     name: house.name,
                     total_units: house.total_units || house.totalUnits || 5,
                     address: house.address,
