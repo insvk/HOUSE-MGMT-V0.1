@@ -745,6 +745,12 @@
                 return;
             }
             if (confirm(`Permanently delete resident ${target.full_name || target.fullName} (${target.email}) from Supabase?`)) {
+                await window.supabase.from('users').update({
+                    occupancy_status: 'evicted',
+                    occupancyStatus: 'evicted',
+                    is_active: false,
+                    deleted_at: new Date().toISOString()
+                }).eq('id', id);
                 await window.supabase.from('users').delete().eq('id', id);
                 selectedResidentId = null;
                 await syncAndRefresh();

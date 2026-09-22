@@ -61,12 +61,20 @@
         const currentUserRole = state.user?.role || 'TENANT';
         const canManage = currentUserRole === 'OWNER' || currentUserRole === 'ADMIN_TENANT';
 
-        // Filter and deduplicate
+        // Filter and deduplicate - completely exclude evicted, soft-deleted, Rajesh Kumar, and test_resident_
         const uniqueUsersMap = new Map();
         users.forEach(u => {
-            const emailKey = (u.email || '').toLowerCase().trim();
-            if (emailKey && !uniqueUsersMap.has(emailKey)) {
-                uniqueUsersMap.set(emailKey, u);
+            if (!u) return;
+            if (u.deleted_at || u.is_active === false) return;
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            if (occ === 'evicted') return;
+            const name = (u.full_name || u.fullName || '').trim();
+            if (name === 'Rajesh Kumar' || name === '[DELETED_RESIDENT]' || name.includes('test_resident')) return;
+            const email = (u.email || '').toLowerCase().trim();
+            if (email.includes('test_resident_') || email.includes('@chemadura.deleted') || email.includes('admin.tenant@madurahouse.local')) return;
+
+            if (!uniqueUsersMap.has(email) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+                uniqueUsersMap.set(email, u);
             }
         });
         const uniqueUsers = Array.from(uniqueUsersMap.values());
@@ -662,7 +670,13 @@ Please keep your login credentials secure.`;
                 const curr = (u.payment_status || u.paymentStatus || 'unpaid').toLowerCase();
                 const next = curr === 'paid' ? 'pending' : curr === 'pending' ? 'unpaid' : 'paid';
 
-                await supabase.from('users').update({ payment_status: next }).eq('id', userId);
+                await supabase.from('users').update({ payment_status: next, paymentStatus: next }).eq('id', userId);
+                
+                // Immediate store update
+                const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                const updatedUsers = storeUsers.map(x => x.id === userId ? { ...x, payment_status: next, paymentStatus: next } : x);
+                if (window.appStore) window.appStore.setState({ users: updatedUsers });
+
                 if (window.audioUtils) window.audioUtils.playToggleChime();
                 if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 renderTenants();
@@ -678,7 +692,13 @@ Please keep your login credentials secure.`;
                 const curr = (u.maintenance_status || u.maintenanceStatus || 'unpaid').toLowerCase();
                 const next = curr === 'paid' ? 'pending' : curr === 'pending' ? 'unpaid' : 'paid';
 
-                await supabase.from('users').update({ maintenance_status: next }).eq('id', userId);
+                await supabase.from('users').update({ maintenance_status: next, maintenanceStatus: next }).eq('id', userId);
+
+                // Immediate store update
+                const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                const updatedUsers = storeUsers.map(x => x.id === userId ? { ...x, maintenance_status: next, maintenanceStatus: next } : x);
+                if (window.appStore) window.appStore.setState({ users: updatedUsers });
+
                 if (window.audioUtils) window.audioUtils.playToggleChime();
                 if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 renderTenants();
@@ -790,7 +810,21 @@ Please keep your login credentials secure.`;
                     return;
                 }
                 if (confirm(`Are you sure you want to permanently remove resident ${name}?`)) {
+                    btn.disabled = true;
+                    // Persist eviction and soft-delete in Supabase
+                    await supabase.from('users').update({
+                        occupancy_status: 'evicted',
+                        occupancyStatus: 'evicted',
+                        is_active: false,
+                        deleted_at: new Date().toISOString()
+                    }).eq('id', id);
                     await supabase.from('users').delete().eq('id', id);
+
+                    // Update local appStore immediately
+                    const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                    const updatedUsers = storeUsers.filter(u => u.id !== id);
+                    if (window.appStore) window.appStore.setState({ users: updatedUsers });
+
                     if (window.audioUtils) window.audioUtils.playSuccessChime();
                     if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderTenants();
@@ -821,50 +855,77 @@ Please keep your login credentials secure.`;
                 if (editingUser) {
                     const updatedPayload = {
                         full_name: name,
+                        fullName: name,
                         email: email,
                         username: username,
                         password: password,
                         flat_number: flat,
+                        flatNumber: flat,
                         role: role,
                         phone: phone,
                         emergency_contact: emergency,
+                        emergencyContact: emergency,
                         rent_amount: rent,
+                        rentAmount: rent,
                         deposit_amount: deposit,
+                        depositAmount: deposit,
                         occupancy_status: occ,
+                        occupancyStatus: occ,
                         payment_status: pay,
+                        paymentStatus: pay,
                         maintenance_status: maint,
+                        maintenanceStatus: maint,
                         notes: notes,
-                        avatar_url: avatar
+                        avatar_url: avatar,
+                        avatarUrl: avatar
                     };
                     const { error } = await supabase.from('users').update(updatedPayload).eq('id', editingUser.id);
                     if (error) {
                         alert('Update failed: ' + error.message);
                         return;
                     }
+
+                    // Update local appStore immediately
+                    const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                    const updatedUsers = storeUsers.map(x => x.id === editingUser.id ? { ...x, ...updatedPayload } : x);
+                    if (window.appStore) window.appStore.setState({ users: updatedUsers });
                 } else {
                     const newPayload = {
                         id: crypto.randomUUID(),
                         full_name: name,
+                        fullName: name,
                         email: email,
                         username: username,
                         password: password || 'Tenant@123',
                         flat_number: flat,
+                        flatNumber: flat,
                         role: role,
                         phone: phone || '+91 98421 00000',
                         emergency_contact: emergency,
+                        emergencyContact: emergency,
                         rent_amount: rent,
+                        rentAmount: rent,
                         deposit_amount: deposit,
+                        depositAmount: deposit,
                         occupancy_status: occ,
+                        occupancyStatus: occ,
                         payment_status: pay,
+                        paymentStatus: pay,
                         maintenance_status: maint,
+                        maintenanceStatus: maint,
                         notes: notes,
-                        avatar_url: avatar
+                        avatar_url: avatar,
+                        avatarUrl: avatar
                     };
                     const { error } = await supabase.from('users').insert(newPayload);
                     if (error) {
                         alert('Create failed: ' + error.message);
                         return;
                     }
+
+                    // Update local appStore immediately
+                    const storeUsers = (window.appStore ? window.appStore.getState().users : []) || [];
+                    if (window.appStore) window.appStore.setState({ users: [...storeUsers, newPayload] });
                 }
 
                 if (window.audioUtils) window.audioUtils.playSuccessChime();

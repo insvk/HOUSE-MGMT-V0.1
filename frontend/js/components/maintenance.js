@@ -31,11 +31,21 @@
         const activeTenants = users.filter(u => (u.occupancy_status === 'active' || u.occupancyStatus === 'active')).length || 5;
         const individualContribution = (totalExpenses / (activeTenants || 1)).toFixed(2);
 
-        // Deduplicate residents
+        // Deduplicate residents - filter out evicted, soft-deleted, Rajesh Kumar, and test_resident_ accounts
         const residentMap = new Map();
         users.forEach(u => {
-            const key = (u.email || '').toLowerCase().trim();
-            if (key && !residentMap.has(key)) residentMap.set(key, u);
+            if (!u) return;
+            if (u.deleted_at || u.is_active === false) return;
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            if (occ === 'evicted') return;
+            const name = (u.full_name || u.fullName || '').trim();
+            if (name === 'Rajesh Kumar' || name === '[DELETED_RESIDENT]' || name.includes('test_resident')) return;
+            const email = (u.email || '').toLowerCase().trim();
+            if (email.includes('test_resident_') || email.includes('@chemadura.deleted') || email.includes('admin.tenant@madurahouse.local')) return;
+
+            if (!residentMap.has(email) || u.id === 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') {
+                residentMap.set(email, u);
+            }
         });
         const residentList = Array.from(residentMap.values());
 

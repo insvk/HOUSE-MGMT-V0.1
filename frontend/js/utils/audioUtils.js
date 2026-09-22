@@ -116,11 +116,34 @@
         osc.stop(now + 0.25);
     }
 
+    // Quick pleasant pop/toggle tone
+    function playToggleChime() {
+        if (!isAudioEnabled()) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, now); // E5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
     window.audioUtils = {
         isAudioEnabled,
         setAudioEnabled,
         playSuccessChime,
         playNotificationChime,
-        playWarningChime
+        playWarningChime,
+        playToggleChime
     };
 })();

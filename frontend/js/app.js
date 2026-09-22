@@ -115,7 +115,39 @@ async function loadGlobalData() {
             supabase.from('announcements').select('*').order('created_at', { ascending: false })
         ]);
 
-        const users = usersRes.status === 'fulfilled' && !usersRes.value.error ? (usersRes.value.data || []) : [];
+        let users = usersRes.status === 'fulfilled' && !usersRes.value.error ? (usersRes.value.data || []) : [];
+        
+        // Permanent filter: completely exclude all evicted, soft-deleted, Rajesh Kumar, and test_resident_ accounts
+        users = users.filter(u => {
+            if (!u) return false;
+            if (u.deleted_at || u.is_active === false) return false;
+            const occ = (u.occupancy_status || u.occupancyStatus || '').toLowerCase();
+            if (occ === 'evicted') return false;
+            const name = (u.full_name || u.fullName || '').trim();
+            if (name === 'Rajesh Kumar' || name === '[DELETED_RESIDENT]' || name.includes('test_resident')) return false;
+            const email = (u.email || '').toLowerCase().trim();
+            if (email.includes('test_resident_') || email.includes('@chemadura.deleted') || email.includes('admin.tenant@madurahouse.local')) return false;
+            return true;
+        });
+
+        // Also clean cached users in localStorage
+        try {
+            const cached = localStorage.getItem('madura_house_users_v2');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed)) {
+                    const cleaned = parsed.filter(u => {
+                        if (!u) return false;
+                        const name = (u.fullName || u.full_name || '').trim();
+                        const email = (u.email || '').toLowerCase().trim();
+                        const occ = (u.occupancyStatus || u.occupancy_status || '').toLowerCase();
+                        return occ !== 'evicted' && name !== 'Rajesh Kumar' && name !== '[DELETED_RESIDENT]' && !email.includes('test_resident_') && !email.includes('@chemadura.deleted');
+                    });
+                    localStorage.setItem('madura_house_users_v2', JSON.stringify(cleaned));
+                }
+            }
+        } catch (e) {}
+
         const records = recordsRes.status === 'fulfilled' && !recordsRes.value.error ? (recordsRes.value.data || []) : [];
         const house = houseRes.status === 'fulfilled' && !houseRes.value.error ? (houseRes.value.data || null) : null;
         const invoices = invoicesRes.status === 'fulfilled' && !invoicesRes.value.error ? (invoicesRes.value.data || []) : [];
