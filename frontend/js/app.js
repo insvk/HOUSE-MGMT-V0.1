@@ -137,3 +137,23 @@ async function loadGlobalData() {
 }
 
 window.loadGlobalData = loadGlobalData;
+
+function refreshCurrentView() {
+    const hash = window.location.hash || '#/';
+    if (hash === '#/' || hash === '') {
+        if (typeof window.renderDashboard === 'function') window.renderDashboard();
+    } else if (hash.startsWith('#/maintenance')) {
+        if (typeof window.renderMaintenance === 'function') window.renderMaintenance();
+    } else if (hash.startsWith('#/tenants')) {
+        if (typeof window.renderTenants === 'function') window.renderTenants();
+    } else if (hash.startsWith('#/invoices')) {
+        if (typeof window.renderInvoices === 'function') window.renderInvoices();
+    } else if (hash.startsWith('#/analytics')) {
+        if (typeof window.renderAnalytics === 'function') window.renderAnalytics();
+    } else if (hash.startsWith('#/notifications')) {
+        if (typeof window.renderNotificationCenter === 'function') window.renderNotificationCenter();
+    } else if (hash.startsWith('#/audit')) {
+        if (typeof window.renderAuditLogs === 'function') window.renderAuditLogs();
+    }
+}
+window.refreshCurrentView = refreshCurrentView;
