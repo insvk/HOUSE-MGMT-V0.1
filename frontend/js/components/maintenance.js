@@ -266,7 +266,9 @@ function renderMaintenance() {
             
             if (!error) {
                 const newTotal = (parseFloat(currentRecord.grand_total) || 0) + amount;
-                await supabase.from('maintenance_records').update({ grand_total: newTotal }).eq('id', recordId);
+                const units = currentRecord.active_tenants_count || 5;
+                const share = units > 0 ? (newTotal / units) : 0;
+                await supabase.from('maintenance_records').update({ grand_total: newTotal, individual_contribution: share }).eq('id', recordId);
                 closeModal();
                 form.reset();
 
@@ -311,8 +313,10 @@ function renderMaintenance() {
                 const expense = expenses.find(x => x.id === id);
                 if (expense) {
                     await supabase.from('expenses').delete().eq('id', id);
-                    const newTotal = (parseFloat(currentRecord.grand_total) || 0) - parseFloat(expense.amount);
-                    await supabase.from('maintenance_records').update({ grand_total: Math.max(0, newTotal) }).eq('id', currentRecord.id);
+                    const newTotal = Math.max(0, (parseFloat(currentRecord.grand_total) || 0) - parseFloat(expense.amount));
+                    const units = currentRecord.active_tenants_count || 5;
+                    const share = units > 0 ? (newTotal / units) : 0;
+                    await supabase.from('maintenance_records').update({ grand_total: newTotal, individual_contribution: share }).eq('id', currentRecord.id);
                     if (window.audioUtils) window.audioUtils.playWarningChime();
                     if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderMaintenance();

@@ -24,8 +24,11 @@
         root.innerHTML = `
         <div class="min-h-screen flex bg-[#fbfbfe] text-[#111827] font-sans antialiased overflow-x-hidden">
             
+            <!-- Mobile Sidebar Backdrop -->
+            <div id="sidebar-backdrop" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden backdrop-blur-xs transition-opacity"></div>
+
             <!-- CosmoLex Sidebar -->
-            <aside class="w-64 bg-[#fbfbfe] border-r border-slate-200 flex flex-col justify-between shrink-0 fixed inset-y-0 left-0 z-30">
+            <aside id="app-sidebar" class="w-64 bg-[#fbfbfe] border-r border-slate-200 flex flex-col justify-between shrink-0 fixed inset-y-0 left-0 z-40 transition-transform duration-200 -translate-x-full lg:translate-x-0">
                 <div>
                     <!-- Brand Header -->
                     <div class="h-16 flex items-center justify-between px-6 border-b border-slate-100">
@@ -110,21 +113,24 @@
             </aside>
 
             <!-- Main Content Area -->
-            <div class="flex-1 ml-64 flex flex-col min-h-screen">
+            <div class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0">
                 
                 <!-- Top Header Bar (CosmoLex Style) -->
-                <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
-                    <!-- Left: Title & Command Palette trigger -->
-                    <div class="flex items-center gap-4">
+                <header class="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+                    <!-- Left: Mobile Toggle, Title & Command Palette trigger -->
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <button id="mobile-sidebar-toggle-btn" class="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer" title="Menu">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
                         <div>
-                            <h1 class="text-base font-bold text-slate-900 tracking-tight leading-tight">${title}</h1>
-                            <p class="text-[11px] text-slate-400">${subtitle}</p>
+                            <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">${title}</h1>
+                            <p class="text-[11px] text-slate-400 hidden sm:block">${subtitle}</p>
                         </div>
 
                         <!-- Command Palette Search Button -->
-                        <button id="header-cmd-search-btn" class="hidden md:flex items-center gap-2.5 bg-[#f3f4f6] hover:bg-slate-200 px-3.5 py-1.5 rounded-full text-xs text-slate-500 transition-colors cursor-pointer ml-3">
+                        <button id="header-cmd-search-btn" class="hidden md:flex items-center gap-2.5 bg-[#f3f4f6] hover:bg-slate-200 px-3.5 py-1.5 rounded-full text-xs text-slate-500 transition-colors cursor-pointer ml-2">
                             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
-                            <span class="font-medium">Search anything...</span>
+                            <span class="font-medium">Search...</span>
                             <kbd class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-400 shadow-2xs">⌘K</kbd>
                         </button>
                     </div>
@@ -208,7 +214,7 @@
                 </header>
 
                 <!-- Body Container -->
-                <main class="p-8 space-y-8 flex-1 bg-[#fbfbfe]">
+                <main class="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 flex-1 bg-[#fbfbfe]">
                     ${bodyHtml}
                 </main>
             </div>
@@ -222,6 +228,19 @@
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
             try { window.lucide.createIcons(); } catch (e) {}
         }
+
+        // Mobile Sidebar Toggle
+        const sidebar = document.getElementById('app-sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const mobileToggleBtn = document.getElementById('mobile-sidebar-toggle-btn');
+        mobileToggleBtn?.addEventListener('click', () => {
+            sidebar?.classList.toggle('-translate-x-full');
+            backdrop?.classList.toggle('hidden');
+        });
+        backdrop?.addEventListener('click', () => {
+            sidebar?.classList.add('-translate-x-full');
+            backdrop?.classList.add('hidden');
+        });
 
         // Attach Command Palette
         document.getElementById('header-cmd-search-btn')?.addEventListener('click', () => {

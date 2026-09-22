@@ -1,49 +1,182 @@
-/* Additional Vanilla CSS overrides */
+/* Enterprise CosmoLex Style System & Animation Engine */
+/* CHE-MADURA HS-1 MGMT V0.1 */
+
+:root {
+  --bg-primary: #fbfbfe;
+  --bg-secondary: #f3f3f9;
+  --text-primary: #111827;
+  --text-muted: #64748b;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --brand-navy: #405189;
+  --brand-navy-dark: #364473;
+  --brand-emerald: #0ab39c;
+  --brand-amber: #f7b84b;
+  --brand-rose: #f06548;
+}
+
+html, body {
+  background-color: #f3f3f9;
+  color: #495057;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+/* Visibility utilities */
 .hidden {
   display: none !important;
 }
 
-/* Spinner animation */
+/* Enhanced Shadows (Tailwind v4 backward compatibility) */
+.shadow-2xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Backdrop Filters */
+.backdrop-blur-xs {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInFromTop {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.05); }
+}
+
+.animate-in {
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn95;
+}
+
+.slide-in-from-top-3 {
+  animation-name: slideInFromTop;
 }
 
 .spinner {
   animation: spin 1s linear infinite;
 }
 
-/* Theme variables and dark mode support */
-:root {
-  --bg-primary: #f3f3f9;
-  --text-primary: #495057;
-  --card-bg: #ffffff;
-  --border-color: #e2e8f0;
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
 }
 
-html.dark, body.dark, .theme-dark {
-  color-scheme: dark;
-  --bg-primary: #0f172a;
-  --text-primary: #f8fafc;
-  --card-bg: #1e293b;
-  --border-color: #334155;
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
+/* Custom Sleek Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.dark .bg-white {
-  background-color: #1e293b !important;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.dark .text-slate-900, .dark .text-gray-900 {
-  color: #f8fafc !important;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 
-.dark .text-slate-600, .dark .text-gray-600 {
-  color: #cbd5e1 !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-.dark .border-slate-200, .dark .border-gray-200 {
-  border-color: #334155 !important;
+/* Modal and Drawer Styling */
+.modal-overlay {
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
+/* Button micro-interactions */
+button:active {
+  transform: scale(0.98);
+}
+
+/* Inputs & Forms */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(64, 81, 137, 0.25);
+  border-color: #405189 !important;
+}
+
+/* Velzon Card Hover Effect */
+.velzon-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.velzon-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Print Optimization */
+@media print {
+  aside, header, #command-palette-overlay, #god-mode-modal-overlay, #settings-modal-overlay {
+    display: none !important;
+  }
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+}
