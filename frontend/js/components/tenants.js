@@ -96,6 +96,12 @@
         const paidRentCount = uniqueUsers.filter(u => (u.payment_status || u.paymentStatus || '').toLowerCase() === 'paid').length;
         const paidMaintCount = uniqueUsers.filter(u => (u.maintenance_status || u.maintenanceStatus || '').toLowerCase() === 'paid').length;
 
+        const records = (window.appStore ? window.appStore.getState().records : []) || [];
+        const activeRecord = records.length > 0 ? records[0] : null;
+        const expenses = activeRecord ? (activeRecord.expenses || []) : [];
+        const totalExpenses = expenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+        const maintSharePerFlat = uniqueUsers.length > 0 ? (totalExpenses / uniqueUsers.length).toFixed(2) : '2000.00';
+
         const actionsHtml = `
             <div class="flex items-center gap-2">
                 <button id="export-tenants-excel-btn" class="px-3 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer" title="Export roster to Excel">
@@ -303,6 +309,22 @@
                                             >
                                                 <span class="font-semibold opacity-70">Maint:</span>
                                                 <span class="status-val">${maintStatus}</span>
+                                            </button>
+
+                                            <!-- Smart Collect UPI QR Button -->
+                                            <button
+                                                type="button"
+                                                class="open-smart-collect-btn text-[9px] px-2 py-0.5 rounded font-bold uppercase transition-all flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-black text-white shadow-2xs active:scale-95 border border-slate-700"
+                                                data-id="${user.id}"
+                                                data-name="${fullName}"
+                                                data-flat="${flatNum}"
+                                                data-phone="${user.phone || ''}"
+                                                data-rent="${rentVal}"
+                                                data-maint="${maintSharePerFlat}"
+                                                title="Open Dynamic UPI QR & 1-Click WhatsApp Reminder"
+                                            >
+                                                <i data-lucide="qr-code" class="w-2.5 h-2.5 text-emerald-400"></i>
+                                                <span>Collect</span>
                                             </button>
                                         </div>
                                     </div>
@@ -766,6 +788,25 @@ Please keep your login credentials secure.`;
                     if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                 }
                 renderTenants();
+            });
+        });
+
+        // Smart Collect Button
+        document.querySelectorAll('.open-smart-collect-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const { id, name, flat, phone, rent, maint } = btn.dataset;
+                if (window.openSmartPaymentModal) {
+                    window.openSmartPaymentModal({
+                        residentId: id,
+                        name: name,
+                        flat: flat,
+                        phone: phone,
+                        rentAmount: rent,
+                        maintAmount: maint
+                    });
+                }
             });
         });
 

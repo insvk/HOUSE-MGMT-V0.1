@@ -36,6 +36,33 @@
                 <div id="cmd-results" class="max-h-96 overflow-y-auto p-2 divide-y divide-slate-100 text-xs">
                     <!-- Actions Section -->
                     <div class="p-2">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">AI Copilot & Smart Actions</div>
+                        <div class="space-y-0.5" id="cmd-smart-actions">
+                            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-indigo-50 text-indigo-900 transition-colors cmd-item" data-action="open-copilot">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
+                                <span class="font-medium">Ask AI Property Copilot (⚡ Natural Language)</span>
+                            </button>
+                            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="scan-anomalies">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600"></i>
+                                <span class="font-medium">Run AI Anomaly & Duplicate Expense Scan</span>
+                            </button>
+                            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="predict-burn">
+                                <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-600"></i>
+                                <span class="font-medium">Forecast Next 3-Month Expenditure Burn</span>
+                            </button>
+                            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="open-smart-qr">
+                                <i data-lucide="qr-code" class="w-4 h-4 text-blue-600"></i>
+                                <span class="font-medium">Open Dynamic UPI QR & WhatsApp Collector</span>
+                            </button>
+                            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="check-amc">
+                                <i data-lucide="activity" class="w-4 h-4 text-amber-600"></i>
+                                <span class="font-medium">Audit Preventative AMC & Equipment Health</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions Section -->
+                    <div class="p-2">
                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">Quick Actions</div>
                         <div class="space-y-0.5" id="cmd-actions">
                             <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="add-expense">
@@ -59,7 +86,7 @@
                                 <span class="font-medium">Export Excel Ledger</span>
                             </button>
                             <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left hover:bg-slate-50 text-slate-700 transition-colors cmd-item" data-action="open-master">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                                <i data-lucide="sliders" class="w-4 h-4 text-amber-500"></i>
                                 <span class="font-medium">Open God Mode Master Editor</span>
                             </button>
                         </div>
@@ -129,6 +156,16 @@
 
                 if (nav) {
                     window.location.hash = nav;
+                } else if (act === 'open-copilot') {
+                    if (window.smartCopilot) window.smartCopilot.open();
+                } else if (act === 'scan-anomalies') {
+                    if (window.smartCopilot) window.smartCopilot.ask('Scan for financial anomalies and duplicate bills');
+                } else if (act === 'predict-burn') {
+                    if (window.smartCopilot) window.smartCopilot.ask('Predict next month maintenance and expense burn');
+                } else if (act === 'open-smart-qr') {
+                    if (window.smartPaymentModal) window.smartPaymentModal.open();
+                } else if (act === 'check-amc') {
+                    if (window.smartCopilot) window.smartCopilot.ask('Audit building assets and preventative maintenance calendar');
                 } else if (act === 'add-expense') {
                     window.location.hash = '#/maintenance';
                     setTimeout(() => {

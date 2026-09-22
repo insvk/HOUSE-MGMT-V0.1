@@ -78,6 +78,34 @@
             ` : ''}
 
             ${activeDashboardTab === 'property' ? `
+                <!-- Smart AI Copilot Insights Banner -->
+                <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 border border-indigo-900/40">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-purple-500 to-indigo-400 flex items-center justify-center text-white shrink-0 shadow-md">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-300 animate-pulse"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-300">AI Financial & Operations Copilot</span>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">ACTIVE RADAR</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-0.5">
+                                ${paidTenantsCount} of ${activeTenants} units cleared. ₹${unpaidBalance} pending collection. Projected next month spend: ₹${(parseFloat(totalExpenses) * 1.04).toFixed(0)}. Sump cleaning due in 38 days.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="dash-open-copilot-btn" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="bot" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span>Ask AI Copilot</span>
+                        </button>
+                        <button type="button" id="dash-wa-blast-btn" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                            <span>WhatsApp Reminders</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 4 Top KPI Cards (CosmoLex Style) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     <!-- KPI 1: Total Expenses -->
@@ -200,9 +228,22 @@
                             <span class="text-xs text-slate-500 font-semibold">Monthly Maintenance Share Due</span>
                             <p class="text-2xl font-bold text-slate-900 mt-1">₹${individualContribution}</p>
                         </div>
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                            <span class="text-xs text-slate-500 font-semibold">Payment Status</span>
-                            <p class="text-2xl font-bold mt-1 ${myMaintStatus === 'paid' ? 'text-emerald-600' : myMaintStatus === 'pending' ? 'text-amber-600' : 'text-rose-600'}">${myMaintStatus.toUpperCase()}</p>
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col justify-between">
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold">Payment Status</span>
+                                <p class="text-2xl font-bold mt-1 ${myMaintStatus === 'paid' ? 'text-emerald-600' : myMaintStatus === 'pending' ? 'text-amber-600' : 'text-rose-600'}">${myMaintStatus.toUpperCase()}</p>
+                            </div>
+                            ${myMaintStatus !== 'paid' ? `
+                                <button type="button" id="dash-personal-upi-btn" class="mt-3 px-3 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all">
+                                    <i data-lucide="qr-code" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    <span>Pay Now via Dynamic UPI QR</span>
+                                </button>
+                            ` : `
+                                <div class="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    <span>Account is in good standing</span>
+                                </div>
+                            `}
                         </div>
                     </div>
                 </div>
@@ -256,6 +297,28 @@
         });
         document.getElementById('dash-export-excel-btn')?.addEventListener('click', () => {
             if (window.exportUtils) window.exportUtils.exportExcel(records, state.house);
+        });
+
+        // AI Copilot triggers
+        document.getElementById('dash-open-copilot-btn')?.addEventListener('click', () => {
+            if (window.smartCopilot) window.smartCopilot.open();
+        });
+        document.getElementById('dash-wa-blast-btn')?.addEventListener('click', () => {
+            if (window.smartCopilot) window.smartCopilot.open('unpaid');
+        });
+
+        // Personal UPI QR Trigger
+        document.getElementById('dash-personal-upi-btn')?.addEventListener('click', () => {
+            if (window.openSmartPaymentModal) {
+                window.openSmartPaymentModal({
+                    residentId: user.id,
+                    name: user.full_name || user.fullName,
+                    flat: user.flat_number || user.flatNumber || 'Flat',
+                    phone: user.phone || '',
+                    rentAmount: user.rent_amount || user.rentAmount || 14000,
+                    maintAmount: individualContribution
+                });
+            }
         });
     }
 

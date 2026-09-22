@@ -208,12 +208,84 @@
                                         </div>
                                     </div>
 
-                                    <button type="button" class="resident-status-toggle-btn px-3 py-1 rounded-lg text-[10px] font-bold uppercase border transition-all cursor-pointer shadow-2xs ${badgeStyle}" data-user-id="${u.id}" data-current-status="${status}" title="Click to cycle status: Paid &rarr; Pending &rarr; Unpaid">
-                                        ${status}
-                                    </button>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button type="button" class="resident-status-toggle-btn px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border transition-all cursor-pointer shadow-2xs ${badgeStyle}" data-user-id="${u.id}" data-current-status="${status}" title="Click to cycle status: Paid &rarr; Pending &rarr; Unpaid">
+                                            ${status}
+                                        </button>
+                                        <button type="button" class="maint-smart-qr-btn p-1.5 rounded-lg bg-slate-900 hover:bg-black text-white cursor-pointer shadow-2xs transition-all active:scale-95 border border-slate-700" data-id="${u.id}" data-name="${u.full_name || u.fullName || 'Resident'}" data-flat="${u.flat_number || u.flatNumber || 'Flat'}" data-phone="${u.phone || ''}" data-rent="${u.rent_amount || u.rentAmount || 14000}" data-maint="${individualContribution}" title="Open Smart UPI QR & WhatsApp Reminder">
+                                            <i data-lucide="qr-code" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             `;
                         }).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Preventative Equipment & AMC Radar -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                            <i data-lucide="wrench" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900">Preventative Equipment & AMC Radar</h2>
+                            <p class="text-xs text-slate-400">Scheduled building infrastructure maintenance and safety certifications</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        All Systems Nominal
+                    </span>
+                </div>
+                <div class="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">Sump & Tank Cleaning</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 uppercase">Healthy</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Bleached & washed. Next cycle due in <strong>38 days</strong>.</p>
+                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Sump Tank">
+                            <i data-lucide="check" class="w-3 h-3"></i>
+                            <span>Mark Serviced Today</span>
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">Elevator Schindler AMC</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 uppercase">Certified</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Monthly inspection logged. Ropes & brakes checked.</p>
+                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Elevator AMC">
+                            <i data-lucide="check" class="w-3 h-3"></i>
+                            <span>Mark Serviced Today</span>
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">Diesel Generator Backup</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 uppercase">Test Due</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Battery 98%. Recommended to run under load in <strong>5 days</strong>.</p>
+                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Generator Backup">
+                            <i data-lucide="check" class="w-3 h-3"></i>
+                            <span>Mark Serviced Today</span>
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">Central RO Purifier</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 uppercase">Optimal</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Output TDS 82 ppm. Sediment filter replacement good.</p>
+                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Central RO Purifier">
+                            <i data-lucide="check" class="w-3 h-3"></i>
+                            <span>Mark Serviced Today</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -523,6 +595,43 @@
                     if (typeof window.loadGlobalData === 'function') await window.loadGlobalData();
                     renderMaintenance();
                 }
+            });
+        });
+
+        // 3.1 Smart Payment Modal Trigger from Maintenance
+        document.querySelectorAll('.maint-smart-qr-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const { id, name, flat, phone, rent, maint } = btn.dataset;
+                if (window.openSmartPaymentModal) {
+                    window.openSmartPaymentModal({
+                        residentId: id,
+                        name: name,
+                        flat: flat,
+                        phone: phone,
+                        rentAmount: rent,
+                        maintAmount: maint
+                    });
+                }
+            });
+        });
+
+        // 3.2 Log AMC Service Done
+        document.querySelectorAll('.log-amc-done-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const asset = btn.dataset.asset || 'Equipment';
+                if (window.appStore && typeof window.appStore.addAuditLog === 'function') {
+                    window.appStore.addAuditLog({
+                        action: 'AMC_SERVICE_LOGGED',
+                        details: `Preventative maintenance performed on ${asset} by Property Manager.`,
+                        user_name: 'Sampath Kumar'
+                    });
+                }
+                if (window.audioUtils) window.audioUtils.playSuccessChime();
+                alert(`✅ ${asset} maintenance logged as completed today. Next inspection scheduled!`);
+                renderMaintenance();
             });
         });
 
