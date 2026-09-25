@@ -215,6 +215,7 @@
                 `• *Monthly Rent:* ₹${rent.toLocaleString('en-IN')}\n` +
                 `• *Total Due:* *₹${parseFloat(totalDues).toLocaleString('en-IN', { minimumFractionDigits: 2 })}*\n\n` +
                 `Please pay via UPI to: *${upiId}* (${payeeName})\n` +
+                `*Tap to Pay Instantly (Mobile):* ${upiUrl}\n\n` +
                 `Or scan the QR code via your mobile banking app.\n\n` +
                 `Thank you!\n_Madura House Management_`
             );
@@ -229,7 +230,8 @@
 UPI ID: ${upiId}
 Payee: ${payeeName}
 Amount Due: ₹${totalDues}
-Note: Flat ${flat} ${billingCycle} Dues`;
+Note: Flat ${flat} ${billingCycle} Dues
+Instant Pay Link: ${upiUrl}`;
             navigator.clipboard.writeText(copyText).then(() => {
                 const btn = document.getElementById('smart-copy-upi-btn');
                 if (btn) {
