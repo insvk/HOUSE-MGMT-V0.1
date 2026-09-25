@@ -14,6 +14,17 @@
     function renderMaintenance() {
         const state = window.appStore ? window.appStore.getState() : {};
         const records = state.records || [];
+        const user = state.user || {};
+        const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN_TENANT' || (user.email || '').toLowerCase() === 'sampathkumar@chemadura.com';
+        const house = state.house || {};
+        
+        const defaultEquipment = [
+            { id: '1', name: 'Sump & Tank Cleaning', status: 'Healthy', status_color: 'emerald', text: 'Bleached & washed. Next cycle due in 38 days.' },
+            { id: '2', name: 'Elevator Schindler AMC', status: 'Certified', status_color: 'blue', text: 'Monthly inspection logged. Ropes & brakes checked.' },
+            { id: '3', name: 'Diesel Generator Backup', status: 'Test Due', status_color: 'amber', text: 'Battery 98%. Recommended to run under load in 5 days.' },
+            { id: '4', name: 'Central RO Purifier', status: 'Optimal', status_color: 'emerald', text: 'Output TDS 82 ppm. Sediment filter replacement good.' }
+        ];
+        const equipmentList = (house.settings && house.settings.equipment_radar) ? house.settings.equipment_radar : defaultEquipment;
         
         // Pick selected record or default to latest
         let currentRecord = null;
@@ -247,58 +258,33 @@
                             <p class="text-xs text-slate-400">Scheduled building infrastructure maintenance and safety certifications</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        All Systems Nominal
-                    </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${isAdmin ? `
+                            <button type="button" id="edit-amc-radar-btn" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#405189] hover:bg-[#364473] text-white transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                <span>Manage Radar</span>
+                            </button>
+                        ` : ''}
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hidden sm:inline-block">
+                            All Systems Nominal
+                        </span>
+                    </div>
                 </div>
                 <div class="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-slate-900">Sump & Tank Cleaning</span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 uppercase">Healthy</span>
+                    ${equipmentList.map(eq => `
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2 relative group">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-900 pr-2">${eq.name}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-${eq.status_color}-50 text-${eq.status_color}-700 uppercase shrink-0">${eq.status}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500">${eq.text}</p>
+                            <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="${eq.name}">
+                                <i data-lucide="check" class="w-3 h-3"></i>
+                                <span>Mark Serviced Today</span>
+                            </button>
                         </div>
-                        <p class="text-[11px] text-slate-500">Bleached & washed. Next cycle due in <strong>38 days</strong>.</p>
-                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Sump Tank">
-                            <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Mark Serviced Today</span>
-                        </button>
-                    </div>
-
-                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-slate-900">Elevator Schindler AMC</span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 uppercase">Certified</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500">Monthly inspection logged. Ropes & brakes checked.</p>
-                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Elevator AMC">
-                            <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Mark Serviced Today</span>
-                        </button>
-                    </div>
-
-                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-slate-900">Diesel Generator Backup</span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 uppercase">Test Due</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500">Battery 98%. Recommended to run under load in <strong>5 days</strong>.</p>
-                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Generator Backup">
-                            <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Mark Serviced Today</span>
-                        </button>
-                    </div>
-
-                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-slate-900">Central RO Purifier</span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 uppercase">Optimal</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500">Output TDS 82 ppm. Sediment filter replacement good.</p>
-                        <button type="button" class="log-amc-done-btn text-[10px] font-bold text-[#405189] hover:underline cursor-pointer flex items-center gap-1" data-asset="Central RO Purifier">
-                            <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Mark Serviced Today</span>
-                        </button>
-                    </div>
+                    `).join('')}
                 </div>
             </div>
 
@@ -501,6 +487,45 @@
                     </div>
                     <div id="inv-modal-content" class="flex-1 overflow-y-auto py-4 flex items-center justify-center min-h-[300px]">
                         <!-- Dynamic Image / PDF / Preview -->
+                    </div>
+                </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AMC CRUD Modal -->
+            <div id="amc-crud-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4 animate-in fade-in duration-150 backdrop-blur-xs">
+                <div class="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+                    <div class="flex items-center justify-between mb-5 shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                                <i data-lucide="wrench" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-900">Manage AMC Radar</h2>
+                                <p class="text-xs text-slate-500">Add, edit, or remove preventative maintenance items</p>
+                            </div>
+                        </div>
+                        <button type="button" id="close-amc-modal-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto space-y-4">
+                        <div id="amc-items-list" class="space-y-3">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button type="button" id="add-new-amc-btn" class="w-full py-2.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-semibold text-xs hover:border-slate-400 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Add New Equipment Radar Item</span>
+                        </button>
+                    </div>
+
+                    <div class="pt-5 mt-5 border-t border-slate-100 flex justify-end shrink-0">
+                        <button type="button" id="save-amc-radar-btn" class="px-6 py-2.5 bg-slate-900 hover:bg-black text-white text-sm font-semibold rounded-xl cursor-pointer shadow-sm flex items-center gap-2 transition-all active:scale-95">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Save & Sync Radar to Cloud</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -821,6 +846,101 @@
         });
         document.getElementById('export-excel-btn')?.addEventListener('click', () => {
             if (window.exportUtils) window.exportUtils.exportExcel(records, state.house);
+        });
+
+        // 9. AMC CRUD Logic
+        let editingAmcItems = [];
+        function renderAmcList() {
+            const container = document.getElementById('amc-items-list');
+            if (!container) return;
+            container.innerHTML = editingAmcItems.map((eq, idx) => `
+                <div class="p-3 border border-slate-200 rounded-xl bg-slate-50/50 flex flex-col sm:flex-row gap-3 items-start relative group">
+                    <button type="button" class="del-amc-btn absolute -top-2 -right-2 bg-rose-100 text-rose-600 p-1.5 rounded-full hover:bg-rose-600 hover:text-white transition-colors cursor-pointer opacity-0 group-hover:opacity-100" data-idx="${idx}">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <div class="w-full sm:w-1/3">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Equipment Name</label>
+                        <input type="text" class="amc-name-input w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#405189]" value="${eq.name}" data-idx="${idx}">
+                    </div>
+                    <div class="w-full sm:w-1/4">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status Badge</label>
+                        <select class="amc-status-input w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#405189]" data-idx="${idx}">
+                            <option value="emerald:Healthy" ${eq.status_color === 'emerald' && eq.status === 'Healthy' ? 'selected' : ''}>Healthy (Green)</option>
+                            <option value="emerald:Optimal" ${eq.status_color === 'emerald' && eq.status === 'Optimal' ? 'selected' : ''}>Optimal (Green)</option>
+                            <option value="blue:Certified" ${eq.status_color === 'blue' && eq.status === 'Certified' ? 'selected' : ''}>Certified (Blue)</option>
+                            <option value="amber:Test Due" ${eq.status_color === 'amber' && eq.status === 'Test Due' ? 'selected' : ''}>Test Due (Amber)</option>
+                            <option value="amber:Warning" ${eq.status_color === 'amber' && eq.status === 'Warning' ? 'selected' : ''}>Warning (Amber)</option>
+                            <option value="rose:Critical" ${eq.status_color === 'rose' && eq.status === 'Critical' ? 'selected' : ''}>Critical (Red)</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:flex-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status Description</label>
+                        <input type="text" class="amc-text-input w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#405189]" value="${eq.text}" data-idx="${idx}">
+                    </div>
+                </div>
+            `).join('');
+
+            if (window.lucide) window.lucide.createIcons();
+
+            container.querySelectorAll('.amc-name-input').forEach(i => i.addEventListener('change', (e) => editingAmcItems[e.target.dataset.idx].name = e.target.value));
+            container.querySelectorAll('.amc-text-input').forEach(i => i.addEventListener('change', (e) => editingAmcItems[e.target.dataset.idx].text = e.target.value));
+            container.querySelectorAll('.amc-status-input').forEach(i => i.addEventListener('change', (e) => {
+                const [color, status] = e.target.value.split(':');
+                editingAmcItems[e.target.dataset.idx].status_color = color;
+                editingAmcItems[e.target.dataset.idx].status = status;
+            }));
+            container.querySelectorAll('.del-amc-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                editingAmcItems.splice(e.currentTarget.dataset.idx, 1);
+                renderAmcList();
+            }));
+        }
+
+        document.getElementById('edit-amc-radar-btn')?.addEventListener('click', () => {
+            editingAmcItems = JSON.parse(JSON.stringify(equipmentList));
+            document.getElementById('amc-crud-modal').classList.remove('hidden');
+            document.getElementById('amc-crud-modal').classList.add('flex');
+            renderAmcList();
+        });
+
+        document.getElementById('close-amc-modal-btn')?.addEventListener('click', () => {
+            document.getElementById('amc-crud-modal').classList.add('hidden');
+            document.getElementById('amc-crud-modal').classList.remove('flex');
+        });
+
+        document.getElementById('add-new-amc-btn')?.addEventListener('click', () => {
+            editingAmcItems.push({ id: Date.now().toString(), name: 'New Equipment', status: 'Healthy', status_color: 'emerald', text: 'New equipment description.' });
+            renderAmcList();
+        });
+
+        document.getElementById('save-amc-radar-btn')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Saving...</span>`;
+            if (window.lucide) window.lucide.createIcons();
+
+            try {
+                const st = window.appStore.getState();
+                const currentHouse = st.house;
+                const newSettings = { ...(currentHouse.settings || {}), equipment_radar: editingAmcItems };
+                const res = await window.supabase.from('houses').update({ settings: newSettings }).eq('id', currentHouse.id);
+                if (res.error) throw res.error;
+
+                window.appStore.dispatch({ type: 'UPDATE_HOUSE_SETTINGS', payload: newSettings });
+                if (window.audioUtils) window.audioUtils.playSuccessChime();
+                if (window.showToast) window.showToast('AMC Radar updated successfully', 'success');
+
+                document.getElementById('amc-crud-modal').classList.add('hidden');
+                document.getElementById('amc-crud-modal').classList.remove('flex');
+                
+                if (window.refreshCurrentView) window.refreshCurrentView();
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) window.showToast('Failed to update AMC Radar', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>Save & Sync Radar to Cloud</span>`;
+                if (window.lucide) window.lucide.createIcons();
+            }
         });
     }
 
