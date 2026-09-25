@@ -82,7 +82,7 @@
                             <i data-lucide="clock" class="w-4 h-4 ${activeTab === 'audit' ? 'text-slate-900' : 'text-slate-500'}"></i>
                             <span>Audit Trail</span>
                         </a>
-                        <button type="button" id="sidebar-sessions-btn" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-rose-600 hover:bg-rose-50 font-bold transition-all cursor-pointer">
+                        <button type="button" id="sidebar-sessions-btn" onclick="if(window.openGodModeModal) window.openGodModeModal('sessions')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[13px] text-rose-600 hover:bg-rose-50 font-bold transition-all cursor-pointer">
                             <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600"></i>
                             <span>Session Security</span>
                         </button>
@@ -284,11 +284,7 @@
             if (window.openSettingsModal) window.openSettingsModal('general');
         });
 
-        // Attach Session Security Sidebar Button
-        document.getElementById('sidebar-sessions-btn')?.addEventListener('click', () => {
-            if (window.openGodModeModal) window.openGodModeModal('sessions');
-        });
-
+        // Event listener for sessions button removed in favor of inline onclick
         // Attach Quick Avatar
         const handleAvatarChange = () => {
             if (window.modals && window.modals.openAvatarModal) {
