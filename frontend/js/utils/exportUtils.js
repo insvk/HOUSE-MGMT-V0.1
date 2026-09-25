@@ -64,6 +64,17 @@
         return (name || 'Property').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
     }
 
+    function generateDiplomaticRef(record, house) {
+        const year = record.year || new Date().getFullYear();
+        const month = String(record.month || (new Date().getMonth() + 1)).padStart(2, '0');
+        const prefix = sanitizeFileName(house?.name || 'PROPERTY').substring(0, 10).toUpperCase();
+        let suffix = '001';
+        if (record.id && record.id !== 'OFFICIAL') {
+            suffix = record.id.split('-')[0].toUpperCase().substring(0, 6);
+        }
+        return `${prefix}/${year}/${month}/STMT-${suffix}`;
+    }
+
     // 1. Export Maintenance to Excel (.xlsx)
     function exportMaintenanceToExcel(records, house) {
         const recordList = Array.isArray(records) ? records : [records];
@@ -89,7 +100,7 @@
             [`${propName.toUpperCase()} MAINTENANCE MANAGEMENT PLATFORM`],
             [`OFFICIAL MONTHLY MAINTENANCE STATEMENT - ${monthName.toUpperCase()} ${record.year || 2026}`],
             [`Property Address: ${propAddress}`],
-            [`Statement Reference ID: ${(record.id || '').toUpperCase()}`],
+            [`Statement Reference ID: ${generateDiplomaticRef(record, activeHouse)}`],
             [],
             ['S.No', 'Particulars / Description', 'Category', 'Attached Invoice / Voucher', `Base Amount (${currency})`, 'GST Applicable', `GST Amount (${currency})`, `Total Amount (${currency})`, 'Added By', 'Date Recorded']
         ];
@@ -187,7 +198,7 @@
         doc.setFontSize(8.5);
         doc.setTextColor(100, 116, 139);
         doc.text(`Property: ${propName}  •  Address: ${propAddress}`, 14, 40);
-        doc.text(`Statement Ref: #${(record.id || 'OFFICIAL').toUpperCase()}  •  Audited By: Property Administration  •  Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 45);
+        doc.text(`Statement Ref: ${generateDiplomaticRef(record, activeHouse)}  •  Audited By: Property Administration  •  Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 45);
 
         // 3. Three Metric Highlight Cards
         const cardY = 50;
