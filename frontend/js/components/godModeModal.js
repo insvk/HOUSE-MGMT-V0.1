@@ -54,6 +54,110 @@
         renderGodModeModal();
     }
 
+    async function loadGodSessions() {
+        const container = document.getElementById('god-sessions-list');
+        if (!container) return;
+
+        container.innerHTML = \`
+            <div class="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center">
+                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mb-2"></i>
+                <span>Scanning auth.sessions securely via Postgres pool...</span>
+            </div>
+        \`;
+        if (window.lucide) window.lucide.createIcons();
+
+        try {
+            if (window.electronAPI && window.electronAPI.dbQuery) {
+                const query = \`
+                    SELECT 
+                        s.id as session_id,
+                        s.user_id,
+                        s.user_agent,
+                        s.ip,
+                        s.created_at,
+                        u.full_name,
+                        u.email,
+                        u.role
+                    FROM auth.sessions s
+                    LEFT JOIN public.users u ON s.user_id = u.id
+                    ORDER BY s.created_at DESC
+                \`;
+                const res = await window.electronAPI.dbQuery(query);
+                if (!res.success) throw new Error(res.error || 'Failed to fetch sessions');
+                const sessions = res.data || [];
+
+                if (sessions.length === 0) {
+                    container.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs">No active sessions found.</div>';
+                    return;
+                }
+
+                container.innerHTML = sessions.map(s => {
+                    const ua = s.user_agent || 'Unknown Device';
+                    const ip = s.ip || 'Unknown IP';
+                    let deviceIcon = 'monitor';
+                    if (ua.toLowerCase().includes('mobile') || ua.toLowerCase().includes('android') || ua.toLowerCase().includes('iphone')) deviceIcon = 'smartphone';
+                    
+                    return \`
+                        <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between text-xs hover:bg-slate-50 transition-colors gap-3">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-slate-100 rounded-lg text-slate-500 shrink-0">
+                                    <i data-lucide="\${deviceIcon}" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900">\${s.full_name || s.email || 'Unknown User'} <span class="ml-1 text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-200 uppercase">\${s.role || 'USER'}</span></div>
+                                    <div class="text-slate-500 text-[11px] mt-0.5 truncate max-w-[250px]" title="\${ua}">\${ua}</div>
+                                    <div class="text-slate-400 text-[10px] mt-0.5 flex items-center gap-2">
+                                        <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> \${ip}</span>
+                                        <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> \${new Date(s.created_at).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                <button type="button" class="god-kill-session-btn px-3 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer" data-sid="\${s.session_id}">
+                                    <i data-lucide="power" class="w-3.5 h-3.5"></i>
+                                    <span>Kill Session</span>
+                                </button>
+                            </div>
+                        </div>
+                    \`;
+                }).join('');
+
+                if (window.lucide) window.lucide.createIcons();
+
+                container.querySelectorAll('.god-kill-session-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const sid = e.currentTarget.dataset.sid;
+                        if (!confirm('Are you sure you want to forcibly terminate this session? The user will be instantly logged out.')) return;
+                        
+                        btn.innerHTML = \`<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Killing...</span>\`;
+                        if (window.lucide) window.lucide.createIcons();
+                        
+                        try {
+                            await window.electronAPI.dbQuery('DELETE FROM auth.refresh_tokens WHERE session_id = $1', [sid]);
+                            const res2 = await window.electronAPI.dbQuery('DELETE FROM auth.sessions WHERE id = $1', [sid]);
+                            if (res2.success) {
+                                showGodToast('Session permanently terminated.');
+                                loadGodSessions();
+                            } else {
+                                throw new Error(res2.error);
+                            }
+                        } catch (err) {
+                            showGodToast('Failed to kill session: ' + err.message, true);
+                            btn.innerHTML = \`<i data-lucide="power" class="w-3.5 h-3.5"></i><span>Kill Session</span>\`;
+                            if (window.lucide) window.lucide.createIcons();
+                        }
+                    });
+                });
+
+            } else {
+                container.innerHTML = '<div class="p-8 text-center text-rose-500 text-xs font-bold">God Maxx Mode strictly requires Direct Desktop PG Connection for auth schema access.</div>';
+            }
+        } catch (e) {
+            console.error('Session load error:', e);
+            container.innerHTML = \`<div class="p-8 text-center text-rose-500 text-xs font-bold">Error loading sessions: \${e.message}</div>\`;
+        }
+    }
+
     function renderGodModeModal() {
         let existing = document.getElementById('god-mode-modal-overlay');
         if (existing) existing.remove();
@@ -125,7 +229,8 @@
                         { id: 'expenses', label: '4. Expenses Ledger', icon: 'receipt' },
                         { id: 'invoices', label: '5. Invoices & OCR', icon: 'file-text' },
                         { id: 'announcements', label: '6. Email Broadcast', icon: 'mail' },
-                        { id: 'raw', label: '7. Raw JSON & Push', icon: 'code' }
+                        { id: 'sessions', label: '7. Session Security', icon: 'shield-alert' },
+                        { id: 'raw', label: '8. Raw JSON & Push', icon: 'code' }
                     ].map(t => `
                         <button type="button" class="py-2.5 sm:py-3 border-b-2 flex items-center gap-1.5 sm:gap-2 shrink-0 transition-colors cursor-pointer ${activeGodTab === t.id ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'}" data-tab="${t.id}">
                             <i data-lucide="${t.icon}" class="w-3.5 h-3.5"></i>
@@ -524,8 +629,28 @@
                                 </div>
                             </form>
                         </div>
+                    ` : activeGodTab === 'sessions' ? `
+                        <!-- TAB 7: SESSION SECURITY & REMOTE LOGOUT -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                                <div>
+                                    <span class="text-xs font-bold text-rose-700 uppercase tracking-wider">Active Devices & Session Control</span>
+                                    <p class="text-xs text-slate-400">View logged-in devices and forcefully terminate sessions</p>
+                                </div>
+                                <button type="button" id="god-refresh-sessions-btn" class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer">
+                                    <i data-lucide="refresh-ccw" class="w-3.5 h-3.5"></i>
+                                    <span>Refresh Sessions</span>
+                                </button>
+                            </div>
+                            <div class="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 max-h-96 overflow-y-auto" id="god-sessions-list">
+                                <div class="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center">
+                                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin mb-2"></i>
+                                    <span>Loading active sessions from auth database...</span>
+                                </div>
+                            </div>
+                        </div>
                     ` : `
-                        <!-- TAB 7: RAW JSON & MASTER CLOUD PUSH -->
+                        <!-- TAB 8: RAW JSON & MASTER CLOUD PUSH -->
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <div>
@@ -576,6 +701,11 @@
                 renderGodModeModal();
             });
         });
+
+        if (activeGodTab === 'sessions') {
+            loadGodSessions();
+            document.getElementById('god-refresh-sessions-btn')?.addEventListener('click', loadGodSessions);
+        }
 
         // Top Cloud Sync Button
         document.getElementById('god-sync-now-btn')?.addEventListener('click', async () => {
