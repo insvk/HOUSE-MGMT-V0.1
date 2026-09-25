@@ -624,7 +624,36 @@
                 localStorage.setItem('madura_house_property_v1', JSON.stringify(updatedPayload));
                 
                 // 2. Direct Supabase Update / Upsert
-                if (window.supabase) {
+                if (window.electronAPI && window.electronAPI.dbQuery) {
+                    const hId = updatedPayload.id || '11111111-2222-3333-4444-555555555555';
+                    const query = `
+                        INSERT INTO houses (id, name, address, city, postal_code, total_units, settings, owner_id, updated_at)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            address = EXCLUDED.address,
+                            city = EXCLUDED.city,
+                            postal_code = EXCLUDED.postal_code,
+                            total_units = EXCLUDED.total_units,
+                            settings = EXCLUDED.settings,
+                            updated_at = NOW();
+                    `;
+                    const values = [
+                        hId, 
+                        updatedPayload.name, 
+                        updatedPayload.address, 
+                        updatedPayload.city, 
+                        updatedPayload.postal_code, 
+                        updatedPayload.total_units, 
+                        JSON.stringify(updatedPayload.settings), 
+                        house.owner_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+                    ];
+                    
+                    const res = await window.electronAPI.dbQuery(query, values);
+                    if (!res.success) {
+                        throw new Error(res.error || 'Direct DB connection failed');
+                    }
+                } else if (window.supabase) {
                     const hId = updatedPayload.id || '11111111-2222-3333-4444-555555555555';
                     const { data: upData, error: upError } = await window.supabase
                         .from('houses')
@@ -703,7 +732,24 @@
 
             try {
                 // 1. Direct Supabase Upsert
-                if (window.supabase) {
+                if (window.electronAPI && window.electronAPI.dbQuery) {
+                    const query = `
+                        INSERT INTO maintenance_records (id, house_id, month, year, grand_total, active_tenants_count, individual_contribution, notes, created_at, updated_at)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            house_id = EXCLUDED.house_id,
+                            month = EXCLUDED.month,
+                            year = EXCLUDED.year,
+                            grand_total = EXCLUDED.grand_total,
+                            active_tenants_count = EXCLUDED.active_tenants_count,
+                            individual_contribution = EXCLUDED.individual_contribution,
+                            notes = EXCLUDED.notes,
+                            updated_at = NOW();
+                    `;
+                    const values = [recordPayload.id, recordPayload.house_id, recordPayload.month, recordPayload.year, recordPayload.grand_total, recordPayload.active_tenants_count, recordPayload.individual_contribution, recordPayload.notes];
+                    const res = await window.electronAPI.dbQuery(query, values);
+                    if (!res.success) throw new Error(res.error || 'DB query failed');
+                } else if (window.supabase) {
                     const { error } = await window.supabase.from('maintenance_records').upsert(recordPayload, { onConflict: 'id' });
                     if (error) throw error;
                 }
@@ -769,7 +815,29 @@
             };
 
             try {
-                if (window.supabase) {
+                if (window.electronAPI && window.electronAPI.dbQuery) {
+                    const query = `
+                        INSERT INTO users (id, full_name, email, password, flat_number, role, phone, rent_amount, deposit_amount, occupancy_status, payment_status, maintenance_status, avatar_url, updated_at)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            full_name = EXCLUDED.full_name,
+                            email = EXCLUDED.email,
+                            password = EXCLUDED.password,
+                            flat_number = EXCLUDED.flat_number,
+                            role = EXCLUDED.role,
+                            phone = EXCLUDED.phone,
+                            rent_amount = EXCLUDED.rent_amount,
+                            deposit_amount = EXCLUDED.deposit_amount,
+                            occupancy_status = EXCLUDED.occupancy_status,
+                            payment_status = EXCLUDED.payment_status,
+                            maintenance_status = EXCLUDED.maintenance_status,
+                            avatar_url = EXCLUDED.avatar_url,
+                            updated_at = NOW();
+                    `;
+                    const values = [userPayload.id, userPayload.full_name, userPayload.email, userPayload.password, userPayload.flat_number, userPayload.role, userPayload.phone, userPayload.rent_amount, userPayload.deposit_amount, userPayload.occupancy_status, userPayload.payment_status, userPayload.maintenance_status, userPayload.avatar_url];
+                    const res = await window.electronAPI.dbQuery(query, values);
+                    if (!res.success) throw new Error(res.error || 'DB query failed');
+                } else if (window.supabase) {
                     const { error } = await window.supabase.from('users').upsert(userPayload, { onConflict: 'id' });
                     if (error) throw error;
                 }

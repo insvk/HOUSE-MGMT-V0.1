@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showSaveDialog: (options) => ipcRenderer.invoke('dialog:showSaveDialog', options),
   printToPDF: (options) => ipcRenderer.invoke('print-to-pdf', options),
   writeFile: (filePath, data) => ipcRenderer.invoke('fs:writeFile', filePath, data),
+  dbQuery: (queryText, values) => ipcRenderer.invoke('db:query', queryText, values),
   onSystemResume: (callback) => {
     ipcRenderer.on('system-resume', callback);
     return () => ipcRenderer.removeListener('system-resume', callback);

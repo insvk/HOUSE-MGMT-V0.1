@@ -1,6 +1,11 @@
 const { app, BrowserWindow, ipcMain, dialog, powerMonitor, safeStorage } = require('electron');
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
+const { Pool } = require('pg');
+
+const dbPool = new Pool({
+  connectionString: 'postgresql://postgres:Admin@Password26@db.kbvjnshgyuwkcvicwefh.supabase.co:5432/postgres'
+});
 
 process.env.DIST = path.join(__dirname, '../dist');
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public');
@@ -105,6 +110,16 @@ function setupIPC() {
       fs.writeFileSync(filePath, data);
       return { success: true };
     } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('db:query', async (event, queryText, values) => {
+    try {
+      const res = await dbPool.query(queryText, values);
+      return { success: true, rows: res.rows, rowCount: res.rowCount };
+    } catch (error) {
+      console.error('Database query error:', error);
       return { success: false, error: error.message };
     }
   });
