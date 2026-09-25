@@ -118,13 +118,23 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="space-y-2 pt-2 border-t border-slate-100">
+                <div class="space-y-2 pt-3 border-t border-slate-100">
+                    <!-- Pay via UPI App (Deep Link) -->
+                    <a 
+                        id="smart-pay-upi-deep-link"
+                        href="${upiUrl}"
+                        class="w-full px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95 cursor-pointer text-center no-underline"
+                    >
+                        <i data-lucide="smartphone" class="w-4 h-4"></i>
+                        <span>Pay directly via UPI App</span>
+                    </a>
+
                     <div class="grid grid-cols-2 gap-2">
                         <!-- WhatsApp Reminder Button -->
                         <button 
                             type="button" 
                             id="smart-whatsapp-remind-btn" 
-                            class="w-full px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+                            class="w-full px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
                         >
                             <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                             <span>WhatsApp Remind</span>
@@ -134,7 +144,7 @@
                         <button 
                             type="button" 
                             id="smart-copy-upi-btn" 
-                            class="w-full px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                         >
                             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                             <span>Copy UPI Info</span>
@@ -178,6 +188,9 @@
             if (upiDisplay) upiDisplay.textContent = upiId;
             const payeeDisplay = document.getElementById('smart-qr-payee-display');
             if (payeeDisplay) payeeDisplay.textContent = payeeName;
+
+            const deepLinkBtn = document.getElementById('smart-pay-upi-deep-link');
+            if (deepLinkBtn) deepLinkBtn.href = upiUrl;
         };
         window.addEventListener('house-settings-updated', handleHouseUpdate);
 
